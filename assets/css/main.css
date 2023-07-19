@@ -2439,6 +2439,7 @@ input, select, textarea {
     justify-content: center;
     padding: 0; /* Remove default padding */
     list-style-type: none; /* Remove default list style */
+    text-align:center;
 }
 
 #nav li {
