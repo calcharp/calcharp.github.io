@@ -1716,6 +1716,10 @@ input, select, textarea {
 		line-height: 5.5em;
 	}
 
+	#nav > ul {
+		text-align:center;
+	}
+
 		#nav > ul > li {
 			float: left;
 			padding: 0 0.8em 0 0.8em;
