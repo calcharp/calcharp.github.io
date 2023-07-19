@@ -2427,3 +2427,21 @@ input, select, textarea {
 			}
 
 	}
+
+
+#nav {
+    display: flex;
+    justify-content: center;
+}
+
+#nav ul {
+    display: flex;
+    justify-content: center;
+    padding: 0; /* Remove default padding */
+    list-style-type: none; /* Remove default list style */
+}
+
+#nav li {
+    margin: 0 10px; /* Add some horizontal margin between items */
+    text-align: center;
+}
