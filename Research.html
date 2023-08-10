@@ -13,6 +13,11 @@
 				clear: both;
 				padding-top: 20px;
 			}
+			.clearfix::after {
+				content: "";
+				display: table;
+				clear: both;
+			}
 		</style>
 	</head>
 	<body class="homepage is-preload">
@@ -48,7 +53,7 @@
 				</div>
 
 			<!-- Main Wrapper -->
-				<div id="main-wrapper" style="margin-right:15%;margin-left:15%">
+				<div id="main-wrapper" style="margin-right:15%;margin-left:15%" class="clearfix">
 					<div class="wrapper style2">
 						<div class="inner">
 							<div class="container">
