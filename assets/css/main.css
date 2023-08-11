@@ -1807,7 +1807,7 @@ input, select, textarea {
 			border-left: 0;
 			border-right: 0;
 			color: #fff;
-			color: rgba(255, 255, 255, 0.75);
+			color: rgba(255, 255, 255, 1); /*0.75*/
 			font-size: 2.35em;
 			font-weight: 700;
 			line-height: 1.3em;
