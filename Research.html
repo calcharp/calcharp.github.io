@@ -1,99 +1,74 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<title>Caleb Charpentier - Research </title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<style>
-			#header-wrapper {
-				background: transparent !important; /* Ensures the background is transparent, overriding other styles if necessary */
-			}
-			#footer-wrapper {
-				background: transparent !important; /* Makes the footer background transparent */
-			}
-			.section {
-				padding-top: 20px;
-			}
-			.clearfix::after {
-				content: "";
-				display: table;
-				clear: both;
-			}
-			body {
-        			background: url('images/background-main.jpg') no-repeat center center fixed;
-        			background-size: cover; /* This will make sure the background image covers the entire viewport */
-    			}
-    			#banner h2 {
-        			opacity: 1 !important; /* Ensures the text is completely opaque */
-       				background: none; /* Removes any background that might affect visibility */
-    			}
-		</style>
-	</head>
-	<body class="homepage is-preload">
-		<div id="page-wrapper">
-
-			<!-- Header -->
-				<div id="header-wrapper" style="margin-right:15%;margin-left:15%">
-					<div class="container">
-
-						<!-- Banner -->
-							<div id="banner">
-								<h2>Caleb Charpentier</h2>
-							</div>
-						
-						<!-- Header -->
-							<header id="header">
-								<div class="inner">
-									<!-- Nav -->
-										<nav id="nav">
-											<ul>
-												<li><a href="index.html">Home</a></li>
-											        <li class="current_page_item"><a href="Research.html">Research</a></li>
-												<li><a href="Publications.html">Publications</a></li>
-												<li><a href="Software.html">Software</a></li>
-												<li><a href="pdfs/CV_website.pdf" target="_blank">CV</a></li>
-											</ul>
-										</nav>
-
-								</div>
-							</header>
-					</div>
-				</div>
-
-			<!-- Main Wrapper -->
-				<div id="main-wrapper" style="margin-right:15%;margin-left:15%">
-					<div class="wrapper style2">
-						<div class="inner">
-							<div class="container">
-								<div id="content">
-
-									<!-- Content -->
-									<article>
-									    <header style="margin-bottom:20px;"> <!-- class="major"> -->
-									        <h2>Phenotypic Evolution in an Age of Machine Learning</h2>
-									   </header>
-										
-									   <div class="section clearfix">
-										   <p>
-									 	   The field of deep learning is advancing rapidly, and with it has come new tools for automated discovery, 
-											   with systems such as <a href='https://www.nature.com/articles/s41586-021-03819-2' target='_blank' style='color:blue;'>AlphaFold</a> and
-											   <a href='https://www.nature.com/articles/s41586-023-06924-6' target='_blank' style='color:blue;'>DeepMind's FunSearch</a> 
-											   allowing users to pull new knowledge directly from high-dimensional data. I want to use similar tools to uncover the 
-											   developmental processes underlying evolution, directly from raw data such as images or videos, and informed by pre-existing 
-											   biological knowledge. With the massive datasets currently available to many researchers, Phenomics allows us to processes 
-											   information with higher volume and dimensionality than was ever before possible. I want to take this a step further, and use 
-											   machine learning to not only process more information than ever before, but also to rethink how our assumptions about the world 
-											   interact with our data and models to begin with.
-									 	   </p>
-									   </div>	
-										   
-										   
-									   <div class="section clearfix">
-										    <h3>The Imageomics Institute</h3>
-										    <img style="height:auto;width:45%; float:left;  margin: 15px 15px 0 0;" src="images/imageomics.jpg" alt="" />
-
-									    <p>My work is centered around <a href='https://imageomics.osu.edu/' target='_blank' style='color:blue;'>Imageomics</a>, 
+<head>
+    <title>Caleb Charpentier - Research </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+        body {
+            background: url('images/background-main.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+        #header-wrapper, #footer-wrapper {
+            background: transparent !important;
+        }
+        .section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .section img {
+            width: 50%;
+            height: auto;
+            margin-right: 15px;
+        }
+        #banner h2 {
+            opacity: 1 !important;
+            background: none;
+        }
+    </style>
+</head>
+<body class="homepage is-preload">
+    <div id="page-wrapper">
+        <!-- Header -->
+        <div id="header-wrapper" style="margin-right:15%;margin-left:15%">
+            <div class="container">
+                <!-- Banner -->
+                <div id="banner">
+                    <h2>Caleb Charpentier</h2>
+                </div>
+                <!-- Header -->
+                <header id="header">
+                    <div class="inner">
+                        <!-- Nav -->
+                        <nav id="nav">
+                            <ul>
+                                <li><a href="index.html">Home</a></li>
+                                <li class="current_page_item"><a href="Research.html">Research</a></li>
+                                <li><a href="Publications.html">Publications</a></li>
+                                <li><a href="Software.html">Software</a></li>
+                                <li><a href="pdfs/CV_website.pdf" target="_blank">CV</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </header>
+            </div>
+        </div>
+        <!-- Main Wrapper -->
+        <div id="main-wrapper" style="margin-right:15%;margin-left:15%">
+            <div class="wrapper style2">
+                <div class="inner">
+                    <div class="container">
+                        <div id="content">
+                            <!-- Content -->
+                            <article>
+                                <!-- Section 1 -->
+                                <div class="section clearfix">
+                                    <img style="height:auto;width:45%;" src="images/imageomics.jpg" alt="" />
+                                    <div>
+                                        <h3>The Imageomics Institute</h3>
+                                        				        <p>My work is centered around <a href='https://imageomics.osu.edu/' target='_blank' style='color:blue;'>Imageomics</a>, 
 										    an area of research that uses images and machine-learning algorithms to study 
 										    biology. More specifically, I am focused on integrating pre-existing biological knowledge and interpretable 
 										    automated-discovery techniques to find new ways of studying evolutionary morphology.
@@ -108,13 +83,14 @@
 										    that humans (even experts) might miss. By grounding them in biological knowledge and enforcing sparce model outputs
 										    that encourage inductive inference, we can potentially bypass the interpretability problems associated with black-box
 										    models and make character construction more reproducible and more robust to complex evolutionary dynamics. </p>
-									   </div>
-
-									   <div class="section clearfix">
-										    <h3>Automated Character Construction with Deep Learning</h3>
-										    <img style="height:auto;width:50%; float:left;  margin: 15px 15px 0 0;" src="images/phylonn.png" alt="" />
-
-									    <p></p>
+                                    </div>
+                                </div>
+                                <!-- Section 2 -->
+                                <div class="section clearfix">
+                                    <img style="height:auto;width:50%;" src="images/phylonn.png" alt="" />
+                                    <div>
+                                        <h3>Automated Character Construction with Deep Learning</h3>
+                                                                        <p></p>
 									    <p>Using Knowledge-Guided Machine Learning (KGML) approaches, 
 										    While deep learning models can fit functions to any sort of data, they still always include inductive 
 										    assumptions about how that data behaves / the processes that led to it being what it is. When dealing 
@@ -132,12 +108,14 @@
 									   <p>
 										<a href='https://arxiv.org/pdf/2306.03228.pdf' target='_blank' style='color:blue;'>The PhyloNN Paper</a> 
 									    </p>
-
-									   <div class="section clearfix">
-										    <h3>Simulating Raw Data</h3>
-										    <img style="height:auto;width:50%; float:left;  margin: 15px 15px 0 0;" src="images/t1_Top_0.png" alt="" />
-
-								            <p>Most phenotypic traits are complex characters, whos evolutionary paths are determined by 
+                                    </div>
+                                </div>
+                                <!-- Section 3 -->
+                                <div class="section clearfix">
+                                    <img style="height:auto;width:50%;" src="images/t1_Top_0.png" alt="" />
+                                    <div>
+                                        <h3>Simulating Raw Data</h3>
+									    <p> Most phenotypic traits are complex characters, whos evolutionary paths are determined by 
 										dynamic changes in regulatory networks with various degrees of integration, complexity, and ... .
 										Deep learning may allow us to uncover these sophisticated processes so that they can be better represented
 										in our models, but many deep learning algorithms are black boxes, and validating the performance of black-box 
@@ -150,15 +128,14 @@
 										    taxa on a simulated phylogeny. TraitBlender can then take 'museum-specimen' style photos of these imaginary taxa in bulk, 
 										    allowing users to create huge synthetic image datasets where the evolutionary and developmental processes are known in their entireties. 
 									    </p>
-
-										   
-									   </div>
-
-									   <div class="section clearfix">
-										    <h3>Incorporating Structured Knowledge into Inference</h3>
-										    <img style="height:auto;width:50%; float:left;  margin: 15px 15px 0 0;" src="images/phenoscape.png" alt="" />
-
-									    <p>Whenever we make models, we are attempting to codify statements about the world. 
+                                    </div>
+                                </div>
+                                <!-- Section 4 -->
+                                <div class="section clearfix">
+                                    <img style="height:auto;width:50%;" src="images/phenoscape.png" alt="" />
+                                    <div>
+                                        <h3>Incorporating Structured Knowledge into Inference</h3>
+                                        				    <p>Whenever we make models, we are attempting to codify statements about the world. 
 										For a model to be meaningful, however, the assumptions we put into it must be reflective 
 										    of our assumptions about external reality. When we are dealing with traits that have 
 										    complex, nonlinear dependencies on each other, doing this can be very difficult.</p>
@@ -169,37 +146,30 @@
 
 								 	    <a href='https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.14210' target='_blank' style='color:blue;'>The RPhenscate Paper</a> 
 									    <a href='https://scate.phenoscape.org/' target='_blank' style='color:blue;'>The SCATE (Semantic Comparative Analysis of Trait Evolution) Project</a>
-									   </div>
-
-									</article>
-
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-								<!-- Footer Wrapper -->
-				<div id="footer-wrapper">
-					<footer id="footer" class="container">
-						<div class="row">
-							<div class="col-3 col-6-medium col-12-small">
-
-
-
-							</div>
-						</div>
-					</footer>
-				</div>
-		</div>
-
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.dropotron.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
-
-	</body>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer Wrapper -->
+        <div id="footer-wrapper">
+            <footer id="footer" class="container">
+                <div class="row">
+                    <div class="col-3 col-6-medium col-12-small">
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.dropotron.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
 </html>
