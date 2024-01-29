@@ -114,14 +114,24 @@
 										    <h3>Automated Character Construction with Deep Learning</h3>
 										    <img style="height:auto;width:50%; float:left;  margin: 15px 15px 0 0;" src="images/phylonn.png" alt="" />
 
-									    <p>The field of deep learning is advancing rapidly, and with it has come new tools for automated discovery, 
-										    with systems such as Alphafold and Deepmind's FunSearch allowing users to pull new knowledge directly 
-										    from high-dimensional data. I want to use similar tools to uncover the developmental processes underlying evolution, 
-										    directly from raw data such as images or videos. </p>
+									    <p></p>
 									    <p>Using Knowledge-Guided Machine Learning (KGML) approaches, 
-										    I want to constrain these models so that their predictions are informed by formally structured knowledge such as 
-										    phylogeny or ontogenic processes, so that they can develop meaningful interpretations of the dynamic 
-										    processes underlying evolution.</p>
+										    While deep learning models can fit functions to any sort of data, they still always include inductive 
+										    assumptions about how that data behaves / the processes that led to it being what it is. When dealing 
+										    with images, convolutional neural networks allow us to incorporate biases about the spatial distribution 
+										    of patterns. When dealing with time-series data, LSTMs allow us to incorporate biases about the order of 
+										    elements in a sequence. 
+									    </p>
+									    <p> When dealing with evolutionary data, we can incorporate similar biases, by using clever restructuring of 
+										    autoencoders and multi-task learning algorithms to bias our models with information from phylogeny, 
+										    ontogeny, or other biological processes. In this way, we can ground increasingly high-dimensional, or 
+										    even raw, datasets in our understanding of reality, and possibily discover new processes that we far more 
+										    difficult to uncover previously.
+										
+									   <\p>
+									   <p>
+										<a href='https://arxiv.org/pdf/2306.03228.pdf' target='_blank' style='color:blue;'>The PhyloNN Paper</a> 
+									    </p>
 
 									   <div class="section clearfix">
 										    <h3>Simulating Raw Data</h3>
