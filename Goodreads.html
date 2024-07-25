@@ -1,133 +1,187 @@
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<title>Caleb Charpentier - Goodreads </title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<style>
-			#header-wrapper {
-				background: transparent !important; /* Ensures the background is transparent, overriding other styles if necessary */
-			}
-			#footer-wrapper {
-				background: transparent !important; /* Makes the footer background transparent */
-			}
-			.section {
-				padding-top: 20px;
-			}
-			.clearfix::after {
-				content: "";
-				display: table;
-				clear: both;
-			}
-			body {
-        			background: url('images/background-main.jpg') no-repeat center center fixed;
-        			background-size: cover; /* This will make sure the background image covers the entire viewport */
-    			}
-    			#banner h2 {
-        			opacity: 1 !important; /* Ensures the text is completely opaque */
-       				background: none; /* Removes any background that might affect visibility */
-    			}
-		</style>
-	</head>
-	<body class="homepage is-preload">
-		<div id="page-wrapper">
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+    <title>Caleb Charpentier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Leven - Resume / CV / vCard Template" />
+    <meta name="keywords" content="vcard, resposnive, retina, resume, jquery, css3, bootstrap, portfolio" />
+    <meta name="author" content="lmpixels" />
+    <link rel="shortcut icon" href="img/darwinbust.png">
+    <link rel="stylesheet" href="css/normalize.css" type="text/css">
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/owl.carousel.css" type="text/css">
+    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="css/main.css" type="text/css">
+  </head>
 
-			<!-- Header -->
-				<div id="header-wrapper" style="margin-right:15%;margin-left:15%">
-					<div class="container">
+  <body class="page">
 
-						<!-- Banner -->
-							<div id="banner">
-								<h2>Caleb Charpentier</h2>
-							</div>
-						
-						<!-- Header -->
-							<header id="header">
-								<div class="inner">
-									<!-- Nav -->
-										<nav id="nav">
-											<ul>
-												<li><a href="index.html">Home</a></li>
-											        <li><a href="Research.html">Research</a></li>
-												<li><a href="Publications.html">Publications</a></li>
-												<li><a href="Software.html">Software</a></li>
-												<li><a href="pdfs/CV_website.pdf">CV</a></li>
-												<li class="current_page_item"><a href="Goodreads.html">GoodReads</a></li>
-											</ul>
-										</nav>
+    <div class="lm-animated-bg"></div>
+    
+    <!-- Loading animation -->
+    <div class="preloader">
+      <div class="preloader-animation">
+        <div class="preloader-spinner">
+        </div>
+      </div>
+    </div>
+    <!-- /Loading animation -->
 
-								</div>
-							</header>
-					</div>
-				</div>
+    <!-- Scroll To Top Button -->
+    <div class="lmpixels-scroll-to-top"><i class="lnr lnr-chevron-up"></i></div>
+    <!-- /Scroll To Top Button -->
 
-			<!-- Main Wrapper -->
-				<div id="main-wrapper" style="margin-right:15%;margin-left:15%">
-					<div class="wrapper style2">
-						<div class="inner">
-							<div class="container">
-								<div id="content">
+    <div class="page-scroll">
+      <div id="page_container" class="page-container bg-move-effect" data-animation="transition-flip-in-right">
 
-									<!-- Content -->
-									<article>
-									   <div class="section clearfix">
-										    <h3>Measurement and Meaning</h3>
-									    <p> 
-                        -
-									    </p>
-									   </div>
-															   
-									   <div class="section clearfix">
-										    <h3>Reframing Biological Thinking</h3>
-									    <p> 
-                        -
-									    </p>
-									   </div>
+        <!-- Header -->
+        <header id="site_header" class="header">
+          <div class="header-content clearfix">
+                
+            <!-- Text Logo -->
+            <div class="text-logo">
+              <a href="index.html">
+                  <div class="logo-symbol">Home</div>
+              </a>
+          </div>
+            <!-- /Text Logo -->
 
-									   <div class="section clearfix">
-										    <h3>Deep Learning</h3>
-									    <p>
-                        - 
-                      </p>
-									   </div>
+            <!-- Navigation -->
+            <div class="site-nav mobile-menu-hide">
+              <ul class="leven-classic-menu site-main-menu">
+                <li class="menu-item">
+                  <a href="index.html">About Me</a>
+                </li>
 
-									   <div class="section clearfix">
-										    <h3>Neat Miscellaneous Stuff</h3>
-								            <p>
-                              - 
-                            </p>
-									   </div>
-										   
-									</article>
+                <li class="menu-item">
+                  <a href="Research.html">Research</a>
+                </li>
 
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                <li class="menu-item">
+                  <a href="Publications.html">Publications</a>
+                
+                <li class="menu-item">
+                  <a href="Software.html">Software</a>
 
-								<!-- Footer Wrapper -->
-				<div id="footer-wrapper">
-					<footer id="footer" class="container">
-						<div class="row">
-							<div class="col-3 col-6-medium col-12-small">
+                <li class="menu-item">
+                  <a href="CV.html">CV</a>
+                </li>
+
+                <li class="menu-item current-menu-item">
+                  <a href="GoodReads.html">GoodReads</a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <a class="menu-toggle mobile-visible">
+              <i class="fa fa-bars"></i>
+            </a>
+            <!-- Mobile Menu Toggle -->
+          </div>
+        </header>
+        <!-- /Header -->
+
+        <div id="main" class="site-main">
+          <div id="main-content" class="single-page-content">
+            <div id="primary" class="content-area">
+              <div id="content" class="page-content site-content" role="main">
+
+                <article class="post">
+
+                  <header class="entry-header">
+                    <div class="entry-meta entry-meta-top">
+                      <span><a href="#" rel="category tag">WordPress</a></span>      
+                    </div><!-- .entry-meta -->
+
+                    <h2 class="entry-title">How to Make a WordPress Plugin Extensible</h2>
+                  </header><!-- .entry-header -->
+
+                  <div class="post-thumbnail">
+                    <img src="./img/blog/blog_post_1_full.jpg" alt=""  />
+                  </div>
+
+                  <div class="post-content">
+                    <div class="entry-content">
+
+                      <div class="row">
+                        <div class=" col-xs-12 col-sm-12 ">
+
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Morbi consequat lacinia pulvinar.</p>
+                            
+                            <div class="single-image ">
+                              <a href="./img/blog/blog_post_2_full.jpg" class="lightbox">
+                                <img src="./img/blog/blog_post_2_full.jpg" alt="image">
+                              </a>
+                            </div>
+
+                            <p> Nunc vestibulum leo a ultricies malesuada. Proin quis volutpat sem. Morbi consequat lacinia pulvinar.</p>
+
+                            <blockquote class="quote fw-quote-left fw-quote-md ">
+                              <p>Sed turpis mauris, aliquet ac lacus nec, tempor condimentum justo.</p>
+                              <footer class="quote-author">
+                                <span>Edgar D. Wang</span>
+                              </footer>
+                            </blockquote>
+                            
+                            <p>Orci ulum leo a ultricies malesuada. Morbi consequat lacinia pulvinar.</p>
+
+                        </div>
+                      </div>
+
+                    </div>
+  
+                  </div>
+                </article>
 
 
 
-							</div>
-						</div>
-					</footer>
-				</div>
-		</div>
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.dropotron.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+              </div>
+            </div>
+          </div>
+        </div>
 
-	</body>
+        <footer style="padding: 20px 0 !important;" class="site-footer clearfix">
+          <div style = "padding-left: 50px;" class="footer-social">
+              <ul class="footer-social-links">
+                  <li>
+                      <a href="https://x.com/CalebCharp" target="_blank">Twitter</a>
+                  </li>
+                  <li>
+                      <a href="https://github.com/calcharp" target="_blank">GitHub</a>
+                  </li>
+                  <li>
+                      <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&hl=en" target="_blank">Google Scholar</a>
+                  </li>
+                  <li style="color: #8d8d8d;">
+                      calebc22@vt.edu
+                  </li>
+              </ul>
+          </div>
+      </footer>
+        
+      </div>
+    </div>
+
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/modernizr.custom.js"></script>
+
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+
+    <script src="js/bootstrap.min.js"></script>
+
+    <script src='js/jquery.shuffle.min.js'></script>
+    <script src='js/masonry.pkgd.min.js'></script>
+    <script src='js/owl.carousel.min.js'></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrDf32aQTCVENBhFJbMBKOUTiUAABtC2o"></script>
+    <script src="js/jquery.googlemap.js"></script>
+    <script src="js/validator.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>
