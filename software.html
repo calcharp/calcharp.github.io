@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Caleb Charpentier - Software</title>
+  <meta name="description" content="Software projects by Caleb Charpentier including TraitBlender, PhyloNN, RPhenoscate, Revticulate, and SISRS.">
+  <link rel="icon" href="img/darwinbust.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="page-template">
+  <div class="container">
+    <header class="header">
+      <div class="header__logo">
+        <a class="logo" href="index.html"><svg class="logo__home" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg>Caleb Charpentier</a>
+      </div>
+      <nav class="navbar js-navbar">
+        <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
+          <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
+        </button>
+        <ul class="navbar__menu">
+          <li><a href="research.html" target="_self">Research</a></li>
+          <li class="has-submenu">
+            <a href="software.html" target="_self" aria-haspopup="true" aria-current="page">Software</a>
+            <ul class="navbar__submenu level-2" aria-hidden="true">
+              <li><a href="software.html#traitblender" target="_self">TraitBlender</a></li>
+              <li><a href="software.html#phylonn" target="_self">PhyloNN</a></li>
+              <li><a href="software.html#rphenoscate" target="_self">RPhenoscate</a></li>
+              <li><a href="software.html#revticulate" target="_self">Revticulate</a></li>
+              <li><a href="software.html#sisrs" target="_self">SISRS</a></li>
+            </ul>
+          </li>
+          <li><a href="blog.html" target="_self">Blog</a></li>
+          <li><a href="cv.html" target="_self">CV</a></li>
+          <li><a href="talks.html" target="_self">Talks</a></li>
+          <li><a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener"><span class="nav-link__label">Publications</span><span class="nav-external-icon" aria-hidden="true">↗</span></a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="content page">
+      <article class="post">
+        <header>
+          <h1 class="post__title">Software</h1>
+        </header>
+        <div class="post__entry">
+          <section class="research-section" id="traitblender">
+            <h2>TraitBlender</h2>
+            <img class="research-section__image research-section__image--right" src="img/traitblender_logo_bg.png" alt="TraitBlender">
+            <p>
+              TraitBlender is a pipeline I developed for generating synthetic image datasets where the underlying evolutionary and developmental processes are fully known. It allows users to represent theoretical morphospaces as Python functions, evolve imaginary taxa on a simulated phylogeny, and render museum-specimen-style photos of those taxa in bulk.
+            </p>
+            <p>
+              This makes it possible to validate deep learning models that aim to discover biological processes from raw image data, without the ambiguity that comes from validating black-box models on real-world datasets with unknown generative processes.
+            </p>
+            <p>
+              <a href="https://imageomics.github.io/TraitBlender/" target="_blank" rel="noopener">TraitBlender documentation</a>
+            </p>
+          </section>
+
+          <section class="research-section" id="phylonn">
+            <h2>PhyloNN</h2>
+            <img class="research-section__image research-section__image--left-wide" src="img/phylonn.png" alt="PhyloNN">
+            <p>
+              PhyloNN uses restructured autoencoders and multi-task learning to incorporate evolutionary information such as phylogeny and ontogeny into deep learning models for phenotypic data. The goal is to ground high-dimensional or raw datasets in biological structure rather than treating morphology as an unstructured prediction problem.
+            </p>
+            <p>
+              <a href="https://arxiv.org/pdf/2306.03228.pdf" target="_blank" rel="noopener">The PhyloNN paper</a>
+              |
+              <a href="https://github.com/elhamod/phylonn" target="_blank" rel="noopener">GitHub repository</a>
+            </p>
+          </section>
+
+          <section class="research-section" id="rphenoscate">
+            <h2>RPhenoscate</h2>
+            <img class="research-section__image research-section__image--left-wide" src="img/phenoscape.png" alt="RPhenoscate">
+            <p>
+              RPhenoscate incorporates biological knowledge into comparative analyses through ontologies: knowledge graphs that specify hierarchical relationships between traits. This helps ensure that statistical models reflect biologically meaningful assumptions about how characters relate to one another.
+            </p>
+            <p>
+              <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.14210" target="_blank" rel="noopener">The RPhenoscate paper</a>
+              |
+              <a href="https://github.com/uyedaj/rphenoscate" target="_blank" rel="noopener">GitHub repository</a>
+            </p>
+          </section>
+
+          <section class="research-section" id="revticulate">
+            <h2>Revticulate</h2>
+            <img class="research-section__image research-section__image--left-wide" src="img/rb_1.png" alt="Revticulate">
+            <p>
+              Revticulate is an R package that provides an interface between R and RevBayes, making it easier to set up, run, and analyze Bayesian phylogenetic inference workflows from within R.
+            </p>
+            <p>
+              <a href="https://github.com/revbayes/Revticulate" target="_blank" rel="noopener">GitHub repository</a>
+            </p>
+          </section>
+
+          <section class="research-section" id="sisrs">
+            <h2>SISRS</h2>
+            <img class="research-section__image research-section__image--right" src="img/SISRS.png" alt="SISRS">
+            <p>
+              SISRS (Site Identification from Short Read Sequences) is a phylogenomic pipeline for identifying informative sites and inferring orthologous sequences from short-read genomic data.
+            </p>
+            <p>
+              <a href="https://github.com/SchwartzLabURI/SISRS" target="_blank" rel="noopener">GitHub repository</a>
+            </p>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__copyright">
+          <p>&copy; 2026 Caleb Charpentier</p>
+          <div class="footer__links">
+            <a href="https://bsky.app/profile/calcharp.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+            <a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Substack</a>
+            <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+            <span class="footer__email">calebc22@vt.edu</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script defer src="assets/js/scripts.min.js"></script>
+  <script>
+    window.publiiThemeMenuConfig = {
+      mobileMenuMode: "sidebar",
+      animationSpeed: 300,
+      submenuWidth: "auto",
+      doubleClickTime: 500,
+      mobileMenuExpandableSubmenus: true,
+      relatedContainerForOverlayMenuSelector: ".top"
+    };
+  </script>
+</body>
+</html>

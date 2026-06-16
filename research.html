@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Caleb Charpentier - Research</title>
+  <meta name="description" content="Research overview for Caleb Charpentier on Imageomics, deep learning, and evolutionary morphology.">
+  <link rel="icon" href="img/darwinbust.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="page-template">
+  <div class="container">
+    <header class="header">
+      <div class="header__logo">
+        <a class="logo" href="index.html"><svg class="logo__home" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg>Caleb Charpentier</a>
+      </div>
+      <nav class="navbar js-navbar">
+        <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
+          <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
+        </button>
+        <ul class="navbar__menu">
+          <li><a href="research.html" target="_self" aria-current="page">Research</a></li>
+          <li class="has-submenu">
+            <a href="software.html" target="_self" aria-haspopup="true">Software</a>
+            <ul class="navbar__submenu level-2" aria-hidden="true">
+              <li><a href="software.html#traitblender" target="_self">TraitBlender</a></li>
+              <li><a href="software.html#phylonn" target="_self">PhyloNN</a></li>
+              <li><a href="software.html#rphenoscate" target="_self">RPhenoscate</a></li>
+              <li><a href="software.html#revticulate" target="_self">Revticulate</a></li>
+              <li><a href="software.html#sisrs" target="_self">SISRS</a></li>
+            </ul>
+          </li>
+          <li><a href="blog.html" target="_self">Blog</a></li>
+          <li><a href="cv.html" target="_self">CV</a></li>
+          <li><a href="talks.html" target="_self">Talks</a></li>
+          <li><a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener"><span class="nav-link__label">Publications</span><span class="nav-external-icon" aria-hidden="true">↗</span></a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="content page">
+      <article class="post">
+        <header>
+          <h1 class="post__title">Research</h1>
+        </header>
+        <div class="post__entry">
+          <section class="research-section">
+            <h2>Imageomics</h2>
+            <img class="research-section__image research-section__image--right" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
+            <p>
+              My work is centered around <a href="https://imageomics.osu.edu/" target="_blank" rel="noopener">Imageomics</a>,
+              an area of research that uses images and machine-learning algorithms to study biology. More specifically, I am focused on integrating pre-existing biological knowledge and interpretable automated-discovery techniques to find new ways of studying evolutionary morphology.
+            </p>
+            <p>
+              The conclusions we can draw from our data and our models are dependent on both the ways our data interacts with our models and the manner in which our data was collected to begin with. This complication can make studying morphology very difficult, as the way traits have historically been defined through character construction has been dependent on particular experts asking particular questions, which often may not adequately capture the dynamic processes that actually drive evolution more broadly.
+            </p>
+            <p>
+              Imageomics provides a possible way to get around this, as neural-networks are often able to pick up on complex patterns that humans (even experts) might miss. By grounding them in biological knowledge and enforcing sparse model outputs that encourage inductive inference, we can potentially bypass the interpretability problems associated with black-box models and make character construction more reproducible and more robust to complex evolutionary dynamics.
+            </p>
+            <p>
+              <a href="https://cacm.acm.org/news/seeing-beyond-human-sight/" target="_blank" rel="noopener">News article on the goals and impact of Imageomics</a>
+            </p>
+          </section>
+
+          <section class="research-section">
+            <h2>Synthetic Evolutionary Image and 3D Mesh Datasets</h2>
+            <img class="research-section__image research-section__image--right-wide" src="img/snail_morphospace.png" alt="Snail morphospace parameter sweeps across shell traits">
+            <p>
+              One way to address this issue is by instead validating the ability of these models to discover known processes through simulated raw data, which can be done with the
+              <a href="https://github.com/Imageomics/TraitBlender" target="_blank" rel="noopener">TraitBlender</a> pipeline I developed. TraitBlender allows users to represent theoretical morphospaces as python functions, which can be be used to evolve imaginary taxa on a simulated phylogeny. TraitBlender can then take 'museum-specimen' style photos of these imaginary taxa in bulk, allowing users to create huge synthetic image datasets where the evolutionary and developmental processes are known in their entireties.
+            </p>
+          </section>
+
+          <section class="research-section">
+            <h2>Deep Comparative Methods</h2>
+            <img class="research-section__image research-section__image--left-wide" src="img/phylonn.png" alt="PhyloNN diagram">
+            <p>
+              While deep learning models can fit functions to any sort of data, they still always include inductive assumptions about how that data behaves / the processes that led to it being what it is. When dealing with images, convolutional neural networks allow us to incorporate biases about the spatial distribution of patterns. When dealing with time-series data, LSTMs allow us to incorporate biases about the order of elements in a sequence.
+            </p>
+            <p>
+              When dealing with evolutionary data, we can incorporate similar biases, by using clever restructuring of autoencoders and multi-task learning algorithms to bias our models with information from phylogeny, ontogeny, or other biological processes. In this way, we can ground increasingly high-dimensional, or even raw, datasets in our understanding of reality, and possibily discover new processes that we far more difficult to uncover previously.
+            </p>
+            <p>
+              <a href="https://arxiv.org/pdf/2306.03228.pdf" target="_blank" rel="noopener">The PhyloNN Paper</a>
+            </p>
+          </section>
+
+          <section class="research-section">
+            <h2>Incorporating Structured Knowledge into Inference</h2>
+            <img class="research-section__image research-section__image--left-wide" src="img/phenoscape.png" alt="Phenoscape ontology diagram">
+            <p>
+              Whenever we make models, we are attempting to codify statements about the world. For a model to be meaningful, however, the assumptions we put into it must be reflective of our assumptions about external reality. When we are dealing with traits that have complex, nonlinear dependencies on each other, doing this can be very difficult.
+            </p>
+            <p>
+              I've contributed to projects that address this problem by incorporating biological knowledge into models directly in the form of ontologies, which are knowledge graphs that specify the hierarchical relationships / dependencies between traits.
+            </p>
+            <p>
+              <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.14210" target="_blank" rel="noopener">The RPhenoscate Paper</a>
+              |
+              <a href="https://scate.phenoscape.org/" target="_blank" rel="noopener">The SCATE (Semantic Comparative Analysis of Trait Evolution) Project</a>
+            </p>
+          </section>
+        </div>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__copyright">
+          <p>&copy; 2026 Caleb Charpentier</p>
+          <div class="footer__links">
+            <a href="https://bsky.app/profile/calcharp.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+            <a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Substack</a>
+            <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+            <span class="footer__email">calebc22@vt.edu</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script defer src="assets/js/scripts.min.js"></script>
+  <script>
+    window.publiiThemeMenuConfig = {
+      mobileMenuMode: "sidebar",
+      animationSpeed: 300,
+      submenuWidth: "auto",
+      doubleClickTime: 500,
+      mobileMenuExpandableSubmenus: true,
+      relatedContainerForOverlayMenuSelector: ".top"
+    };
+  </script>
+</body>
+</html>
