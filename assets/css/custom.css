@@ -354,6 +354,27 @@ img[loading] {
   width: 100%;
 }
 
+.cv-download-icon {
+  color: hsla(var(--accent), var(--alpha, 1));
+  display: inline-flex;
+  height: 0.85em;
+  margin-left: -0.2em;
+  text-decoration: none;
+  transition: var(--transition);
+  vertical-align: middle;
+  width: 0.85em;
+}
+
+.cv-download-icon:hover {
+  color: hsla(var(--color), var(--alpha, 1));
+}
+
+.cv-download-icon svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
 .footer__links {
   display: flex;
   flex-wrap: wrap;
