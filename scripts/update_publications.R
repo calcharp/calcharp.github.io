@@ -11,8 +11,8 @@ if (!nzchar(scholar_id)) {
   stop("Google Scholar ID is required.")
 }
 
-if (!requireNamespace("scholar", quietly = TRUE)) {
-  install.packages("scholar", repos = "https://cloud.r-project.org")
+if (!requireNamespace("scholar", quietly = TRUE) || !requireNamespace("jsonlite", quietly = TRUE)) {
+  stop("Required packages 'scholar' and 'jsonlite' must be installed before running this script.")
 }
 
 library(scholar)

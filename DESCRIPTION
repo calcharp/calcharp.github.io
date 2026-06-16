@@ -1,0 +1,10 @@
+Package: calcharp-publications
+Title: Google Scholar publication fetch (CI only)
+Version: 0.0.1
+Authors@R: person("Caleb", "Charpentier", email = "caleb@example.com", role = c("aut", "cre"))
+Description: Declares R dependencies for the weekly Google Scholar publications workflow.
+Depends: R (>= 4.1)
+Imports:
+    jsonlite,
+    scholar
+License: MIT

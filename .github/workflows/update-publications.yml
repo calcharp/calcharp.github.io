@@ -21,9 +21,12 @@ jobs:
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: "release"
+          use-public-rspm: true
 
-      - name: Install scholar package
-        run: Rscript -e 'install.packages("scholar", repos = "https://cloud.r-project.org")'
+      - name: Install R package dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache: true
 
       - name: Fetch publications and citation counts
         env:
