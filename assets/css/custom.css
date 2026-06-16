@@ -409,3 +409,79 @@ img[loading] {
 .footer__email {
   color: hsla(var(--color), var(--alpha, 0.5));
 }
+
+.publications-intro {
+  margin-bottom: calc(var(--baseline) * 6);
+}
+
+.publications-scholar-link {
+  display: inline-block;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.publications-scholar-link .nav-link__label,
+.publications-scholar-link .nav-external-icon {
+  color: inherit;
+  display: inline;
+}
+
+.publications-scholar-link .nav-link__label {
+  text-decoration: underline;
+  text-decoration-thickness: 0.02em;
+  text-underline-offset: 0.15em;
+}
+
+.publications-scholar-link .nav-external-icon {
+  font-size: 0.75em;
+  margin-left: 0.25em;
+  text-decoration: none;
+  vertical-align: baseline;
+}
+
+.publication-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--baseline) * 5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.publication-list > li {
+  line-height: 1.6;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.publication-list > li::marker {
+  content: none;
+}
+
+.publication-list em {
+  font-style: italic;
+}
+
+.publication-list strong {
+  font-weight: 700;
+}
+
+.publication-list a {
+  word-break: break-word;
+}
+
+.publication-year {
+  margin-top: calc(var(--baseline) * 8);
+}
+
+.publication-year:first-of-type {
+  margin-top: 0;
+}
+
+.publication-year h2 {
+  border-bottom: 1px solid hsla(var(--accent), var(--alpha, 1));
+  font-size: clamp(1.1377777785rem, 1.1377777785rem + 0.0758518523 * ((100vw - 20rem) / 50), 1.2136296308rem);
+  margin-bottom: calc(var(--baseline) * 4);
+  padding-bottom: calc(var(--baseline) * 2);
+}
