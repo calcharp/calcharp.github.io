@@ -130,9 +130,10 @@ img[loading] {
 
 .hero-links {
   align-items: center;
-  display: grid;
-  gap: calc(var(--baseline) * 2) calc(var(--baseline) * 3);
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--baseline) * 4) calc(var(--baseline) * 5);
+  justify-content: center;
   padding: calc(var(--baseline) * 5) 0;
 }
 
@@ -140,10 +141,13 @@ img[loading] {
   align-items: center;
   color: hsla(var(--accent), var(--alpha, 1));
   display: flex;
+  flex: 0 1 auto;
   font-size: 0.8789062495rem;
   justify-content: center;
+  max-width: 100%;
   min-height: 2.5rem;
-  padding: calc(var(--baseline) * 2) 0;
+  overflow-wrap: anywhere;
+  padding: calc(var(--baseline) * 2) calc(var(--baseline) * 2);
   text-align: center;
   text-decoration: none;
   transition: var(--transition);
@@ -152,6 +156,16 @@ img[loading] {
 .hero-links a:hover {
   color: hsla(var(--color), var(--alpha, 1));
   text-decoration: none;
+}
+
+.hero-links a.hero-link--stacked {
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+
+.hero-link__line {
+  display: block;
 }
 
 .home-darwin {
