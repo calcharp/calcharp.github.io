@@ -264,11 +264,22 @@ img[loading] {
   margin-top: 0;
 }
 
+.research-section__image--traitblender {
+  height: auto;
+  max-width: min(336px, 100%);
+  width: min(336px, 100%);
+}
+
 @media all and (min-width: 42.75em) {
   .research-section__image--right {
     float: right;
     margin-left: calc(var(--baseline) * 6);
     max-width: 280px;
+  }
+
+  .research-section__image--traitblender {
+    max-width: 336px;
+    width: 336px;
   }
 
   .research-section__image--right-wide {
