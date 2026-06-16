@@ -50,33 +50,6 @@
         </header>
         <div class="post__entry">
           <section class="research-section">
-            <h2>Imageomics</h2>
-            <img class="research-section__image research-section__image--right" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
-            <p>
-              My work is centered around <a href="https://imageomics.osu.edu/" target="_blank" rel="noopener">Imageomics</a>,
-              an area of research that uses images and machine-learning algorithms to study biology. More specifically, I am focused on integrating pre-existing biological knowledge and interpretable automated-discovery techniques to find new ways of studying evolutionary morphology.
-            </p>
-            <p>
-              The conclusions we can draw from our data and our models are dependent on both the ways our data interacts with our models and the manner in which our data was collected to begin with. This complication can make studying morphology very difficult, as the way traits have historically been defined through character construction has been dependent on particular experts asking particular questions, which often may not adequately capture the dynamic processes that actually drive evolution more broadly.
-            </p>
-            <p>
-              Imageomics provides a possible way to get around this, as neural-networks are often able to pick up on complex patterns that humans (even experts) might miss. By grounding them in biological knowledge and enforcing sparse model outputs that encourage inductive inference, we can potentially bypass the interpretability problems associated with black-box models and make character construction more reproducible and more robust to complex evolutionary dynamics.
-            </p>
-            <p>
-              <a href="https://cacm.acm.org/news/seeing-beyond-human-sight/" target="_blank" rel="noopener">News article on the goals and impact of Imageomics</a>
-            </p>
-          </section>
-
-          <section class="research-section">
-            <h2>Synthetic Evolutionary Image and 3D Mesh Datasets</h2>
-            <img class="research-section__image research-section__image--right-wide" src="img/snail_morphospace.png" alt="Snail morphospace parameter sweeps across shell traits">
-            <p>
-              One way to address this issue is by instead validating the ability of these models to discover known processes through simulated raw data, which can be done with the
-              <a href="https://github.com/Imageomics/TraitBlender" target="_blank" rel="noopener">TraitBlender</a> pipeline I developed. TraitBlender allows users to represent theoretical morphospaces as python functions, which can be be used to evolve imaginary taxa on a simulated phylogeny. TraitBlender can then take 'museum-specimen' style photos of these imaginary taxa in bulk, allowing users to create huge synthetic image datasets where the evolutionary and developmental processes are known in their entireties.
-            </p>
-          </section>
-
-          <section class="research-section">
             <h2>Deep Comparative Methods</h2>
             <img class="research-section__image research-section__image--left-wide" src="img/phylonn.png" alt="PhyloNN diagram">
             <p>
@@ -91,7 +64,24 @@
           </section>
 
           <section class="research-section">
-            <h2>Incorporating Structured Knowledge into Inference</h2>
+            <h2>Synthetic Evolutionary Image and 3D Mesh Datasets</h2>
+            <img class="research-section__image research-section__image--right-wide" src="img/snail_morphospace.png" alt="Snail morphospace parameter sweeps across shell traits">
+            <p>
+              One way to address this issue is by instead validating the ability of these models to discover known processes through simulated raw data, which can be done with the
+              <a href="https://imageomics.github.io/TraitBlender/" target="_blank" rel="noopener">TraitBlender</a> pipeline I developed. TraitBlender allows users to represent theoretical morphospaces as python functions, which can be be used to evolve imaginary taxa on a simulated phylogeny. TraitBlender can then take 'museum-specimen' style photos of these imaginary taxa in bulk, allowing users to create huge synthetic image datasets where the evolutionary and developmental processes are known in their entireties.
+            </p>
+          </section>
+
+          <section class="research-section">
+            <h2>Measurement and Meaning in Evolution and AI</h2>
+            <img class="research-section__image research-section__image--right" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
+            <p>
+              My work in this area is primarily theoretical, focused on connecting the regularization tools of representation learning, such as metric learning, domain adaptation, sparsity, and interpretability constraints, to principles from measurement theory in evolutionary biology. Rather than treating learned traits as automatically meaningful, I am interested in when these tools produce representations that are actually commensurable with macroevolutionary questions.
+            </p>
+          </section>
+
+          <section class="research-section">
+            <h2>Ontologies and Computable Trait Descriptions</h2>
             <img class="research-section__image research-section__image--left-wide" src="img/phenoscape.png" alt="Phenoscape ontology diagram">
             <p>
               Whenever we make models, we are attempting to codify statements about the world. For a model to be meaningful, however, the assumptions we put into it must be reflective of our assumptions about external reality. When we are dealing with traits that have complex, nonlinear dependencies on each other, doing this can be very difficult.
