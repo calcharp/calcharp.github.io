@@ -202,7 +202,7 @@
     }
     .modal-card {
       position: relative;
-      width: min(720px, 100%);
+      width: min(860px, 100%);
       max-height: min(88vh, 820px);
       overflow: auto;
       background: var(--paper);
@@ -241,23 +241,28 @@
       color: rgba(28, 36, 25, 0.7);
     }
     .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-      gap: 0.85rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
       margin-bottom: 1rem;
     }
     .gallery-card {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.45rem;
-      padding: 0.75rem 0.5rem 0.65rem;
+      align-items: stretch;
+      text-align: left;
+      gap: 0.55rem;
+      padding: 0.75rem 0.75rem 0.7rem;
       background:
         radial-gradient(ellipse 80% 60% at 50% 30%, rgba(255,255,255,0.85), transparent 70%),
         rgba(255,255,255,0.4);
       border: 1px solid rgba(28, 36, 25, 0.1);
       border-radius: 2px;
+    }
+    .gallery-card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
     .gallery-card .phylo-sil {
       width: 72px;
@@ -268,21 +273,57 @@
       width: 2rem;
       height: 2rem;
     }
+    .gallery-card .g-meta { flex: 1; min-width: 0; }
     .gallery-card .g-name {
-      font-size: 0.82rem;
+      font-size: 0.92rem;
       font-weight: 600;
       line-height: 1.25;
       color: var(--ink);
     }
     .gallery-card .g-sci {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-style: italic;
       color: rgba(28, 36, 25, 0.55);
       line-height: 1.3;
     }
     .gallery-card .g-count {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: rgba(28, 36, 25, 0.5);
+      margin-top: 0.15rem;
+    }
+    .photo-strip {
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      padding: 0.2rem 0 0.1rem;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .photo-strip::-webkit-scrollbar { height: 6px; }
+    .photo-strip::-webkit-scrollbar-thumb {
+      background: rgba(28, 36, 25, 0.25);
+      border-radius: 3px;
+    }
+    .photo-strip a {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      line-height: 0;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid rgba(28, 36, 25, 0.12);
+    }
+    .photo-strip img {
+      display: block;
+      height: 96px;
+      width: auto;
+      max-width: 140px;
+      object-fit: cover;
+    }
+    .photo-strip-empty,
+    .photo-strip-loading {
+      font-size: 0.75rem;
+      color: rgba(28, 36, 25, 0.5);
+      padding: 0.35rem 0;
     }
     .modal-foot {
       display: flex;
@@ -671,7 +712,7 @@
         <h2 id="gallery-title">Species gallery</h2>
         <button type="button" class="modal-close" data-close-gallery aria-label="Close">×</button>
       </header>
-      <p class="modal-lede">Silhouettes from PhyloPic (click any icon for its source page). Export includes location and Udvardy biogeography for each mapped specimen.</p>
+      <p class="modal-lede">PhyloPic silhouettes plus iNaturalist taxon photos (scroll sideways). Click a photo or silhouette for its source page. Export includes location and Udvardy biogeography.</p>
       <div class="gallery-grid" id="gallery-grid"></div>
       <footer class="modal-foot">
         <span class="modal-meta" id="gallery-meta"></span>
@@ -807,9 +848,91 @@
       if (!enabled) setOverlay(null);
     }
 
-    function inatSearchUrl(sp) {
+    async function resolveiNatTaxon(sp) {
+      if (sp.inatId && sp.inatSlug) {
+        return { id: sp.inatId, slug: sp.inatSlug };
+      }
+      const queries = [sp.scientific, sp.common].filter(Boolean);
+      for (const q of queries) {
+        const url = new URL("https://api.inaturalist.org/v1/taxa");
+        url.searchParams.set("q", q);
+        url.searchParams.set("per_page", "5");
+        const r = await fetch(url);
+        if (!r.ok) continue;
+        const results = (await r.json()).results || [];
+        const sciNorm = String(sp.scientific || "").toLowerCase();
+        const hit =
+          results.find((t) => String(t.name || "").toLowerCase() === sciNorm) ||
+          results.find((t) => t.rank === "species") ||
+          results[0];
+        if (!hit || !hit.id) continue;
+        const slug = String(hit.name || sp.scientific || "taxon").replace(/\s+/g, "-");
+        sp.inatId = hit.id;
+        sp.inatSlug = slug;
+        return { id: hit.id, slug };
+      }
+      return null;
+    }
+
+    function licensePreferScore(code) {
+      const lic = String(code || "").toLowerCase();
+      if (!lic) return 3; // all rights reserved / unknown
+      if (lic === "cc0" || lic.includes("public")) return 0;
+      if (lic.startsWith("cc-by") && !lic.includes("nc")) return 1;
+      if (lic.includes("cc-by")) return 2;
+      return 3;
+    }
+
+    async function loadiNatPhotos(sp) {
+      if (sp.inatPhotos) return sp.inatPhotos;
+      const hit = await resolveiNatTaxon(sp);
+      if (!hit) {
+        sp.inatPhotos = [];
+        return sp.inatPhotos;
+      }
+      const r = await fetch(`https://api.inaturalist.org/v1/taxa/${hit.id}`);
+      if (!r.ok) {
+        sp.inatPhotos = [];
+        return sp.inatPhotos;
+      }
+      const taxon = ((await r.json()).results || [])[0];
+      const photos = [];
+      const seen = new Set();
+      const pushPhoto = (p) => {
+        if (!p) return;
+        const url = p.medium_url || p.small_url || p.url;
+        if (!url || seen.has(url)) return;
+        seen.add(url);
+        photos.push({
+          url,
+          attribution: p.attribution || "",
+          license: p.license_code || "",
+          page: `https://www.inaturalist.org/taxa/${hit.id}-${hit.slug}`,
+        });
+      };
+      (taxon && taxon.taxon_photos ? taxon.taxon_photos : []).forEach((tp) => pushPhoto(tp.photo));
+      if (taxon && taxon.default_photo) pushPhoto(taxon.default_photo);
+      photos.sort((a, b) => licensePreferScore(a.license) - licensePreferScore(b.license));
+      sp.inatPhotos = photos.slice(0, 16);
+      return sp.inatPhotos;
+    }
+
+    async function openiNat(sp) {
+      try {
+        const hit = await resolveiNatTaxon(sp);
+        if (hit) {
+          window.open(
+            `https://www.inaturalist.org/taxa/${hit.id}-${hit.slug}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+          return;
+        }
+      } catch {
+        /* fall through */
+      }
       const q = encodeURIComponent(sp.scientific || sp.common || "");
-      return `https://www.inaturalist.org/taxa/search?q=${q}`;
+      window.open(`https://www.inaturalist.org/taxa/search?q=${q}`, "_blank", "noopener,noreferrer");
     }
 
     function wikipediaUrl(sp) {
@@ -839,6 +962,7 @@
     }
 
     function renderSpeciesList() {
+      species.forEach(ensureSpeciesStyle);
       speciesListEl.innerHTML = "";
       species.forEach((sp, i) => {
         const row = document.createElement("div");
@@ -850,16 +974,14 @@
             <span class="sci">${sp.scientific} · key ${sp.taxonKey}</span>
           </span>
           <span class="chip-actions">
-            <button type="button" class="chip-btn" data-act="inat" title="Open iNaturalist search">iNat</button>
+            <button type="button" class="chip-btn" data-act="inat" title="Open iNaturalist taxon page">iNat</button>
             <button type="button" class="chip-btn" data-act="wiki" title="Open Wikipedia">Wiki</button>
             <button type="button" class="chip-btn" data-act="onezoom" title="Open on OneZoom tree of life">OZ</button>
             <button type="button" class="chip-remove" title="Remove" aria-label="Remove">×</button>
           </span>`;
         const iconSlot = row.querySelector('[data-role="icon"]');
         iconSlot.appendChild(speciesIconEl(sp, color));
-        row.querySelector('[data-act="inat"]').addEventListener("click", () => {
-          window.open(inatSearchUrl(sp), "_blank", "noopener,noreferrer");
-        });
+        row.querySelector('[data-act="inat"]').addEventListener("click", () => openiNat(sp));
         row.querySelector('[data-act="wiki"]').addEventListener("click", () => {
           window.open(wikipediaUrl(sp), "_blank", "noopener,noreferrer");
         });
@@ -887,14 +1009,49 @@
       ensurePhyloPics();
     }
 
+    /** Look up the live species record — single source of truth for name/color. */
+    function getSpecies(taxonKey) {
+      const key = Number(taxonKey);
+      return species.find((s) => Number(s.taxonKey) === key) || null;
+    }
+
+    function ensureSpeciesStyle(sp) {
+      if (!sp || sp.colorKey === "pika" || sp.colorKey === "dog") return;
+      if (sp.colorIndex != null) return;
+      const used = new Set(
+        species
+          .filter((s) => s !== sp && s.colorKey !== "pika" && s.colorKey !== "dog")
+          .map((s) => s.colorIndex)
+          .filter((i) => i != null)
+      );
+      let i = 0;
+      while (used.has(i)) i += 1;
+      sp.colorIndex = i;
+    }
+
     function colorForSpecies(sp) {
+      if (!sp) return "#888888";
       const c = POINT_COLORS[currentTheme] || POINT_COLORS.default;
       if (sp.colorKey === "pika") return c.pika;
       if (sp.colorKey === "dog") return c.dog;
-      const idx = Math.max(0, species.indexOf(sp));
-      const extras = species.filter((s) => s.colorKey !== "pika" && s.colorKey !== "dog");
-      const eidx = extras.indexOf(sp);
-      return c.extra[(eidx >= 0 ? eidx : idx) % c.extra.length];
+      ensureSpeciesStyle(sp);
+      return c.extra[(sp.colorIndex || 0) % c.extra.length];
+    }
+
+    function colorForTaxonKey(taxonKey) {
+      return colorForSpecies(getSpecies(taxonKey));
+    }
+
+    function refreshMarkerColors() {
+      pointMarkers.forEach((m) => {
+        const key = m._taxonKey;
+        if (key == null) return;
+        m.setStyle({
+          fillColor: colorForTaxonKey(key),
+          color: currentTheme === "hc" ? "#111111" : "#1c2419",
+          weight: currentTheme === "hc" ? 1.2 : 0.8,
+        });
+      });
     }
 
     function circleSwatch(color) {
@@ -1059,38 +1216,44 @@
       pointMarkers.length = 0;
     }
 
-    function removePointsForSpecies(sp) {
+    function removePointsForSpecies(spOrKey) {
+      const key = Number(typeof spOrKey === "object" ? spOrKey.taxonKey : spOrKey);
       for (let i = pointMarkers.length - 1; i >= 0; i--) {
         const m = pointMarkers[i];
-        if (m._speciesRef === sp || m._speciesRef?.taxonKey === sp.taxonKey) {
+        if (Number(m._taxonKey) === key) {
           allPoints.removeLayer(m);
           pointMarkers.splice(i, 1);
         }
       }
     }
 
-    function popupFor(rec, sp) {
+    function popupFor(rec, taxonKey) {
+      const sp = getSpecies(taxonKey) || {};
       const elev = rec.elev_m != null ? `${Math.round(rec.elev_m)} m` : "—";
       const year = rec.year != null ? rec.year : "—";
       return `<div class="popup">
-        <h3>${rec.locality || sp.common || sp.scientific}</h3>
-        <p><strong>${sp.common || sp.scientific}</strong><br><em>${rec.scientificName || sp.scientific}</em></p>
+        <h3>${rec.locality || sp.common || sp.scientific || "Occurrence"}</h3>
+        <p><strong>${sp.common || sp.scientific || "Unknown"}</strong><br><em>${rec.scientificName || sp.scientific || ""}</em></p>
         <p>Elev ${elev} · Year ${year}</p>
         <p><a href="${rec.source_url}" target="_blank" rel="noopener">${rec.source_name}</a></p>
       </div>`;
     }
 
     function addPoints(recs, sp) {
+      ensureSpeciesStyle(sp);
+      const taxonKey = sp.taxonKey;
       recs.forEach((rec) => {
         const marker = L.circleMarker([rec.lat, rec.lon], {
           radius: 4,
           color: currentTheme === "hc" ? "#111111" : "#1c2419",
           weight: currentTheme === "hc" ? 1.2 : 0.8,
-          fillColor: colorForSpecies(sp),
+          fillColor: colorForTaxonKey(taxonKey),
           fillOpacity: 0.7,
-        }).bindPopup(popupFor(rec, sp)).addTo(allPoints);
-        marker._speciesRef = sp;
+        });
+        marker._taxonKey = taxonKey;
         marker._rec = rec;
+        marker.bindPopup(() => popupFor(rec, taxonKey));
+        marker.addTo(allPoints);
         pointMarkers.push(marker);
       });
     }
@@ -1114,14 +1277,16 @@
           radius: p.location_type === "occurrence" ? 4 : 5,
           color: currentTheme === "hc" ? "#111111" : "#1c2419",
           weight: currentTheme === "hc" ? 1.2 : 0.8,
-          fillColor: colorForSpecies(sp),
+          fillColor: colorForTaxonKey(sp.taxonKey),
           fillOpacity: p.location_type === "occurrence" ? 0.55 : 0.9,
-        }).bindPopup(`<div class="popup">
+        });
+        marker._taxonKey = sp.taxonKey;
+        marker.bindPopup(`<div class="popup">
           <h3>${p.label || p.site_id}</h3>
           <p><strong>${p.organism}</strong></p>
           <p><a href="${p.source_url}" target="_blank" rel="noopener">${p.source_name}</a></p>
-        </div>`).addTo(allPoints);
-        marker._speciesRef = sp;
+        </div>`);
+        marker.addTo(allPoints);
         pointMarkers.push(marker);
         n++;
       });
@@ -1369,13 +1534,7 @@
 
     function applyTheme(theme) {
       currentTheme = theme;
-      pointMarkers.forEach((m) => {
-        m.setStyle({
-          fillColor: colorForSpecies(m._speciesRef),
-          color: theme === "hc" ? "#111111" : "#1c2419",
-          weight: theme === "hc" ? 1.2 : 0.8,
-        });
-      });
+      refreshMarkerColors();
       renderSpeciesList();
       (window.OVERLAY_LAYERS || []).forEach(rebuildOverlayLayer);
       if (activeOverlayId) setOverlay(activeOverlayId);
@@ -1467,7 +1626,7 @@
       const index = await loadProvincesIndex();
       const rows = [];
       pointMarkers.forEach((m) => {
-        const sp = m._speciesRef;
+        const sp = getSpecies(m._taxonKey) || {};
         const rec = m._rec || {};
         const lat = rec.lat != null ? rec.lat : m.getLatLng().lat;
         const lon = rec.lon != null ? rec.lon : m.getLatLng().lng;
@@ -1475,7 +1634,7 @@
         rows.push({
           common_name: sp.common || "",
           scientific_name: sp.scientific || rec.scientificName || "",
-          taxon_key: sp.taxonKey || "",
+          taxon_key: sp.taxonKey || m._taxonKey || "",
           lat,
           lon,
           elev_m: rec.elev_m != null ? rec.elev_m : "",
@@ -1533,9 +1692,8 @@
     }
 
     function countForSpecies(sp) {
-      return pointMarkers.filter(
-        (m) => m._speciesRef === sp || m._speciesRef?.taxonKey === sp.taxonKey
-      ).length;
+      const key = Number(sp.taxonKey);
+      return pointMarkers.filter((m) => Number(m._taxonKey) === key).length;
     }
 
     function openGallery() {
@@ -1546,37 +1704,72 @@
         card.className = "gallery-card";
         card.style.color = color;
 
+        const top = document.createElement("div");
+        top.className = "gallery-card-top";
+
         const iconWrap = document.createElement("div");
         iconWrap.appendChild(speciesIconEl(sp, color));
-        // Enlarge silhouette if present
         const sil = iconWrap.querySelector(".phylo-sil");
         if (sil) {
           sil.style.width = "72px";
           sil.style.height = "56px";
         }
 
+        const meta = document.createElement("div");
+        meta.className = "g-meta";
         const name = document.createElement("div");
         name.className = "g-name";
         name.textContent = sp.common || sp.scientific;
-
         const sci = document.createElement("div");
         sci.className = "g-sci";
         sci.textContent = sp.scientific || "";
-
         const count = document.createElement("div");
         count.className = "g-count";
         const n = countForSpecies(sp);
-        count.textContent = n ? `${n} locations` : "No locations yet";
+        count.textContent = n ? `${n} mapped locations` : "No locations yet";
+        meta.appendChild(name);
+        meta.appendChild(sci);
+        meta.appendChild(count);
 
-        card.appendChild(iconWrap);
-        card.appendChild(name);
-        card.appendChild(sci);
-        card.appendChild(count);
+        top.appendChild(iconWrap);
+        top.appendChild(meta);
+
+        const strip = document.createElement("div");
+        strip.className = "photo-strip";
+        strip.innerHTML = `<div class="photo-strip-loading">Loading iNaturalist photos…</div>`;
+
+        card.appendChild(top);
+        card.appendChild(strip);
         galleryGrid.appendChild(card);
+
+        loadiNatPhotos(sp)
+          .then((photos) => {
+            strip.innerHTML = "";
+            if (!photos.length) {
+              strip.innerHTML = `<div class="photo-strip-empty">No iNaturalist photos found.</div>`;
+              return;
+            }
+            photos.forEach((p) => {
+              const a = document.createElement("a");
+              a.href = p.page;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              a.title = p.attribution || "iNaturalist photo";
+              const img = document.createElement("img");
+              img.src = p.url;
+              img.alt = `${sp.common || sp.scientific} — iNaturalist`;
+              img.loading = "lazy";
+              a.appendChild(img);
+              strip.appendChild(a);
+            });
+          })
+          .catch(() => {
+            strip.innerHTML = `<div class="photo-strip-empty">Could not load photos.</div>`;
+          });
       });
 
       const total = pointMarkers.length;
-      galleryMeta.textContent = `${species.length} species · ${total} mapped locations`;
+      galleryMeta.textContent = `${species.length} species · ${total} mapped locations · photos via iNaturalist`;
       galleryModal.hidden = false;
     }
 
@@ -1721,6 +1914,7 @@
           taxonKey: match.taxonKey,
           colorKey: "extra",
         };
+        ensureSpeciesStyle(sp);
         species.push(sp);
         addInput.value = "";
         renderSpeciesList();
