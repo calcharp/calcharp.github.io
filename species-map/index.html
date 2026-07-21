@@ -355,21 +355,6 @@
       color: rgba(28, 36, 25, 0.75);
     }
     .control-row input[type="range"] { flex: 1; accent-color: var(--sage); }
-    .hint {
-      font-size: 0.8rem;
-      color: rgba(28, 36, 25, 0.65);
-      line-height: 1.4;
-      margin: 0.85rem 0 0;
-      padding-top: 0.75rem;
-      border-top: 1px solid rgba(28, 36, 25, 0.1);
-    }
-    .legend-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.65rem 1rem;
-      margin-top: 0.45rem;
-    }
     .legend-item {
       display: inline-flex;
       align-items: center;
@@ -377,13 +362,6 @@
       font-size: 0.85rem;
       color: rgba(28, 36, 25, 0.8);
     }
-    .legend-item a.phylo-link {
-      display: inline-flex;
-      align-items: center;
-      line-height: 0;
-      border-radius: 2px;
-    }
-    .legend-item a.phylo-link:hover .phylo-sil,
     .species-chip a.phylo-link:hover .phylo-sil {
       outline: 2px solid var(--sky);
       outline-offset: 1px;
@@ -411,32 +389,78 @@
       width: 26px;
       height: 20px;
     }
-    .credit {
-      display: block;
-      margin-top: 0.35rem;
-      font-size: 0.7rem;
-      color: rgba(28, 36, 25, 0.5);
-    }
-    .credit a { color: var(--sage); }
     .legend { font-size: 0.75rem; margin: 0.35rem 0 0.5rem; color: rgba(28,36,25,0.65); line-height: 1.35; }
     .ramp { height: 10px; border-radius: 2px; margin: 0.25rem 0 0.15rem; border: 1px solid rgba(28,36,25,0.15); }
+    .sources {
+      position: relative;
+      font-size: 0.78rem;
+      line-height: 1.55;
+      margin-top: 0.35rem;
+    }
     .sources h2 {
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      margin: 0.85rem 0 0.35rem;
+      margin: 0.85rem 0 0;
       color: rgba(28, 36, 25, 0.55);
       font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
-    .sources { font-size: 0.78rem; line-height: 1.55; }
     .sources a { color: var(--sage); }
-    .advanced {
+    .sources-info {
+      width: 1.05rem;
+      height: 1.05rem;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(28, 36, 25, 0.35);
+      background: rgba(255, 255, 255, 0.7);
+      color: rgba(28, 36, 25, 0.7);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.72rem;
+      font-style: italic;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sources-info:hover,
+    .sources-info[aria-expanded="true"] {
+      border-color: var(--sage);
+      color: var(--ink);
+      background: #fff;
+    }
+    .sources-popover {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 0.35rem);
+      z-index: 5;
+      min-width: min(16rem, 100%);
+      max-width: 18rem;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid rgba(28, 36, 25, 0.14);
+      border-radius: 2px;
+      background: #faf8f4;
+      box-shadow: 0 6px 18px rgba(28, 36, 25, 0.12);
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: rgba(28, 36, 25, 0.78);
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+    }
+    .advanced,
+    .about {
       margin-top: 0.75rem;
       border: 1px solid rgba(28, 36, 25, 0.12);
       border-radius: 2px;
       background: rgba(255,255,255,0.35);
     }
-    .advanced > summary {
+    .advanced > summary,
+    .about > summary {
       cursor: pointer;
       list-style: none;
       padding: 0.55rem 0.65rem;
@@ -445,15 +469,38 @@
       color: rgba(28, 36, 25, 0.7);
       user-select: none;
     }
-    .advanced > summary::-webkit-details-marker { display: none; }
-    .advanced > summary::before {
+    .advanced > summary::-webkit-details-marker,
+    .about > summary::-webkit-details-marker { display: none; }
+    .advanced > summary::before,
+    .about > summary::before {
       content: "▸ ";
       display: inline-block;
       transition: transform 0.15s ease;
     }
-    .advanced[open] > summary::before { transform: rotate(90deg); }
-    .advanced-body { padding: 0 0.65rem 0.75rem; }
+    .advanced[open] > summary::before,
+    .about[open] > summary::before { transform: rotate(90deg); }
+    .advanced-body,
+    .about-body { padding: 0 0.65rem 0.75rem; }
     .advanced .section-label { margin-top: 0.55rem; }
+    .about-body {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: rgba(28, 36, 25, 0.78);
+    }
+    .about-body p { margin: 0.35rem 0 0.55rem; }
+    .about-body h3 {
+      margin: 0.55rem 0 0.25rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(28, 36, 25, 0.55);
+      font-weight: 600;
+    }
+    .about-body ul {
+      margin: 0.2rem 0 0.45rem;
+      padding-left: 1.1rem;
+    }
+    .about-body li { margin: 0.2rem 0; }
 
     .note-co {
       font-size: 0.75rem;
@@ -468,10 +515,22 @@
     }
     #map { height: 100%; min-height: 320px; background: #f3efe6; }
     .leaflet-container { background: #f3efe6; }
+    /* Smooth WorldClim PNG coasts instead of crisp pixel blocks */
+    .leaflet-image-layer {
+      image-rendering: auto;
+    }
     .leaflet-popup-content-wrapper {
       border-radius: 2px;
       font-family: "Source Sans 3", system-ui, sans-serif;
       box-shadow: 0 8px 24px rgba(28, 36, 25, 0.18);
+    }
+    .leaflet-popup.popup-preview {
+      opacity: 0.68;
+      pointer-events: none;
+      transition: opacity 0.12s ease;
+    }
+    .leaflet-popup.popup-preview .leaflet-popup-content-wrapper {
+      box-shadow: 0 4px 14px rgba(28, 36, 25, 0.1);
     }
     .leaflet-popup-content { margin: 0.8rem 0.95rem; max-width: 260px; }
     .popup h3 {
@@ -481,6 +540,24 @@
     }
     .popup p { margin: 0.15rem 0; font-size: 0.85rem; line-height: 1.35; }
     .popup a { color: var(--sage); font-weight: 600; word-break: break-all; }
+    .popup-photo {
+      margin: 0.45rem 0 0.35rem !important;
+      line-height: 0;
+    }
+    .popup-photo img {
+      display: block;
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 2px;
+      background: rgba(28, 36, 25, 0.06);
+    }
+    .popup-photo-credit {
+      margin: 0.2rem 0 0.35rem !important;
+      font-size: 0.7rem !important;
+      color: rgba(28, 36, 25, 0.55);
+      line-height: 1.3 !important;
+    }
 
     /* Floating visual properties over the map */
     .viz-panel {
@@ -569,10 +646,8 @@
       font-size: 0.75rem;
       margin: 0.15rem 0.35rem 0.15rem 0;
     }
-    .overlay-block.disabled .layers,
-    .overlay-block.disabled .control-row {
-      opacity: 0.55;
-      pointer-events: none;
+    .layer:has(input:disabled) {
+      opacity: 0.45;
     }
 
     @media (max-width: 780px) {
@@ -635,20 +710,38 @@
         </div>
       </details>
 
-      <p class="hint">
-        <span class="legend-row" id="species-legend"></span>
-        <span class="credit">Occurrence data: <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a>
-          · Silhouettes: <a href="https://www.phylopic.org/" target="_blank" rel="noopener">PhyloPic</a>
-          · Biogeography: <a href="https://www.unep-wcmc.org/" target="_blank" rel="noopener">Udvardy / UNEP-WCMC</a></span>
-      </p>
+      <details class="about">
+        <summary>About the map layers</summary>
+        <div class="about-body">
+          <h3>Environment overlays</h3>
+          <ul>
+            <li><strong>Precipitation &amp; temperature</strong> — WorldClim 2.1 long-term climate normals for <strong>1970–2000</strong> (mean annual values), clipped to land.</li>
+            <li><strong>Greenness / NDVI</strong> — MODIS Terra vegetation index, fixed mid-summer mosaic (<strong>July 2010</strong>) as a long-term-style snapshot.</li>
+            <li><strong>Elevation</strong> — static digital elevation model (no time period).</li>
+          </ul>
+          <h3>Why do temp &amp; precip stop at 2000?</h3>
+          <p>
+            They don’t “run out” of years — WorldClim 2.1’s free global climate layers are published as a fixed
+            <strong>1970–2000</strong> 30-year normal (Fick &amp; Hijmans 2017). That baseline is still the classroom
+            standard for species distribution work. Later decades exist in other products; this map uses the classic WorldClim normal.
+          </p>
+        </div>
+      </details>
 
       <div class="sources">
-        <h2>Sources</h2>
-        <div>
-          <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a><br />
-          <a href="https://data-gis.unep-wcmc.org/server/rest/services/Bio-geographicalRegions/Udvardy_Biogeographical_Provinces_1975/FeatureServer" target="_blank" rel="noopener">Udvardy provinces (1975) via UNEP-WCMC</a><br />
-          <a href="https://prism.oregonstate.edu/normals/" target="_blank" rel="noopener">PRISM normals (Colorado)</a><br />
-          <a href="https://www.usgs.gov/3d-elevation-program" target="_blank" rel="noopener">USGS 3DEP</a>
+        <h2>
+          Sources
+          <button type="button" class="sources-info" id="sources-info" aria-expanded="false" aria-controls="sources-popover" title="Data sources" aria-label="Data sources">
+            i
+          </button>
+        </h2>
+        <div class="sources-popover" id="sources-popover" hidden>
+          <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a> — occurrence data<br />
+          <a href="https://www.phylopic.org/" target="_blank" rel="noopener">PhyloPic</a> — silhouettes<br />
+          <a href="https://data-gis.unep-wcmc.org/server/rest/services/Bio-geographicalRegions/Udvardy_Biogeographical_Provinces_1975/FeatureServer" target="_blank" rel="noopener">Udvardy provinces (1975)</a> via UNEP-WCMC<br />
+          <a href="https://www.worldclim.org/" target="_blank" rel="noopener">WorldClim 2.1</a> — global climate normals<br />
+          <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">AWS Terrain Tiles</a> — global elevation<br />
+          <a href="https://nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a> — MODIS NDVI greenness
         </div>
       </div>
     </aside>
@@ -660,7 +753,7 @@
         <summary>Visual properties</summary>
         <div class="viz-body">
           <label class="layer viz-specimens">
-            <input type="checkbox" id="show-specimens" />
+            <input type="checkbox" id="show-specimens" checked />
             <span>Plot specimens</span>
           </label>
 
@@ -691,7 +784,7 @@
           <details class="viz-section" id="overlay-block">
             <summary>Environment overlays</summary>
             <div class="viz-section-body">
-              <p class="note-co" id="note-co">Climate overlays are available when the region filter is set to Colorado.</p>
+              <p class="note-co" id="note-co" style="display:none"></p>
               <div class="layers" id="overlay-layers"></div>
               <div class="control-row">
                 <span>Opacity</span>
@@ -722,13 +815,14 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="regions.js"></script>
-  <script src="gbif.js"></script>
-  <script src="phylopic.js"></script>
-  <script src="onezoom.js"></script>
-  <script src="overlays.js"></script>
-  <script src="udvardy.js"></script>
-  <script src="locations.js"></script>
+  <script src="regions.js?v=20260721f"></script>
+  <script src="gbif.js?v=20260721f"></script>
+  <script src="phylopic.js?v=20260721f"></script>
+  <script src="onezoom.js?v=20260721f"></script>
+  <script src="overlays.js?v=20260721i"></script>
+  <script src="elevation.js?v=20260721f"></script>
+  <script src="udvardy.js?v=20260721f"></script>
+  <script src="locations.js?v=20260721f"></script>
   <script>
     const COLORS = {
       "American pika|survey_plot": true,
@@ -745,17 +839,26 @@
       default: {
         precip: "linear-gradient(90deg,#d2b48c,#e6d296,#8cbe78,#3c8ca0,#14468c)",
         tmean: "linear-gradient(90deg,#2850a0,#78b4c8,#f0e696,#e68c3c,#b4281e)",
+        wc_precip: "linear-gradient(90deg,#d2b48c,#e6d296,#8cbe78,#3c8ca0,#14468c)",
+        wc_tmean: "linear-gradient(90deg,#2850a0,#78b4c8,#f0e696,#e68c3c,#b4281e)",
         elev: "linear-gradient(90deg,#467846,#a0aa64,#aa8c64,#bebebe,#f5f5f5)",
+        ndvi: "linear-gradient(90deg,#f5e6c8,#c2d48a,#5a9e4e,#1f6b32,#0b3d1c)",
       },
       cb: {
         precip: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
         tmean: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
+        wc_precip: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
+        wc_tmean: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
         elev: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
+        ndvi: "linear-gradient(90deg,#00224e,#465b7a,#6e7f6d,#a69450,#ffe696)",
       },
       hc: {
         precip: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
         tmean: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
+        wc_precip: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
+        wc_tmean: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
         elev: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
+        ndvi: "linear-gradient(90deg,#140a32,#502878,#b45028,#e6a014,#fff050)",
       },
     };
 
@@ -775,7 +878,6 @@
     const regionSelect = document.getElementById("region-select");
     const speciesListEl = document.getElementById("species-list");
     const statusEl = document.getElementById("status");
-    const overlayBlock = document.getElementById("overlay-block");
     const noteCo = document.getElementById("note-co");
 
     function setStatus(msg, isError) {
@@ -810,7 +912,8 @@
           name: "Worldwide",
           country: null,
           stateProvince: null,
-          bbox: [-170, -55, 170, 75],
+          // Default map frame: contiguous US–focused
+          bbox: [-125, 24, -66, 50],
           isColorado: false,
         };
       }
@@ -838,40 +941,85 @@
     }
 
     function updateOverlayAvailability() {
-      const reg = currentRegion();
-      const enabled = reg.isColorado;
-      overlayBlock.classList.toggle("disabled", !enabled);
-      noteCo.style.display = enabled ? "none" : "block";
-      noteCo.textContent = enabled
-        ? ""
-        : "Climate overlays are available when the region filter is set to Colorado.";
-      if (!enabled) setOverlay(null);
+      // All environment overlays are global now
+      if (noteCo) {
+        noteCo.style.display = "none";
+        noteCo.textContent = "";
+      }
+    }
+
+    /**
+     * Resolve via iNaturalist (fuzzy q search). Caches id/slug, matched
+     * scientific name (inatName), and preferred common name (inatCommon).
+     * Common-name chips and Wiki / OneZoom / PhyloPic prefer these.
+     */
+    function applyiNatLabels(sp) {
+      if (sp.inatCommon) sp.common = sp.inatCommon;
     }
 
     async function resolveiNatTaxon(sp) {
-      if (sp.inatId && sp.inatSlug) {
-        return { id: sp.inatId, slug: sp.inatSlug };
+      if (sp.inatId && sp.inatSlug && sp.inatName) {
+        applyiNatLabels(sp);
+        return {
+          id: sp.inatId,
+          slug: sp.inatSlug,
+          name: sp.inatName,
+          common: sp.inatCommon || null,
+        };
       }
       const queries = [sp.scientific, sp.common].filter(Boolean);
       for (const q of queries) {
         const url = new URL("https://api.inaturalist.org/v1/taxa");
         url.searchParams.set("q", q);
-        url.searchParams.set("per_page", "5");
+        url.searchParams.set("is_active", "true");
+        url.searchParams.set("per_page", "8");
         const r = await fetch(url);
         if (!r.ok) continue;
         const results = (await r.json()).results || [];
+        if (!results.length) continue;
+        const qNorm = String(q || "").toLowerCase();
         const sciNorm = String(sp.scientific || "").toLowerCase();
+        const nameEq = (t, n) => String(t.name || "").toLowerCase() === n;
         const hit =
-          results.find((t) => String(t.name || "").toLowerCase() === sciNorm) ||
+          results.find((t) => nameEq(t, sciNorm)) ||
+          results.find((t) => nameEq(t, qNorm)) ||
+          results.find(
+            (t) =>
+              t.rank === "species" &&
+              String(t.matched_term || "").toLowerCase() === qNorm
+          ) ||
           results.find((t) => t.rank === "species") ||
           results[0];
         if (!hit || !hit.id) continue;
-        const slug = String(hit.name || sp.scientific || "taxon").replace(/\s+/g, "-");
+        const name = String(hit.name || "").trim();
+        const common = String(hit.preferred_common_name || "").trim();
+        const slug = (name || sp.scientific || "taxon").replace(/\s+/g, "-");
         sp.inatId = hit.id;
         sp.inatSlug = slug;
-        return { id: hit.id, slug };
+        if (name) sp.inatName = name;
+        if (common) sp.inatCommon = common;
+        applyiNatLabels(sp);
+        return {
+          id: hit.id,
+          slug,
+          name: sp.inatName || name,
+          common: sp.inatCommon || null,
+        };
       }
       return null;
+    }
+
+    function preferredScientific(sp) {
+      return sp.inatName || sp.scientific || sp.common || "";
+    }
+
+    async function ensurePreferredScientific(sp) {
+      try {
+        await resolveiNatTaxon(sp);
+      } catch {
+        /* keep GBIF name */
+      }
+      return preferredScientific(sp);
     }
 
     function licensePreferScore(code) {
@@ -935,17 +1083,31 @@
       window.open(`https://www.inaturalist.org/taxa/search?q=${q}`, "_blank", "noopener,noreferrer");
     }
 
-    function wikipediaUrl(sp) {
-      const q = encodeURIComponent(sp.scientific || sp.common || "");
+    function wikipediaUrl(scientificOrSp) {
+      const name =
+        typeof scientificOrSp === "string"
+          ? scientificOrSp
+          : preferredScientific(scientificOrSp);
+      const q = encodeURIComponent(name || "");
       return `https://en.wikipedia.org/wiki/Special:Search?search=${q}&go=Go`;
+    }
+
+    async function openWikipedia(sp) {
+      const name = await ensurePreferredScientific(sp);
+      window.open(wikipediaUrl(name), "_blank", "noopener,noreferrer");
     }
 
     async function openOneZoom(sp) {
       setStatus(`Finding ${sp.common || sp.scientific} on OneZoom…`);
       try {
+        await ensurePreferredScientific(sp);
         const hit = window.ONEZOOM_API
           ? await window.ONEZOOM_API.resolve(sp)
-          : { url: `https://www.onezoom.org/life/@${encodeURIComponent(String(sp.scientific || "").replace(/\s+/g, "_"))}` };
+          : {
+              url: `https://www.onezoom.org/life/@${encodeURIComponent(
+                String(preferredScientific(sp) || "").replace(/\s+/g, "_")
+              )}`,
+            };
         window.open(hit.url, "_blank", "noopener,noreferrer");
         if (hit.ott && hit.name) {
           const via = hit.matched && hit.matched !== hit.name ? ` (via “${hit.matched}”)` : "";
@@ -953,7 +1115,7 @@
         } else if (hit.ott) {
           setStatus(`Opened OneZoom (OTT ${hit.ott}).`);
         } else {
-          setStatus(`Opened OneZoom search pin for ${sp.scientific}.`);
+          setStatus(`Opened OneZoom search pin for ${preferredScientific(sp)}.`);
         }
       } catch (e) {
         window.open("https://www.onezoom.org/", "_blank", "noopener,noreferrer");
@@ -982,9 +1144,7 @@
         const iconSlot = row.querySelector('[data-role="icon"]');
         iconSlot.appendChild(speciesIconEl(sp, color));
         row.querySelector('[data-act="inat"]').addEventListener("click", () => openiNat(sp));
-        row.querySelector('[data-act="wiki"]').addEventListener("click", () => {
-          window.open(wikipediaUrl(sp), "_blank", "noopener,noreferrer");
-        });
+        row.querySelector('[data-act="wiki"]').addEventListener("click", () => openWikipedia(sp));
         row.querySelector('[data-act="onezoom"]').addEventListener("click", () => openOneZoom(sp));
         row.querySelector(".chip-remove").addEventListener("click", () => {
           if (species.length <= 1) {
@@ -999,13 +1159,11 @@
             setStatus(`Removed ${removed.common || removed.scientific}. Reloading remaining species…`);
             refetchAllSpecies();
           } else {
-            fitToPoints();
             setStatus(`Removed ${removed.common || removed.scientific}.`);
           }
         });
         speciesListEl.appendChild(row);
       });
-      renderSpeciesLegend();
       ensurePhyloPics();
     }
 
@@ -1082,29 +1240,32 @@
       return circleSwatch(color);
     }
 
-    function renderSpeciesLegend() {
-      const el = document.getElementById("species-legend");
-      el.innerHTML = "";
-      species.forEach((sp) => {
-        const item = document.createElement("span");
-        item.className = "legend-item";
-        item.appendChild(speciesIconEl(sp, colorForSpecies(sp)));
-        item.appendChild(document.createTextNode(" " + (sp.common || sp.scientific)));
-        el.appendChild(item);
-      });
-    }
-
     async function ensurePhyloPics() {
-      if (!window.PHYLOPIC_API) return;
-      const needing = species.filter((s) => s.phylopic === undefined);
-      if (!needing.length) return;
+      const needingInat = species.filter((s) => !s.inatId);
+      const needingPhylo = window.PHYLOPIC_API
+        ? species.filter((s) => s.phylopic === undefined)
+        : [];
+      if (!needingInat.length && !needingPhylo.length) return;
+
+      // Reserve silhouette slots so parallel renders don't double-fetch
+      needingPhylo.forEach((s) => {
+        s.phylopic = null;
+      });
+
+      const targets = new Set([...needingInat, ...needingPhylo]);
       await Promise.all(
-        needing.map(async (sp) => {
-          // Reserve slot so parallel renders don't double-fetch
-          sp.phylopic = null;
+        [...targets].map(async (sp) => {
           try {
+            await ensurePreferredScientific(sp);
+          } catch {
+            /* keep GBIF labels */
+          }
+          if (!needingPhylo.includes(sp) || !window.PHYLOPIC_API) return;
+          try {
+            const names = [sp.inatName, sp.scientific].filter(Boolean);
             sp.phylopic = await window.PHYLOPIC_API.findSilhouette({
-              scientific: sp.scientific,
+              scientific: preferredScientific(sp),
+              names,
               taxonKey: sp.taxonKey,
             });
           } catch {
@@ -1112,19 +1273,24 @@
           }
         })
       );
-      renderSpeciesListIconsOnly();
+      refreshSpeciesChipDisplay();
     }
 
-    function renderSpeciesListIconsOnly() {
+    function refreshSpeciesChipDisplay() {
       [...speciesListEl.querySelectorAll(".species-chip")].forEach((row, i) => {
         const sp = species[i];
         if (!sp) return;
+        const nameEl = row.querySelector(".name");
+        if (nameEl) {
+          nameEl.innerHTML = `${sp.common || sp.scientific}
+            <span class="sci">${sp.scientific} · key ${sp.taxonKey}</span>`;
+        }
         const slot = row.querySelector('[data-role="icon"]');
-        if (!slot) return;
-        slot.innerHTML = "";
-        slot.appendChild(speciesIconEl(sp, colorForSpecies(sp)));
+        if (slot) {
+          slot.innerHTML = "";
+          slot.appendChild(speciesIconEl(sp, colorForSpecies(sp)));
+        }
       });
-      renderSpeciesLegend();
     }
 
     // --- Map ---
@@ -1135,7 +1301,7 @@
       worldCopyJump: true,
     });
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: "&copy; OSM &copy; CARTO | GBIF | Udvardy/UNEP-WCMC | PRISM | USGS 3DEP",
+      attribution: "&copy; OSM &copy; CARTO | GBIF | Udvardy | WorldClim | AWS Terrain | NASA GIBS",
       maxZoom: 18,
     }).addTo(map);
 
@@ -1173,7 +1339,6 @@
 
     showSpecimens.addEventListener("change", () => {
       syncSpecimenVisibility();
-      if (specimensVisible() && pointMarkers.length) fitToPoints();
     });
 
     function bringPointsFront() {
@@ -1193,7 +1358,7 @@
       if (currentRegion().mode === "global") {
         map.setMaxBounds(null);
         map.setMinZoom(2);
-        map.fitBounds(bounds, { padding: [20, 20], maxZoom: 3 });
+        map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6 });
         return;
       }
       map.setMinZoom(2);
@@ -1231,12 +1396,65 @@
       const sp = getSpecies(taxonKey) || {};
       const elev = rec.elev_m != null ? `${Math.round(rec.elev_m)} m` : "—";
       const year = rec.year != null ? rec.year : "—";
+      const photo = rec.image_url
+        ? `<p class="popup-photo"><img src="${rec.image_url}" alt="" loading="lazy" referrerpolicy="no-referrer" /></p>${
+            rec.image_credit
+              ? `<p class="popup-photo-credit">Photo: ${rec.image_credit}</p>`
+              : ""
+          }`
+        : "";
       return `<div class="popup">
         <h3>${rec.locality || sp.common || sp.scientific || "Occurrence"}</h3>
         <p><strong>${sp.common || sp.scientific || "Unknown"}</strong><br><em>${rec.scientificName || sp.scientific || ""}</em></p>
+        ${photo}
         <p>Elev ${elev} · Year ${year}</p>
         <p><a href="${rec.source_url}" target="_blank" rel="noopener">${rec.source_name}</a></p>
       </div>`;
+    }
+
+    /** Hover = faded preview; click = sticky full popup until closed. */
+    function bindHoverStickyPopup(marker, content) {
+      let pinned = false;
+      let leaveTimer = null;
+      marker.bindPopup(content, {
+        autoPan: false,
+        closeButton: true,
+        className: "",
+      });
+
+      const setPreview = (on) => {
+        const el = marker.getPopup() && marker.getPopup().getElement();
+        if (!el) return;
+        el.classList.toggle("popup-preview", !!on);
+      };
+
+      marker.on("mouseover", () => {
+        clearTimeout(leaveTimer);
+        if (pinned) return;
+        marker.openPopup();
+        setPreview(true);
+      });
+
+      marker.on("mouseout", () => {
+        if (pinned) return;
+        clearTimeout(leaveTimer);
+        leaveTimer = setTimeout(() => {
+          if (!pinned) marker.closePopup();
+        }, 80);
+      });
+
+      marker.on("click", () => {
+        clearTimeout(leaveTimer);
+        pinned = true;
+        marker.openPopup();
+        // After Leaflet paints the popup, drop the faded preview style
+        requestAnimationFrame(() => setPreview(false));
+      });
+
+      marker.on("popupclose", () => {
+        clearTimeout(leaveTimer);
+        pinned = false;
+      });
     }
 
     function addPoints(recs, sp) {
@@ -1252,7 +1470,7 @@
         });
         marker._taxonKey = taxonKey;
         marker._rec = rec;
-        marker.bindPopup(() => popupFor(rec, taxonKey));
+        bindHoverStickyPopup(marker, () => popupFor(rec, taxonKey));
         marker.addTo(allPoints);
         pointMarkers.push(marker);
       });
@@ -1281,11 +1499,14 @@
           fillOpacity: p.location_type === "occurrence" ? 0.55 : 0.9,
         });
         marker._taxonKey = sp.taxonKey;
-        marker.bindPopup(`<div class="popup">
+        bindHoverStickyPopup(
+          marker,
+          `<div class="popup">
           <h3>${p.label || p.site_id}</h3>
           <p><strong>${p.organism}</strong></p>
           <p><a href="${p.source_url}" target="_blank" rel="noopener">${p.source_name}</a></p>
-        </div>`);
+        </div>`
+        );
         marker.addTo(allPoints);
         pointMarkers.push(marker);
         n++;
@@ -1459,16 +1680,72 @@
       });
     });
 
-    // --- Overlays (Colorado only) ---
+    // --- Environment overlays: elevation, WorldClim, NDVI ---
     const overlayLayers = {};
     let activeOverlayId = null;
     const opacityInput = document.getElementById("overlay-opacity");
     const legendEl = document.getElementById("overlay-legend");
     const overlayBox = document.getElementById("overlay-layers");
 
+    const GLOBAL_ELEV_ID = "elev_global";
+    const GLOBAL_NDVI_ID = "ndvi_global";
+    const elevLegend = (window.ELEVATION_TILES && window.ELEVATION_TILES.legend) || {
+      vmin: 0,
+      vmax: 5000,
+      units: "m",
+      source_name: "AWS Terrain Tiles",
+      source_url: "https://registry.opendata.aws/terrain-tiles/",
+    };
+    const globalElevMeta = {
+      id: GLOBAL_ELEV_ID,
+      label: "Elevation (global, m)",
+      ...elevLegend,
+      period: "DEM tiles",
+    };
+    const globalElevLayer = window.ELEVATION_TILES
+      ? window.ELEVATION_TILES.createLayer({
+          opacity: Number(opacityInput.value),
+          theme: currentTheme,
+        })
+      : null;
+
+    // NASA GIBS MODIS Terra NDVI — fixed mid-summer mosaic (cleaner ocean mask than Landsat tiles)
+    const ndviMeta = {
+      id: GLOBAL_NDVI_ID,
+      label: "Greenness / NDVI (global)",
+      vmin: "low",
+      vmax: "high",
+      units: "vegetation index",
+      period: "MODIS Terra · Jul 2010",
+      source_name: "NASA GIBS / MODIS",
+      source_url: "https://nasa.gov/gibs",
+    };
+    const globalNdviLayer = L.tileLayer(
+      "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_L3_NDVI_Monthly/default/2010-07-01/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png",
+      {
+        attribution: "NDVI &copy; NASA GIBS / MODIS",
+        maxNativeZoom: 7,
+        maxZoom: 12,
+        opacity: Number(opacityInput.value),
+        crossOrigin: true,
+      }
+    );
+
+    const imageOverlayMetas = window.OVERLAY_LAYERS || [];
+
     function overlayUrl(meta, theme) {
-      if (meta.files && meta.files[theme]) return meta.files[theme];
-      return meta.file;
+      const base = meta.files && meta.files[theme] ? meta.files[theme] : meta.file;
+      return `${base}?v=20260721i`;
+    }
+
+    function clearActiveOverlayLayers() {
+      Object.values(overlayLayers).forEach(({ layer }) => {
+        if (map.hasLayer(layer)) map.removeLayer(layer);
+      });
+      if (globalElevLayer && map.hasLayer(globalElevLayer)) {
+        map.removeLayer(globalElevLayer);
+      }
+      if (map.hasLayer(globalNdviLayer)) map.removeLayer(globalNdviLayer);
     }
 
     function rebuildOverlayLayer(meta) {
@@ -1480,24 +1757,66 @@
         interactive: false,
       });
       overlayLayers[meta.id] = { layer: img, meta };
-      if ((wasOn || activeOverlayId === meta.id) && currentRegion().isColorado) {
+      if (wasOn || activeOverlayId === meta.id) {
         img.addTo(map);
         bringPointsFront();
       }
     }
 
     function setOverlay(id) {
-      Object.values(overlayLayers).forEach(({ layer }) => {
-        if (map.hasLayer(layer)) map.removeLayer(layer);
-      });
-      activeOverlayId = id;
+      clearActiveOverlayLayers();
+      activeOverlayId = id || null;
       legendEl.innerHTML = "";
-      if (!id || !currentRegion().isColorado) {
+
+      if (!id) {
         const none = overlayBox.querySelector('input[value=""]');
         if (none) none.checked = true;
         return;
       }
-      const { layer, meta } = overlayLayers[id];
+
+      if (id === GLOBAL_ELEV_ID) {
+        if (!globalElevLayer) {
+          setOverlay(null);
+          return;
+        }
+        const radio = overlayBox.querySelector(`input[value="${GLOBAL_ELEV_ID}"]`);
+        if (radio) radio.checked = true;
+        if (typeof globalElevLayer.setTheme === "function") {
+          globalElevLayer.setTheme(currentTheme);
+        }
+        globalElevLayer.setOpacity(Number(opacityInput.value));
+        globalElevLayer.addTo(map);
+        bringPointsFront();
+        const ramp = (RAMPS[currentTheme] || RAMPS.default).elev || "#ccc";
+        legendEl.innerHTML = `
+          <div class="ramp" style="background:${ramp}"></div>
+          ${globalElevMeta.vmin.toLocaleString()} – ${globalElevMeta.vmax.toLocaleString()}+ ${globalElevMeta.units} (oceans transparent)<br>
+          ${globalElevMeta.period} · <a href="${globalElevMeta.source_url}" target="_blank" rel="noopener">${globalElevMeta.source_name}</a>`;
+        return;
+      }
+
+      if (id === GLOBAL_NDVI_ID) {
+        const radio = overlayBox.querySelector(`input[value="${GLOBAL_NDVI_ID}"]`);
+        if (radio) radio.checked = true;
+        globalNdviLayer.setOpacity(Number(opacityInput.value));
+        globalNdviLayer.addTo(map);
+        bringPointsFront();
+        const ramp = (RAMPS[currentTheme] || RAMPS.default).ndvi || "#ccc";
+        legendEl.innerHTML = `
+          <div class="ramp" style="background:${ramp}"></div>
+          ${ndviMeta.vmin} – ${ndviMeta.vmax} ${ndviMeta.units}<br>
+          ${ndviMeta.period} · <a href="${ndviMeta.source_url}" target="_blank" rel="noopener">${ndviMeta.source_name}</a>`;
+        return;
+      }
+
+      const entry = overlayLayers[id];
+      if (!entry) {
+        setOverlay(null);
+        return;
+      }
+      const { layer, meta } = entry;
+      const radio = overlayBox.querySelector(`input[value="${id}"]`);
+      if (radio) radio.checked = true;
       layer.setOpacity(Number(opacityInput.value));
       layer.addTo(map);
       bringPointsFront();
@@ -1508,35 +1827,54 @@
         ${meta.period} · <a href="${meta.source_url}" target="_blank" rel="noopener">${meta.source_name}</a>`;
     }
 
-    (window.OVERLAY_LAYERS || []).forEach((meta, idx) => {
-      rebuildOverlayLayer(meta);
+    function addOverlayRadio(value, labelText, swatch, onPick, checked) {
       const label = document.createElement("label");
       label.className = "layer";
-      const swatch = idx === 0 ? "#3c8ca0" : idx === 1 ? "#e68c3c" : "#8a8a8a";
       label.innerHTML = `
-        <input type="radio" name="env-overlay" value="${meta.id}" />
+        <input type="radio" name="env-overlay" value="${value}" ${checked ? "checked" : ""} />
         <span class="swatch" style="background:${swatch}"></span>
-        <span>${meta.label}</span>`;
+        <span>${labelText}</span>`;
       overlayBox.appendChild(label);
-      label.querySelector("input").addEventListener("change", () => setOverlay(meta.id));
+      label.querySelector("input").addEventListener("change", onPick);
+    }
+
+    addOverlayRadio(GLOBAL_ELEV_ID, globalElevMeta.label, "#8a8a8a", () => setOverlay(GLOBAL_ELEV_ID), true);
+
+    imageOverlayMetas.forEach((meta) => {
+      rebuildOverlayLayer(meta);
+      const swatch = meta.id === "wc_precip" ? "#3c8ca0" : "#e68c3c";
+      addOverlayRadio(meta.id, meta.label, swatch, () => setOverlay(meta.id), false);
     });
-    const noneLabel = document.createElement("label");
-    noneLabel.className = "layer";
-    noneLabel.innerHTML = `<input type="radio" name="env-overlay" value="" /><span class="swatch" style="background:transparent"></span><span>No overlay</span>`;
-    overlayBox.appendChild(noneLabel);
-    noneLabel.querySelector("input").addEventListener("change", () => setOverlay(null));
+
+    addOverlayRadio(GLOBAL_NDVI_ID, ndviMeta.label, "#5a9e4e", () => setOverlay(GLOBAL_NDVI_ID), false);
+    addOverlayRadio("", "No overlay", "transparent", () => setOverlay(null), false);
 
     opacityInput.addEventListener("input", () => {
-      if (activeOverlayId && overlayLayers[activeOverlayId]) {
-        overlayLayers[activeOverlayId].layer.setOpacity(Number(opacityInput.value));
+      const op = Number(opacityInput.value);
+      if (activeOverlayId === GLOBAL_ELEV_ID && globalElevLayer) {
+        globalElevLayer.setOpacity(op);
+      } else if (activeOverlayId === GLOBAL_NDVI_ID) {
+        globalNdviLayer.setOpacity(op);
+      } else if (activeOverlayId && overlayLayers[activeOverlayId]) {
+        overlayLayers[activeOverlayId].layer.setOpacity(op);
       }
     });
+
+    updateOverlayAvailability();
+    setOverlay(GLOBAL_ELEV_ID);
 
     function applyTheme(theme) {
       currentTheme = theme;
       refreshMarkerColors();
       renderSpeciesList();
-      (window.OVERLAY_LAYERS || []).forEach(rebuildOverlayLayer);
+      imageOverlayMetas.forEach(rebuildOverlayLayer);
+      if (
+        activeOverlayId === GLOBAL_ELEV_ID &&
+        globalElevLayer &&
+        typeof globalElevLayer.setTheme === "function"
+      ) {
+        globalElevLayer.setTheme(theme);
+      }
       if (activeOverlayId) setOverlay(activeOverlayId);
       refreshUdvardyStyle();
     }
@@ -1849,7 +2187,7 @@
       return recs.length;
     }
 
-    async function refetchAllSpecies({ fit = true } = {}) {
+    async function refetchAllSpecies({ fit = false } = {}) {
       // Allow a newer reload to supersede an older one (e.g. remove-during-load)
       const runId = ++fetchRunId;
       beginFetch();
@@ -1875,13 +2213,6 @@
         if (fit) fitToPoints();
         await setupColoradoMask();
         updateOverlayAvailability();
-        if (reg.isColorado) {
-          const precip = overlayBox.querySelector('input[value="precip"]');
-          if (precip && !activeOverlayId) {
-            precip.checked = true;
-            setOverlay("precip");
-          }
-        }
         const stratifyByCountry = document.getElementById("stratify-country").checked;
         const modeNote = stratifyByCountry && reg.mode === "global" ? "stratified by country" : "flat sample";
         const maxRecords = Number(document.getElementById("sample-size").value) || 1000;
@@ -1915,18 +2246,19 @@
           colorKey: "extra",
         };
         ensureSpeciesStyle(sp);
+        await ensurePreferredScientific(sp);
+        if (runId !== fetchRunId) return;
         species.push(sp);
         addInput.value = "";
         renderSpeciesList();
         const via =
-          match.matchType === "VERNACULAR"
+          match.matchType === "VERNACULAR" || match.matchType === "INAT"
             ? ` (matched common name “${match.query}”)`
             : "";
-        setStatus(`Searching GBIF for ${match.scientific}${via}…`);
+        setStatus(`Searching GBIF for ${sp.common} · ${match.scientific}${via}…`);
         const n = await fetchOneSpecies(sp, runId);
         if (runId !== fetchRunId) return;
         bringPointsFront();
-        fitToPoints();
         setStatus(`Added ${sp.common} · ${match.scientific}: ${n} locations${via}.`);
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
@@ -1969,6 +2301,28 @@
       }
     });
 
+    const sourcesInfo = document.getElementById("sources-info");
+    const sourcesPopover = document.getElementById("sources-popover");
+    function setSourcesOpen(open) {
+      if (!sourcesInfo || !sourcesPopover) return;
+      sourcesPopover.hidden = !open;
+      sourcesInfo.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    if (sourcesInfo && sourcesPopover) {
+      sourcesInfo.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setSourcesOpen(sourcesPopover.hidden);
+      });
+      document.addEventListener("click", (e) => {
+        if (sourcesPopover.hidden) return;
+        if (e.target.closest(".sources")) return;
+        setSourcesOpen(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setSourcesOpen(false);
+      });
+    }
+
     document.getElementById("btn-reset").addEventListener("click", async () => {
       regionFilter.checked = false;
       regionMode.value = "us_state";
@@ -1979,9 +2333,9 @@
       document.getElementById("stratify-country").checked = false;
       species = structuredClone(window.REGIONS.default_species);
       renderSpeciesList();
-      setOverlay(null);
+      setOverlay(GLOBAL_ELEV_ID);
       setUdvardy(null);
-      showSpecimens.checked = false;
+      showSpecimens.checked = true;
       syncSpecimenVisibility();
       fitRegion(currentRegion().bbox);
       await refetchAllSpecies();

@@ -113,6 +113,8 @@ window.ONEZOOM_API = (() => {
         queries.push(s);
       };
 
+      // Prefer iNaturalist-matched scientific name when available (better synonyms / fuzzy)
+      pushQ(sp.inatName);
       pushQ(sp.scientific);
       pushQ(sp.common);
 
@@ -159,7 +161,7 @@ window.ONEZOOM_API = (() => {
           if (ott) {
             // Prefer pairing with a searchable name at this rank
             const rank = ctx && ctx.ladder.find((r) => r.key === key);
-            const name = (rank && rank.name) || sp.scientific;
+            const name = (rank && rank.name) || sp.inatName || sp.scientific;
             // Verify via search when possible
             const verified = name ? await searchNode(name) : null;
             if (verified && verified.ott) {
@@ -185,7 +187,9 @@ window.ONEZOOM_API = (() => {
       }
 
       // Last resort: name pin (may land on root with error)
-      const pinName = String(sp.scientific || "").trim().replace(/\s+/g, "_");
+      const pinName = String(sp.inatName || sp.scientific || "")
+        .trim()
+        .replace(/\s+/g, "_");
       return {
         url: pinName ? `${OZ}/life/@${encodeURIComponent(pinName)}` : `${OZ}/`,
         matched: null,

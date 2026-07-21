@@ -6,10 +6,37 @@
     return new Promise((res) => setTimeout(res, ms));
   }
 
+  /** First still image from a GBIF occurrence, sized for map popups when possible. */
+  function imageFromOccurrence(o) {
+    const media = Array.isArray(o.media) ? o.media : [];
+    for (const m of media) {
+      const type = String(m.type || "");
+      const format = String(m.format || "").toLowerCase();
+      if (type && type !== "StillImage") continue;
+      if (format && !format.startsWith("image/")) continue;
+      let url = String(m.identifier || "").trim();
+      if (!url || !/^https?:\/\//i.test(url)) {
+        url = String(m.references || "").trim();
+      }
+      if (!url || !/^https?:\/\//i.test(url)) continue;
+      // iNat open-data originals are huge — prefer medium for the popup
+      url = url
+        .replace(/\/original\.(jpe?g|png|webp)(\?|$)/i, "/medium.$1$2")
+        .replace(/\/large\.(jpe?g|png|webp)(\?|$)/i, "/medium.$1$2");
+      return {
+        url,
+        credit: String(m.creator || m.rightsHolder || "").trim(),
+        license: String(m.license || "").trim(),
+      };
+    }
+    return null;
+  }
+
   function recordFromOccurrence(o) {
     const lat = o.decimalLatitude;
     const lon = o.decimalLongitude;
     if (lat == null || lon == null) return null;
+    const photo = imageFromOccurrence(o);
     return {
       lat,
       lon,
@@ -24,6 +51,8 @@
       gbifID: o.key,
       basisOfRecord: o.basisOfRecord || "",
       elev_m: o.elevation,
+      image_url: photo ? photo.url : null,
+      image_credit: photo ? photo.credit : null,
       source_url: `https://www.gbif.org/occurrence/${o.key}`,
       source_name: "GBIF occurrence",
     };
@@ -48,15 +77,62 @@
       .trim();
   }
 
+  function looksLikeBinomial(query) {
+    // "Genus species" (optional authorship junk) — treat as scientific first
+    return /^[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]+(\s+[a-zà-öø-ÿ×.-]+)+$/.test(
+      String(query || "").trim()
+    );
+  }
+
+  /** Small edit distance for common typos (racoon → raccoon). */
+  function editDistance(a, b) {
+    const s = String(a || "");
+    const t = String(b || "");
+    if (s === t) return 0;
+    if (!s.length) return t.length;
+    if (!t.length) return s.length;
+    const rows = s.length + 1;
+    const cols = t.length + 1;
+    const d = new Array(rows);
+    for (let i = 0; i < rows; i++) {
+      d[i] = new Array(cols);
+      d[i][0] = i;
+    }
+    for (let j = 0; j < cols; j++) d[0][j] = j;
+    for (let i = 1; i < rows; i++) {
+      for (let j = 1; j < cols; j++) {
+        const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(
+          d[i - 1][j] + 1,
+          d[i][j - 1] + 1,
+          d[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return d[s.length][t.length];
+  }
+
+  function fuzzyEqual(a, b) {
+    const x = normalizeLabel(a);
+    const y = normalizeLabel(b);
+    if (!x || !y) return false;
+    if (x === y) return true;
+    const maxLen = Math.max(x.length, y.length);
+    if (maxLen < 4) return false;
+    const allowed = maxLen <= 5 ? 1 : maxLen <= 10 ? 1 : 2;
+    return editDistance(x, y) <= allowed;
+  }
+
   function resultFromMatch(j, query, via) {
     return {
       scientific: j.canonicalName || j.scientificName || query,
       taxonKey: j.usageKey,
       rank: j.rank,
       status: j.status,
-      matchType: j.matchType || via || "MATCH",
+      // Prefer our pathway label (INAT / VERNACULAR) over backbone EXACT/FUZZY
+      matchType: via || j.matchType || "MATCH",
       confidence: j.confidence,
-      common: via === "VERNACULAR" ? query : null,
+      common: via === "VERNACULAR" || via === "INAT" ? query : null,
       query,
     };
   }
@@ -69,21 +145,124 @@
     return r.json();
   }
 
+  function preferredVernacular(item) {
+    const verns = item.vernacularNames || [];
+    const pref = verns.find((v) => v.preferred && v.vernacularName);
+    if (pref) return normalizeLabel(pref.vernacularName);
+    const en = verns.find(
+      (v) =>
+        v.vernacularName &&
+        String(v.language || v.lang || "").toLowerCase().startsWith("en")
+    );
+    return en ? normalizeLabel(en.vernacularName) : null;
+  }
+
   function vernacularScore(item, queryNorm) {
     const verns = item.vernacularNames || [];
-    let best = 0;
+    let bestExact = 0;
+    let bestPartial = 0;
+    let exactWasPreferred = false;
+
     for (const v of verns) {
       const vn = normalizeLabel(v.vernacularName);
       if (!vn) continue;
-      if (vn === queryNorm) best = Math.max(best, v.preferred ? 100 : 95);
-      else if (vn.includes(queryNorm) || queryNorm.includes(vn)) best = Math.max(best, 70);
+      if (vn === queryNorm || fuzzyEqual(vn, queryNorm)) {
+        const sc = v.preferred ? 120 : 100;
+        if (sc >= bestExact) {
+          bestExact = sc;
+          exactWasPreferred = !!v.preferred;
+        }
+      } else {
+        const words = vn.split(" ");
+        // Prefer whole-word hits over loose substring ("racoon" in "racoon tick")
+        if (words.some((w) => w === queryNorm || fuzzyEqual(w, queryNorm))) {
+          // Single-token preferred name that fuzzy-matches is strong; multi-word compounds weaker
+          const sc = words.length === 1 ? 85 : 55;
+          bestPartial = Math.max(bestPartial, sc);
+        } else if (vn.includes(queryNorm) && queryNorm.length >= 4) {
+          bestPartial = Math.max(bestPartial, 35);
+        }
+      }
     }
-    // Prefer backbone-linked Animalia species
-    if (item.rank === "SPECIES") best += 5;
-    if (item.kingdom === "Animalia" || item.kingdom === "Plantae" || item.kingdom === "Fungi") best += 3;
+
+    let best = Math.max(bestExact, bestPartial);
+    if (!best) return 0;
+
+    const pref = preferredVernacular(item);
+    if (pref) {
+      if (pref === queryNorm || fuzzyEqual(pref, queryNorm)) best += 40;
+      else if (pref.split(" ").length === 1 && fuzzyEqual(pref, queryNorm)) best += 30;
+      // Exact hit only on an obscure synonym while preferred name is a long compound → demote
+      if (bestExact && !exactWasPreferred && pref.split(" ").length >= 2) {
+        const prefHasQuery = pref
+          .split(" ")
+          .some((w) => w === queryNorm || fuzzyEqual(w, queryNorm));
+        if (prefHasQuery) best -= 45; // e.g. preferred "raccoon butterflyfish"
+      }
+    }
+
+    if (item.rank === "SPECIES") best += 8;
+    else if (item.rank === "SUBSPECIES") best += 2;
+    const kingdom = String(item.kingdom || "");
+    if (/animalia|plantae|fungi|metazoa/i.test(kingdom)) best += 3;
     if (item.taxonomicStatus === "ACCEPTED") best += 2;
     if (item.nubKey || item.speciesKey) best += 1;
+
+    // Shorter preferred common names win ties ("raccoon" vs "raccoon butterflyfish")
+    if (pref) best += Math.max(0, 6 - pref.split(" ").length);
+
     return best;
+  }
+
+  /**
+   * iNaturalist is stronger at common-name / typo resolution than GBIF vernacular search.
+   * Resolve to a scientific name, then map onto the GBIF backbone.
+   */
+  async function searchByiNat(query) {
+    const queryNorm = normalizeLabel(query);
+    if (!queryNorm) return null;
+    const url = new URL("https://api.inaturalist.org/v1/taxa");
+    url.searchParams.set("q", query);
+    url.searchParams.set("is_active", "true");
+    url.searchParams.set("per_page", "8");
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const results = (await r.json()).results || [];
+    if (!results.length) return null;
+
+    const scored = results.map((t) => {
+      let score = 0;
+      const matched = normalizeLabel(t.matched_term);
+      const common = normalizeLabel(t.preferred_common_name);
+      const sci = normalizeLabel(t.name);
+      if (matched === queryNorm) score += 120;
+      else if (fuzzyEqual(matched, queryNorm)) score += 110;
+      else if (matched.split(" ").some((w) => fuzzyEqual(w, queryNorm))) score += 50;
+      if (common === queryNorm || fuzzyEqual(common, queryNorm)) score += 80;
+      else if (common && common.split(" ").length === 1 && fuzzyEqual(common, queryNorm))
+        score += 70;
+      else if (common && common.split(" ").some((w) => fuzzyEqual(w, queryNorm))) {
+        // Compound preferred name containing the query token — weaker
+        score += 25;
+      }
+      if (sci === queryNorm) score += 90;
+      if (t.rank === "species") score += 15;
+      else if (t.rank === "subspecies") score += 5;
+      if (common) score += Math.max(0, 6 - common.split(" ").length);
+      return { t, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    if (!best || best.score < 80) return null;
+
+    const scientific = String(best.t.name || "").trim();
+    if (!scientific) return null;
+    const backbone = await matchScientific(scientific);
+    if (!backbone.usageKey || backbone.matchType === "NONE") return null;
+    const out = resultFromMatch(backbone, query, "INAT");
+    out.common = best.t.preferred_common_name || query;
+    out.confidence = best.score;
+    return out;
   }
 
   async function searchByCommonName(query) {
@@ -127,7 +306,8 @@
     const backbone = await matchScientific(scientific);
     if (backbone.usageKey && backbone.matchType !== "NONE") {
       const out = resultFromMatch(backbone, query, "VERNACULAR");
-      out.common = query;
+      out.common = preferredVernacular(best) || query;
+      out.confidence = ranked[0].score;
       return out;
     }
 
@@ -140,20 +320,21 @@
       status: best.taxonomicStatus || "",
       matchType: "VERNACULAR",
       confidence: ranked[0].score,
-      common: query,
+      common: preferredVernacular(best) || query,
       query,
     };
   }
 
   /**
    * Match a scientific or common name to a GBIF backbone taxon.
-   * 1) Try GBIF scientific name matching
-   * 2) If there is no solid scientific hit, search vernacular (common) names
+   * Common-name queries prefer iNaturalist (typos / vernaculars), then GBIF.
+   * Binomial-looking queries prefer GBIF scientific match first.
    */
   async function matchSpecies(name) {
     const query = String(name || "").trim();
     if (!query) throw new Error("Enter a species name");
 
+    const binomial = looksLikeBinomial(query);
     const j = await matchScientific(query);
     const solid =
       j.usageKey &&
@@ -163,14 +344,24 @@
         j.matchType === "FUZZY" ||
         (typeof j.confidence === "number" && j.confidence >= 90));
 
-    if (solid) {
+    // True scientific names: trust GBIF backbone first
+    if (binomial && solid) {
       return resultFromMatch(j, query, j.matchType);
+    }
+
+    // Common names / typos: iNat first, then GBIF vernacular ranking
+    try {
+      const viaInat = await searchByiNat(query);
+      if (viaInat) return viaInat;
+    } catch {
+      /* fall through */
     }
 
     const viaCommon = await searchByCommonName(query);
     if (viaCommon) return viaCommon;
 
-    // Last resort: accept weaker scientific match (e.g. HIGHERRANK) if present
+    if (solid) return resultFromMatch(j, query, j.matchType);
+
     if (j.usageKey && j.matchType && j.matchType !== "NONE") {
       return resultFromMatch(j, query, j.matchType);
     }

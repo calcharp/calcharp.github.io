@@ -135,10 +135,24 @@ window.PHYLOPIC_API = (() => {
   }
 
   /**
+   * @param {{scientific?:string, names?:string[], taxonKey?:number|string}} opts
    * @returns {Promise<null|{uuid,src,pageUrl,license,attribution}>}
    */
-  async function findSilhouette({ scientific, taxonKey } = {}) {
-    const cacheKey = String(taxonKey || scientific || "").toLowerCase();
+  async function findSilhouette({ scientific, names, taxonKey } = {}) {
+    const tryNames = [];
+    const seen = new Set();
+    const pushName = (n) => {
+      const s = String(n || "").trim();
+      if (!s) return;
+      const k = s.toLowerCase();
+      if (seen.has(k)) return;
+      seen.add(k);
+      tryNames.push(s);
+    };
+    (Array.isArray(names) ? names : []).forEach(pushName);
+    pushName(scientific);
+
+    const cacheKey = String(taxonKey || tryNames[0] || "").toLowerCase();
     if (!cacheKey) return null;
     if (cache.has(cacheKey)) return cache.get(cacheKey);
 
@@ -146,10 +160,15 @@ window.PHYLOPIC_API = (() => {
       try {
         const build = await getBuild();
         let node = await nodeFromGbif(taxonKey, build);
-        if (!node) node = await nodeFromName(scientific, build);
-        if (!node && scientific) {
-          // try genus
-          const genus = normalizeName(scientific).split(" ")[0];
+        if (!node) {
+          for (const n of tryNames) {
+            node = await nodeFromName(n, build);
+            if (node) break;
+          }
+        }
+        if (!node && tryNames.length) {
+          // try genus of the preferred (first) name
+          const genus = normalizeName(tryNames[0]).split(" ")[0];
           if (genus) node = await nodeFromName(genus, build);
         }
         return await pickLicensedImage(node, build);
