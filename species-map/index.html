@@ -377,6 +377,8 @@
       mask-size: contain;
       -webkit-mask-repeat: no-repeat;
       mask-repeat: no-repeat;
+      mask-mode: alpha;
+      -webkit-mask-source-type: alpha;
       flex-shrink: 0;
     }
     .species-chip a.phylo-link {
@@ -817,7 +819,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="regions.js?v=20260721f"></script>
   <script src="gbif.js?v=20260721f"></script>
-  <script src="phylopic.js?v=20260721f"></script>
+  <script src="phylopic.js?v=20260723a"></script>
   <script src="onezoom.js?v=20260721f"></script>
   <script src="overlays.js?v=20260721i"></script>
   <script src="elevation.js?v=20260721f"></script>
@@ -1219,9 +1221,38 @@
       return span;
     }
 
+    /** Load a PhyloPic thumb as a same-origin blob URL (needed for CSS masks). */
+    async function phylopicMaskUrl(phy) {
+      if (!phy) return null;
+      if (phy.maskUrl) return phy.maskUrl;
+      const candidates = [];
+      const seen = new Set();
+      const push = (u) => {
+        if (!u || seen.has(u)) return;
+        seen.add(u);
+        candidates.push(u);
+      };
+      push(phy.src);
+      (phy.thumbUrls || []).forEach(push);
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, { mode: "cors" });
+          if (!r.ok) continue;
+          const blob = await r.blob();
+          if (!blob || !blob.size) continue;
+          phy.maskUrl = URL.createObjectURL(blob);
+          phy.src = url;
+          return phy.maskUrl;
+        } catch {
+          /* try next size */
+        }
+      }
+      return null;
+    }
+
     function speciesIconEl(sp, color) {
       const phy = sp.phylopic;
-      if (phy && phy.src && phy.pageUrl) {
+      if (phy && phy.pageUrl && (phy.maskUrl || phy.src)) {
         const a = document.createElement("a");
         a.className = "phylo-link";
         a.href = phy.pageUrl;
@@ -1232,8 +1263,10 @@
         const sil = document.createElement("span");
         sil.className = "phylo-sil";
         sil.style.color = color;
-        sil.style.webkitMaskImage = `url("${phy.src}")`;
-        sil.style.maskImage = `url("${phy.src}")`;
+        const maskSrc = phy.maskUrl || phy.src;
+        sil.style.webkitMaskImage = `url("${maskSrc}")`;
+        sil.style.maskImage = `url("${maskSrc}")`;
+        sil.style.maskMode = "alpha";
         a.appendChild(sil);
         return a;
       }
@@ -1268,6 +1301,7 @@
               names,
               taxonKey: sp.taxonKey,
             });
+            if (sp.phylopic) await phylopicMaskUrl(sp.phylopic);
           } catch {
             sp.phylopic = null;
           }

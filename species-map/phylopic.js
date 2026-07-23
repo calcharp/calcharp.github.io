@@ -45,16 +45,23 @@ window.PHYLOPIC_API = (() => {
     const licenseHref = links.license && links.license.href;
     if (!licenseOk(licenseHref)) return null;
     const thumbs = links.thumbnailFiles || [];
+    // Prefer 192/64 over 128: some 128px PhyloPic thumbs fail browser CORS
+    // fetches (CSS masks need that), which leaves a blank but still-clickable icon.
     const thumb =
-      thumbs.find((t) => (t.sizes || "").startsWith("128")) ||
       thumbs.find((t) => (t.sizes || "").startsWith("192")) ||
+      thumbs.find((t) => (t.sizes || "").startsWith("64")) ||
+      thumbs.find((t) => (t.sizes || "").startsWith("128")) ||
       thumbs[0];
-    const vector = links.vectorFile;
-    const src = (thumb && thumb.href) || (vector && vector.href);
+    // Avoid vector.svg as mask source — often missing CORS headers.
+    const src = thumb && thumb.href;
     if (!src) return null;
+    const thumbUrls = thumbs
+      .map((t) => t && t.href)
+      .filter(Boolean);
     return {
       uuid: img.uuid,
       src,
+      thumbUrls,
       pageUrl: `${SITE}/images/${img.uuid}`,
       license: licenseHref,
       attribution: (links.contributor && links.contributor.title) || null,
