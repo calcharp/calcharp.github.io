@@ -432,8 +432,64 @@
       pointer-events: none;
       background: currentColor;
     }
-    .add-row { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
+    .add-row { display: flex; gap: 0.35rem; margin-top: 0.35rem; align-items: flex-start; }
     .add-row input { flex: 1; }
+    .add-suggest-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+    .add-suggest-wrap input { width: 100%; }
+    .species-suggest {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 2px);
+      z-index: 40;
+      margin: 0;
+      padding: 0.2rem 0;
+      list-style: none;
+      max-height: 14rem;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid rgba(28, 36, 25, 0.18);
+      border-radius: 2px;
+      box-shadow: 0 8px 22px rgba(28, 36, 25, 0.14);
+    }
+    .species-suggest[hidden] { display: none !important; }
+    .species-suggest-item {
+      display: block;
+      width: 100%;
+      padding: 0.4rem 0.55rem;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .species-suggest-item:hover,
+    .species-suggest-item.is-active {
+      background: rgba(61, 111, 140, 0.12);
+    }
+    .species-suggest-common {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .species-suggest-sci {
+      display: block;
+      font-size: 0.75rem;
+      font-style: italic;
+      color: rgba(28, 36, 25, 0.55);
+      line-height: 1.25;
+    }
+    .species-suggest-empty {
+      padding: 0.45rem 0.55rem;
+      font-size: 0.8rem;
+      color: rgba(28, 36, 25, 0.5);
+    }
     .btn {
       font: inherit;
       font-size: 0.88rem;
@@ -946,7 +1002,18 @@
       <p class="section-label">Species</p>
       <div class="species-list" id="species-list"></div>
       <div class="add-row">
-        <input type="text" id="species-add" placeholder="Scientific or common name" />
+        <div class="add-suggest-wrap">
+          <input
+            type="text"
+            id="species-add"
+            placeholder="Scientific or common name"
+            autocomplete="off"
+            aria-autocomplete="list"
+            aria-controls="species-suggest"
+            aria-expanded="false"
+          />
+          <ul id="species-suggest" class="species-suggest" role="listbox" hidden></ul>
+        </div>
         <button type="button" class="btn" id="btn-add-species">Add</button>
         <button type="button" class="btn navy" id="btn-reset">Reset</button>
       </div>
@@ -3250,11 +3317,305 @@
     let activeFetchCount = 0;
     const addBtn = document.getElementById("btn-add-species");
     const addInput = document.getElementById("species-add");
+    const suggestEl = document.getElementById("species-suggest");
+    let suggestItems = [];
+    let suggestActive = -1;
+    let suggestTimer = null;
+    let suggestReqId = 0;
 
     function setFetchBusy(busy) {
       fetchBusy = busy;
       addBtn.disabled = busy;
       addInput.disabled = busy;
+      if (busy) hideSpeciesSuggest();
+    }
+
+    function hideSpeciesSuggest() {
+      suggestItems = [];
+      suggestActive = -1;
+      suggestEl.hidden = true;
+      suggestEl.innerHTML = "";
+      addInput.setAttribute("aria-expanded", "false");
+    }
+
+    function paintSpeciesSuggest() {
+      suggestEl.innerHTML = "";
+      if (!suggestItems.length) {
+        hideSpeciesSuggest();
+        return;
+      }
+      suggestItems.forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.id = `species-suggest-${idx}`;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "species-suggest-item" + (idx === suggestActive ? " is-active" : "");
+        btn.innerHTML = `
+          <span class="species-suggest-common">${item.common || item.scientific}</span>
+          <span class="species-suggest-sci">${item.scientific}</span>`;
+        btn.addEventListener("mousedown", (e) => {
+          // mousedown before blur so the click isn't lost
+          e.preventDefault();
+          chooseSpeciesSuggest(idx);
+        });
+        li.appendChild(btn);
+        suggestEl.appendChild(li);
+      });
+      suggestEl.hidden = false;
+      addInput.setAttribute("aria-expanded", "true");
+      addInput.setAttribute(
+        "aria-activedescendant",
+        suggestActive >= 0 ? `species-suggest-${suggestActive}` : ""
+      );
+    }
+
+    function chooseSpeciesSuggest(idx) {
+      const item = suggestItems[idx];
+      if (!item) return;
+      hideSpeciesSuggest();
+      // Prefer binomial so GBIF backbone match is exact
+      addInput.value = item.scientific || item.common || "";
+      addSpeciesAndSearch();
+    }
+
+    function suggestEditDistance(a, b) {
+      const s = String(a || "").toLowerCase();
+      const t = String(b || "").toLowerCase();
+      if (s === t) return 0;
+      if (!s.length) return t.length;
+      if (!t.length) return s.length;
+      const rows = s.length + 1;
+      const cols = t.length + 1;
+      const d = Array.from({ length: rows }, () => new Array(cols).fill(0));
+      for (let i = 0; i < rows; i++) d[i][0] = i;
+      for (let j = 0; j < cols; j++) d[0][j] = j;
+      for (let i = 1; i < rows; i++) {
+        for (let j = 1; j < cols; j++) {
+          const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        }
+      }
+      return d[s.length][t.length];
+    }
+
+    function suggestSoundex(str) {
+      const s = String(str || "")
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "");
+      if (!s) return "";
+      const map = {
+        B: "1", F: "1", P: "1", V: "1",
+        C: "2", G: "2", J: "2", K: "2", Q: "2", S: "2", X: "2", Z: "2",
+        D: "3", T: "3",
+        L: "4",
+        M: "5", N: "5",
+        R: "6",
+      };
+      let out = s[0];
+      let prev = map[s[0]] || "";
+      for (let i = 1; i < s.length && out.length < 4; i++) {
+        const ch = s[i];
+        if (ch === "H" || ch === "W") continue;
+        const code = map[ch] || "";
+        if (code && code !== prev) out += code;
+        if (code) prev = code;
+        else prev = "";
+      }
+      return `${out}000`.slice(0, 4);
+    }
+
+    /** English-ish spelling variants for phonetic typos (wallabbee → wallaby). */
+    function phoneticQueryVariants(query) {
+      const q = String(query || "").toLowerCase().trim();
+      if (q.length < 3) return [];
+      const ordered = [];
+      const seen = new Set();
+      const add = (s) => {
+        const v = String(s || "").toLowerCase().trim();
+        if (v.length < 3 || v === q || seen.has(v)) return;
+        seen.add(v);
+        ordered.push(v);
+      };
+
+      const collapse = (s) => s.replace(/(.)\1+/g, "$1");
+      const collapsed = collapse(q);
+
+      // Progressive prefixes first — wallabbee → wallab → walla (iNat can resolve these)
+      for (let len = q.length - 1; len >= 4; len--) add(q.slice(0, len));
+
+      add(collapsed);
+      [q, collapsed].forEach((base) => {
+        if (base.endsWith("ee") || base.endsWith("ey") || base.endsWith("ie")) {
+          add(`${base.slice(0, -2)}y`);
+          add(`${base.slice(0, -2)}i`);
+        }
+        if (base.endsWith("y") && base.length > 3) {
+          add(`${base.slice(0, -1)}ee`);
+          add(`${base.slice(0, -1)}ey`);
+        }
+        if (q.endsWith("ee") && base.endsWith("e") && !base.endsWith("ee")) {
+          add(`${base.slice(0, -1)}y`);
+        }
+        add(base.replace(/ck/g, "c"));
+        add(base.replace(/c([eiy])/g, "k$1"));
+        add(base.replace(/k([eiy])/g, "c$1"));
+        add(base.replace(/ph/g, "f"));
+        add(base.replace(/ou/g, "o"));
+        add(base.replace(/oo/g, "u"));
+        add(base.replace(/ee/g, "i"));
+      });
+
+      [...ordered].forEach((v) => add(collapse(v)));
+      for (let len = collapsed.length - 1; len >= 4; len--) add(collapsed.slice(0, len));
+
+      return ordered.slice(0, 14);
+    }
+
+    async function inatAutocompleteRaw(q) {
+      const url = new URL("https://api.inaturalist.org/v1/taxa/autocomplete");
+      url.searchParams.set("q", q);
+      const r = await fetch(url);
+      if (!r.ok) return [];
+      return (await r.json()).results || [];
+    }
+
+    async function fetchSpeciesSuggestions(query) {
+      const q = String(query || "").trim();
+      const reqId = ++suggestReqId;
+      if (q.length < 2) {
+        hideSpeciesSuggest();
+        return;
+      }
+      const qNorm = q.toLowerCase();
+      const qSound = suggestSoundex(qNorm);
+      const qCollapsed = qNorm.replace(/(.)\1+/g, "$1");
+      try {
+        const variants = phoneticQueryVariants(qNorm);
+        const primary = await inatAutocompleteRaw(q);
+        if (reqId !== suggestReqId) return;
+
+        const looksUseful = (t) => {
+          const common = String(t.preferred_common_name || "").toLowerCase();
+          const matched = String(t.matched_term || "").toLowerCase();
+          const sci = String(t.name || "").toLowerCase();
+          return [common, matched, sci].filter(Boolean).some((n) => {
+            if (suggestSoundex(n) === qSound) return true;
+            if (suggestEditDistance(n, qNorm) <= 3) return true;
+            if (suggestEditDistance(n.replace(/(.)\1+/g, "$1"), qCollapsed) <= 2) return true;
+            return n.split(/\s+/).some((tok) => {
+              if (tok.length < 3) return false;
+              return (
+                suggestSoundex(tok) === qSound ||
+                suggestEditDistance(tok, qNorm) <= 2 ||
+                suggestEditDistance(tok.replace(/(.)\1+/g, "$1"), qCollapsed) <= 1
+              );
+            });
+          });
+        };
+
+        let results = primary.slice();
+        let useful = primary.filter(looksUseful);
+        // Walk phonetic/prefix variants in batches until we get usable hits
+        if (useful.length < 2 && variants.length) {
+          for (let i = 0; i < variants.length && useful.length < 2; i += 4) {
+            const batch = variants.slice(i, i + 4);
+            const extras = await Promise.all(
+              batch.map((v) => inatAutocompleteRaw(v).catch(() => []))
+            );
+            if (reqId !== suggestReqId) return;
+            extras.forEach((list) => {
+              results = results.concat(list);
+            });
+            useful = results.filter(looksUseful);
+          }
+        }
+
+        const seen = new Set();
+        const items = [];
+        for (const t of results) {
+          const scientific = String(t.name || "").trim();
+          if (!scientific) continue;
+          const rank = String(t.rank || "").toLowerCase();
+          if (rank && !["species", "subspecies", "variety", "form", "genus"].includes(rank)) {
+            continue;
+          }
+          const key = scientific.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          items.push({
+            scientific,
+            common: String(t.preferred_common_name || "").trim(),
+            matched: String(t.matched_term || "").trim(),
+            rank,
+            inatId: t.id,
+          });
+        }
+
+        const scoreItem = (item) => {
+          const common = item.common.toLowerCase();
+          const sci = item.scientific.toLowerCase();
+          const matched = item.matched.toLowerCase();
+          let score = 0;
+          if (common === qNorm || sci === qNorm || matched === qNorm) score += 220;
+          if (common.startsWith(qNorm)) score += 120;
+          if (sci.startsWith(qNorm)) score += 110;
+          if (matched.startsWith(qNorm)) score += 100;
+          if (common.includes(qNorm)) score += 60;
+          if (sci.includes(qNorm)) score += 50;
+
+          const names = [common, matched, sci].filter(Boolean);
+          for (const n of names) {
+            if (qSound && suggestSoundex(n) === qSound) score += 90;
+            const dist = suggestEditDistance(n, qNorm);
+            if (dist === 1) score += 80;
+            else if (dist === 2) score += 55;
+            else if (dist === 3) score += 30;
+            const nc = n.replace(/(.)\1+/g, "$1");
+            if (nc === qCollapsed) score += 75;
+            const cd = suggestEditDistance(nc, qCollapsed);
+            if (cd === 1) score += 55;
+            else if (cd === 2) score += 30;
+            for (const tok of n.split(/\s+/)) {
+              if (tok.length < 3) continue;
+              if (qSound && suggestSoundex(tok) === qSound) score += 85;
+              const td = suggestEditDistance(tok, qNorm);
+              if (td === 1) score += 90;
+              else if (td === 2) score += 60;
+              else if (td === 3) score += 25;
+              const tc = tok.replace(/(.)\1+/g, "$1");
+              if (tc === qCollapsed) score += 80;
+              const tcd = suggestEditDistance(tc, qCollapsed);
+              if (tcd === 1) score += 55;
+              else if (tcd === 2) score += 30;
+            }
+          }
+
+          if (item.rank === "species") score += 30;
+          else if (item.rank === "subspecies") score += 12;
+          else if (item.rank === "genus") score -= 25;
+          if (common) score += Math.max(0, 8 - common.split(/\s+/).length);
+          return score;
+        };
+
+        items.sort((a, b) => scoreItem(b) - scoreItem(a));
+        const ranked = items.filter((item, idx) => idx < 3 || scoreItem(item) >= 40);
+        suggestItems = (ranked.length ? ranked : items).slice(0, 8);
+        suggestActive = suggestItems.length ? 0 : -1;
+        paintSpeciesSuggest();
+      } catch {
+        if (reqId === suggestReqId) hideSpeciesSuggest();
+      }
+    }
+
+    function scheduleSpeciesSuggest() {
+      clearTimeout(suggestTimer);
+      const q = addInput.value.trim();
+      if (q.length < 2 || fetchBusy) {
+        hideSpeciesSuggest();
+        return;
+      }
+      suggestTimer = setTimeout(() => fetchSpeciesSuggestions(q), 180);
     }
 
     function beginFetch() {
@@ -3416,12 +3777,53 @@
     document.getElementById("sample-size").addEventListener("change", () => refetchAllSpecies());
     document.getElementById("stratify-country").addEventListener("change", () => refetchAllSpecies());
 
-    addBtn.addEventListener("click", addSpeciesAndSearch);
+    addBtn.addEventListener("click", () => {
+      hideSpeciesSuggest();
+      addSpeciesAndSearch();
+    });
+    addInput.addEventListener("input", scheduleSpeciesSuggest);
+    addInput.addEventListener("focus", () => {
+      if (addInput.value.trim().length >= 2) scheduleSpeciesSuggest();
+    });
+    addInput.addEventListener("blur", () => {
+      // Delay so mousedown on a suggestion can fire first
+      setTimeout(() => hideSpeciesSuggest(), 120);
+    });
     addInput.addEventListener("keydown", (e) => {
+      const open = !suggestEl.hidden && suggestItems.length;
+      if (e.key === "ArrowDown" && open) {
+        e.preventDefault();
+        suggestActive = (suggestActive + 1) % suggestItems.length;
+        paintSpeciesSuggest();
+        return;
+      }
+      if (e.key === "ArrowUp" && open) {
+        e.preventDefault();
+        suggestActive =
+          (suggestActive - 1 + suggestItems.length) % suggestItems.length;
+        paintSpeciesSuggest();
+        return;
+      }
+      if (e.key === "Escape") {
+        if (open) {
+          e.preventDefault();
+          hideSpeciesSuggest();
+        }
+        return;
+      }
       if (e.key === "Enter") {
         e.preventDefault();
-        addSpeciesAndSearch();
+        if (open && suggestActive >= 0) {
+          chooseSpeciesSuggest(suggestActive);
+        } else {
+          hideSpeciesSuggest();
+          addSpeciesAndSearch();
+        }
       }
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".add-suggest-wrap")) return;
+      hideSpeciesSuggest();
     });
 
     const sourcesInfo = document.getElementById("sources-info");
