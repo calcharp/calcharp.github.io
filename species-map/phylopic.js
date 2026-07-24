@@ -45,19 +45,40 @@ window.PHYLOPIC_API = (() => {
     const licenseHref = links.license && links.license.href;
     if (!licenseOk(licenseHref)) return null;
     const thumbs = links.thumbnailFiles || [];
+    const rasters = links.rasterFiles || [];
     // Prefer 192/64 over 128: some 128px PhyloPic thumbs fail browser CORS
     // fetches (CSS masks need that), which leaves a blank but still-clickable icon.
-    const thumb =
-      thumbs.find((t) => (t.sizes || "").startsWith("192")) ||
-      thumbs.find((t) => (t.sizes || "").startsWith("64")) ||
-      thumbs.find((t) => (t.sizes || "").startsWith("128")) ||
-      thumbs[0];
-    // Avoid vector.svg as mask source — often missing CORS headers.
-    const src = thumb && thumb.href;
+    // Some images also block CORS on all thumbnail sizes while still allowing
+    // raster/* — keep mid-size rasters as fallbacks.
+    const preferredThumbs = [
+      thumbs.find((t) => (t.sizes || "").startsWith("192")),
+      thumbs.find((t) => (t.sizes || "").startsWith("64")),
+      thumbs.find((t) => (t.sizes || "").startsWith("128")),
+      thumbs[0],
+    ].filter(Boolean);
+    const rasterByWidth = (min, max) =>
+      rasters.find((t) => {
+        const w = parseInt(String(t.sizes || "").split("x")[0], 10);
+        return Number.isFinite(w) && w >= min && w <= max;
+      });
+    const preferredRasters = [
+      rasterByWidth(256, 512),
+      rasterByWidth(128, 1024),
+      rasters[rasters.length - 1],
+    ].filter(Boolean);
+
+    const thumbUrls = [];
+    const seen = new Set();
+    const push = (u) => {
+      if (!u || seen.has(u)) return;
+      seen.add(u);
+      thumbUrls.push(u);
+    };
+    preferredThumbs.forEach((t) => push(t && t.href));
+    preferredRasters.forEach((t) => push(t && t.href));
+
+    const src = thumbUrls[0];
     if (!src) return null;
-    const thumbUrls = thumbs
-      .map((t) => t && t.href)
-      .filter(Boolean);
     return {
       uuid: img.uuid,
       src,

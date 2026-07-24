@@ -1090,7 +1090,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="regions.js?v=20260721f"></script>
   <script src="gbif.js?v=20260721f"></script>
-  <script src="phylopic.js?v=20260723a"></script>
+  <script src="phylopic.js?v=20260724a"></script>
   <script src="onezoom.js?v=20260721f"></script>
   <script src="overlays.js?v=20260721i"></script>
   <script src="elevation.js?v=20260721f"></script>
@@ -1924,7 +1924,7 @@
       return span;
     }
 
-    /** Load a PhyloPic thumb as a same-origin blob URL (needed for CSS masks). */
+    /** Load a PhyloPic image as a same-origin blob URL (needed for CSS masks). */
     async function phylopicMaskUrl(phy) {
       if (!phy) return null;
       if (phy.maskUrl) return phy.maskUrl;
@@ -1939,29 +1939,68 @@
       (phy.thumbUrls || []).forEach(push);
       for (const url of candidates) {
         try {
-          const r = await fetch(url, { mode: "cors" });
+          const r = await fetch(url, { mode: "cors", cache: "no-store" });
           if (!r.ok) continue;
           const blob = await r.blob();
           if (!blob || !blob.size) continue;
-          phy.maskUrl = URL.createObjectURL(blob);
+          // Normalize to white RGB + alpha so both luminance and alpha CSS masks work.
+          // PhyloPic thumbs are often LA with L=0 (black); -webkit-mask uses luminance
+          // and would otherwise render blank.
+          const maskBlob = (await normalizePhyloMaskBlob(blob)) || blob;
+          phy.maskUrl = URL.createObjectURL(maskBlob);
           phy.src = url;
           return phy.maskUrl;
         } catch {
-          /* try next size */
+          /* try next size / raster fallback */
         }
       }
       return null;
     }
 
+    /** Convert PhyloPic PNG into a luminance-safe mask (white + alpha). */
+    async function normalizePhyloMaskBlob(blob) {
+      try {
+        const bmp = await createImageBitmap(blob);
+        const canvas = document.createElement("canvas");
+        canvas.width = bmp.width;
+        canvas.height = bmp.height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return null;
+        ctx.drawImage(bmp, 0, 0);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i];
+          const g = d[i + 1];
+          const b = d[i + 2];
+          const a = d[i + 3];
+          const lum = (r + g + b) / 3;
+          // Prefer alpha when present; otherwise invert luminance (black-on-white art).
+          const alpha = a < 250 ? a : Math.max(0, Math.min(255, 255 - lum));
+          d[i] = 255;
+          d[i + 1] = 255;
+          d[i + 2] = 255;
+          d[i + 3] = alpha;
+        }
+        ctx.putImageData(img, 0, 0);
+        bmp.close?.();
+        const out = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        return out;
+      } catch {
+        return null;
+      }
+    }
+
     function speciesIconEl(sp, color, { link = true } = {}) {
       const phy = sp.phylopic;
-      if (phy && phy.pageUrl && (phy.maskUrl || phy.src)) {
+      // Only use blob maskUrl for CSS masks — raw PhyloPic URLs often fail as masks
+      // (CORS / luminance), which leaves a blank but still-clickable icon.
+      if (phy && phy.pageUrl && phy.maskUrl) {
         const sil = document.createElement("span");
         sil.className = "phylo-sil";
         sil.style.color = color;
-        const maskSrc = phy.maskUrl || phy.src;
-        sil.style.webkitMaskImage = `url("${maskSrc}")`;
-        sil.style.maskImage = `url("${maskSrc}")`;
+        sil.style.webkitMaskImage = `url("${phy.maskUrl}")`;
+        sil.style.maskImage = `url("${phy.maskUrl}")`;
         sil.style.maskMode = "alpha";
         if (!link) return sil;
         const a = document.createElement("a");
@@ -1974,7 +2013,19 @@
         a.appendChild(sil);
         return a;
       }
-      return circleSwatch(color);
+      const swatch = circleSwatch(color);
+      if (phy && phy.pageUrl && link) {
+        const a = document.createElement("a");
+        a.className = "phylo-link";
+        a.href = phy.pageUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.title = `PhyloPic page${phy.attribution ? ` · ${phy.attribution}` : ""}`;
+        a.setAttribute("aria-label", `PhyloPic page for ${sp.common || sp.scientific}`);
+        a.appendChild(swatch);
+        return a;
+      }
+      return swatch;
     }
 
     async function ensurePhyloPics() {
