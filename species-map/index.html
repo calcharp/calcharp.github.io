@@ -102,6 +102,37 @@
       gap: 0.35rem;
       margin: 0.35rem 0;
     }
+    .species-list-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 0.45rem;
+    }
+    .species-list-actions .btn {
+      font-size: 0.78rem;
+      padding: 0.28rem 0.55rem;
+    }
+    .bulk-add-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      margin: 0.45rem 0 0.15rem;
+      padding: 0.45rem 0.55rem;
+      border: 1px solid rgba(139, 46, 26, 0.35);
+      background: rgba(196, 92, 38, 0.12);
+      font-size: 0.82rem;
+      color: var(--ink);
+    }
+    .bulk-add-bar[hidden] {
+      display: none !important;
+    }
+    .bulk-add-bar .btn,
+    #btn-stop-bulk-tree {
+      flex-shrink: 0;
+      background: var(--clay, #c45c26);
+      border-color: transparent;
+      color: #fff;
+    }
     .species-chip {
       display: flex;
       align-items: center;
@@ -151,6 +182,18 @@
       color: var(--ink);
       border-color: rgba(28, 36, 25, 0.35);
       background: #fff;
+    }
+    .species-chip .chip-btn.chip-btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2rem 0.35rem;
+      min-width: 1.7rem;
+    }
+    .species-chip .chip-btn.chip-btn-icon svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
     }
     .species-chip button.chip-remove {
       font-size: 1rem;
@@ -570,6 +613,115 @@
       line-height: 1.4;
       color: rgba(28, 36, 25, 0.7);
     }
+    .tree-modal-card { width: min(720px, 100%); }
+    .inat-taxonomy {
+      margin: 0.15rem 0 0.75rem;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: rgba(28, 36, 25, 0.88);
+    }
+    .inat-taxonomy-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .inat-taxonomy-list .inat-taxonomy-list {
+      margin: 0.05rem 0 0.05rem 0.85rem;
+      padding: 0;
+      border-left: 1px solid rgba(28, 36, 25, 0.1);
+    }
+    .inat-taxon {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.15rem 0.35rem;
+      padding: 0.18rem 0 0.18rem 0.15rem;
+    }
+    .inat-taxon-arrow {
+      color: rgba(28, 36, 25, 0.4);
+      font-size: 0.85em;
+      flex-shrink: 0;
+      width: 0.9rem;
+    }
+    .inat-taxon-common {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .inat-taxon-detail {
+      color: rgba(28, 36, 25, 0.5);
+      font-size: 0.86em;
+    }
+    .inat-taxon-detail em {
+      font-style: italic;
+    }
+    .inat-taxon .inat-taxon-link {
+      min-width: 0;
+    }
+    .inat-taxon-add {
+      flex-shrink: 0;
+      margin-left: 0.35rem;
+      border: 1px solid rgba(28, 36, 25, 0.2);
+      background: rgba(255, 255, 255, 0.75);
+      color: rgba(28, 36, 25, 0.7);
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.12rem 0.4rem;
+      cursor: pointer;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+    .inat-taxon-add:hover {
+      border-color: rgba(28, 36, 25, 0.4);
+      color: var(--ink);
+      background: #fff;
+    }
+    .inat-taxon-add:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+    .inat-taxon .phylo-link,
+    .inat-taxon .phylo-sil,
+    .inat-taxon .swatch {
+      flex-shrink: 0;
+      margin-left: 0;
+      margin-right: 0.15rem;
+      vertical-align: middle;
+    }
+    .inat-taxonomy .phylo-sil {
+      width: 28px;
+      height: 22px;
+    }
+    .inat-taxonomy .swatch {
+      width: 0.85rem;
+      height: 0.85rem;
+      border-radius: 50%;
+      border: 1px solid rgba(28, 36, 25, 0.35);
+      display: inline-block;
+    }
+    .inat-taxon-link {
+      color: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.15rem 0.35rem;
+    }
+    .inat-taxon-link:hover .inat-taxon-common {
+      text-decoration: underline;
+    }
+    .tree-empty,
+    .tree-loading {
+      padding: 1.25rem 0.5rem;
+      text-align: center;
+      color: rgba(28, 36, 25, 0.55);
+      font-size: 0.9rem;
+    }
+    .tree-unresolved {
+      margin: 0.5rem 0 0;
+      font-size: 0.78rem;
+      color: rgba(28, 36, 25, 0.55);
+    }
     .gallery-grid {
       display: flex;
       flex-direction: column;
@@ -621,6 +773,31 @@
       color: rgba(28, 36, 25, 0.5);
       margin-top: 0.15rem;
     }
+    .gallery-card .g-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-left: auto;
+      align-self: flex-start;
+      flex-shrink: 0;
+    }
+    .gallery-card .g-actions .btn {
+      font-size: 0.78rem;
+      padding: 0.28rem 0.55rem;
+    }
+    .gallery-card .g-actions .btn[data-act="add-similar"] {
+      min-width: 5.75rem;
+    }
+    .gallery-card.is-on-map {
+      opacity: 0.72;
+    }
+    .gallery-card .similar-thumb-fallback {
+      width: 72px;
+      height: 56px;
+      object-fit: cover;
+      background: rgba(28, 36, 25, 0.08);
+      flex-shrink: 0;
+    }
     .photo-strip {
       display: flex;
       gap: 0.4rem;
@@ -663,6 +840,12 @@
       flex-wrap: wrap;
       padding-top: 0.75rem;
       border-top: 1px solid rgba(28, 36, 25, 0.1);
+    }
+    .modal-foot-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
     }
     .modal-meta {
       font-size: 0.8rem;
@@ -1001,6 +1184,11 @@
 
       <p class="section-label">Species</p>
       <div class="species-list" id="species-list"></div>
+      <div class="species-list-actions">
+        <button type="button" class="btn secondary" id="btn-clear-species" title="Remove every species from the list and map">
+          Clear all
+        </button>
+      </div>
       <div class="add-row">
         <div class="add-suggest-wrap">
           <input
@@ -1019,7 +1207,12 @@
       </div>
       <div class="btn-row data-actions">
         <button type="button" class="btn secondary" id="btn-gallery">Species gallery</button>
+        <button type="button" class="btn secondary" id="btn-tree">Taxonomy</button>
         <button type="button" class="btn secondary" id="btn-export">Export CSV</button>
+      </div>
+      <div class="bulk-add-bar" id="bulk-add-bar" hidden>
+        <span id="bulk-add-label">Adding species…</span>
+        <button type="button" class="btn" id="btn-stop-bulk" title="Stop adding more species">Stop</button>
       </div>
       <div class="status" id="status" aria-live="polite"></div>
 
@@ -1154,11 +1347,53 @@
     </div>
   </div>
 
+  <div class="modal" id="similar-modal" hidden>
+    <div class="modal-backdrop" data-close-similar></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="similar-title">
+      <header class="modal-head">
+        <h2 id="similar-title">Similar species</h2>
+        <button type="button" class="modal-close" data-close-similar aria-label="Close">×</button>
+      </header>
+      <p class="modal-lede" id="similar-lede">
+        Often confused on iNaturalist (same list as the Similar Species tab). Add any of these to the map.
+      </p>
+      <div class="gallery-grid" id="similar-grid"></div>
+      <footer class="modal-foot">
+        <span class="modal-meta" id="similar-meta"></span>
+        <a class="btn secondary" id="similar-inat-link" href="https://www.inaturalist.org/" target="_blank" rel="noopener">View on iNat</a>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal" id="tree-modal" hidden>
+    <div class="modal-backdrop" data-close-tree></div>
+    <div class="modal-card tree-modal-card" role="dialog" aria-modal="true" aria-labelledby="tree-title">
+      <header class="modal-head">
+        <h2 id="tree-title">Taxonomy</h2>
+        <button type="button" class="modal-close" data-close-tree aria-label="Close">×</button>
+      </header>
+      <p class="modal-lede">
+        Shared taxonomy for species on the map, from
+        <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>
+        (same ancestry text as the taxon Taxonomy tab). Branches split where lineages diverge.
+      </p>
+      <div id="tree-body"></div>
+      <footer class="modal-foot">
+        <span class="modal-meta" id="tree-meta"></span>
+        <div class="modal-foot-actions">
+          <button type="button" class="btn" id="btn-stop-bulk-tree" hidden title="Stop adding more species">Stop adding</button>
+          <a class="btn secondary" id="tree-opentree-link" href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>
+        </div>
+      </footer>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="regions.js?v=20260721f"></script>
   <script src="gbif.js?v=20260721f"></script>
-  <script src="phylopic.js?v=20260724a"></script>
+  <script src="phylopic.js?v=20260724b"></script>
   <script src="onezoom.js?v=20260721f"></script>
+  <script src="opentree.js?v=20260724k"></script>
   <script src="overlays.js?v=20260721i"></script>
   <script src="elevation.js?v=20260721f"></script>
   <script src="udvardy.js?v=20260721f"></script>
@@ -1505,6 +1740,8 @@
     function renderSpeciesList() {
       species.forEach(ensureSpeciesStyle);
       speciesListEl.innerHTML = "";
+      const clearBtn = document.getElementById("btn-clear-species");
+      if (clearBtn) clearBtn.disabled = !species.length;
       species.forEach((sp, i) => {
         const row = document.createElement("div");
         row.className = "species-chip";
@@ -1515,6 +1752,9 @@
             <span class="sci">${sp.scientific} · key ${sp.taxonKey}</span>
           </span>
           <span class="chip-actions">
+            <button type="button" class="chip-btn chip-btn-icon" data-act="zoom" title="Zoom map to this species’ overall range" aria-label="Zoom map to this species’ overall range">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM3 11h3v2H3v-2zm15 0h3v2h-3v-2zM11 3h2v3h-2V3zm0 15h2v3h-2v-3z"/></svg>
+            </button>
             <button type="button" class="chip-btn" data-act="inat" title="Open iNaturalist taxon page">iNat</button>
             <button type="button" class="chip-btn" data-act="wiki" title="Open Wikipedia">Wiki</button>
             <button type="button" class="chip-btn" data-act="onezoom" title="Open on OneZoom tree of life">OZ</button>
@@ -1522,19 +1762,18 @@
           </span>`;
         const iconSlot = row.querySelector('[data-role="icon"]');
         iconSlot.appendChild(speciesIconEl(sp, color));
+        row.querySelector('[data-act="zoom"]').addEventListener("click", () => zoomToSpecies(sp));
         row.querySelector('[data-act="inat"]').addEventListener("click", () => openiNat(sp));
         row.querySelector('[data-act="wiki"]').addEventListener("click", () => openWikipedia(sp));
         row.querySelector('[data-act="onezoom"]').addEventListener("click", () => openOneZoom(sp));
         row.querySelector(".chip-remove").addEventListener("click", () => {
-          if (species.length <= 1) {
-            setStatus("Keep at least one species.", true);
-            return;
-          }
           const removed = species.splice(i, 1)[0];
           removePointsForSpecies(removed);
           renderSpeciesList();
           // If a bulk GBIF load had cleared the map and was still running, reload what's left
-          if (!pointMarkers.length && species.length) {
+          if (!species.length) {
+            setStatus(`Removed ${removed.common || removed.scientific}. Map is empty — add a species when ready.`);
+          } else if (!pointMarkers.length) {
             setStatus(`Removed ${removed.common || removed.scientific}. Reloading remaining species…`);
             refetchAllSpecies();
           } else {
@@ -2240,7 +2479,17 @@
 
     const allPoints = L.layerGroup(); // not on map until "Plot specimens" is checked
     const pointMarkers = [];
+    /** Plot each occurrence on the main world and ±360° copies so Pacific/Asia continuity is visible. */
+    const WORLD_LNG_COPIES = [0, -360, 360];
     const showSpecimens = document.getElementById("show-specimens");
+
+    function isPrimaryOccurrenceMarker(m) {
+      return !m || !m._wrapOffset;
+    }
+
+    function primaryPointMarkers() {
+      return pointMarkers.filter(isPrimaryOccurrenceMarker);
+    }
 
     function specimensVisible() {
       return showSpecimens.checked;
@@ -2300,7 +2549,7 @@
     }
 
     function fitToPoints() {
-      const visibleMarkers = pointMarkers.filter((m) => {
+      const visibleMarkers = primaryPointMarkers().filter((m) => {
         const sp = getSpecies(m._taxonKey);
         return speciesPlotVisible(sp) && allPoints.hasLayer(m);
       });
@@ -2311,6 +2560,112 @@
       const group = L.featureGroup(visibleMarkers);
       map.setMaxBounds(null);
       map.fitBounds(group.getBounds().pad(0.12), { padding: [24, 24], maxZoom: 8 });
+    }
+
+    function medianNumber(values) {
+      const sorted = values.slice().sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+
+    function quantileNumber(sorted, q) {
+      if (!sorted.length) return NaN;
+      if (sorted.length === 1) return sorted[0];
+      const pos = (sorted.length - 1) * q;
+      const lo = Math.floor(pos);
+      const hi = Math.ceil(pos);
+      if (lo === hi) return sorted[lo];
+      return sorted[lo] * (hi - pos) + sorted[hi] * (pos - lo);
+    }
+
+    /** Unwrap longitudes around a reference so antimeridian ranges stay continuous. */
+    function unwrapLng(lng, ref) {
+      let d = lng - ref;
+      while (d > 180) d -= 360;
+      while (d < -180) d += 360;
+      return ref + d;
+    }
+
+    function boundsFromLatLngs(pts) {
+      if (!pts || !pts.length) return null;
+      const bounds = L.latLngBounds(pts.map((p) => [p.lat, p.lng]));
+      return bounds.isValid() ? bounds : null;
+    }
+
+    /** IQR-trimmed overall range for centering the map on a species. */
+    function robustSpeciesBounds(markers) {
+      const pts = markers
+        .map((m) => {
+          const ll = m.getLatLng();
+          if (!ll || !Number.isFinite(ll.lat) || !Number.isFinite(ll.lng)) return null;
+          return { lat: ll.lat, lng: ll.lng };
+        })
+        .filter(Boolean);
+      if (!pts.length) return null;
+
+      const medLng = medianNumber(pts.map((p) => p.lng));
+      let unwrapped = pts.map((p) => ({
+        lat: p.lat,
+        lng: unwrapLng(p.lng, medLng),
+      }));
+
+      if (unwrapped.length >= 5) {
+        const lats = unwrapped.map((p) => p.lat).sort((a, b) => a - b);
+        const lngs = unwrapped.map((p) => p.lng).sort((a, b) => a - b);
+        const latQ1 = quantileNumber(lats, 0.25);
+        const latQ3 = quantileNumber(lats, 0.75);
+        const lngQ1 = quantileNumber(lngs, 0.25);
+        const lngQ3 = quantileNumber(lngs, 0.75);
+        const latIqr = Math.max(latQ3 - latQ1, 1e-6);
+        const lngIqr = Math.max(lngQ3 - lngQ1, 1e-6);
+        const fence = 2.0;
+        const core = unwrapped.filter(
+          (p) =>
+            p.lat >= latQ1 - fence * latIqr &&
+            p.lat <= latQ3 + fence * latIqr &&
+            p.lng >= lngQ1 - fence * lngIqr &&
+            p.lng <= lngQ3 + fence * lngIqr
+        );
+        if (core.length >= Math.max(3, Math.ceil(unwrapped.length * 0.5))) {
+          unwrapped = core;
+        }
+      }
+      return boundsFromLatLngs(unwrapped);
+    }
+
+    function ensureSpeciesVisibleForZoom(sp) {
+      if (!specimensVisible()) {
+        showSpecimens.checked = true;
+        syncSpecimenVisibility();
+      }
+      if (!speciesPlotVisible(sp)) {
+        sp.plotVisible = true;
+        syncSpeciesPlotVisibility(sp);
+        renderColorPanel();
+      }
+    }
+
+    /** Pan/zoom to the overall range center (IQR outlier-corrected bounds). */
+    function zoomToSpecies(sp) {
+      if (!sp) return;
+      const key = Number(sp.taxonKey);
+      const markers = primaryPointMarkers().filter((m) => Number(m._taxonKey) === key);
+      if (!markers.length) {
+        setStatus(`No mapped points yet for ${sp.common || sp.scientific}.`, true);
+        return;
+      }
+      const bounds = robustSpeciesBounds(markers);
+      if (!bounds || !bounds.isValid()) {
+        setStatus(`Could not determine range for ${sp.common || sp.scientific}.`, true);
+        return;
+      }
+      ensureSpeciesVisibleForZoom(sp);
+      map.setMaxBounds(null);
+      map.fitBounds(bounds.pad(0.12), { padding: [24, 24], maxZoom: 8 });
+      const c = bounds.getCenter();
+      setStatus(
+        `Centered on ${sp.common || sp.scientific} (${c.lat.toFixed(2)}°, ${c.lng.toFixed(2)}°).`
+      );
     }
 
     function clearPoints() {
@@ -2399,18 +2754,22 @@
       const taxonKey = sp.taxonKey;
       const show = speciesPlotVisible(sp);
       recs.forEach((rec) => {
-        const marker = L.circleMarker([rec.lat, rec.lon], {
+        const style = {
           radius: 4,
           color: "#1c2419",
           weight: 0.8,
           fillColor: colorForTaxonKey(taxonKey),
           fillOpacity: 0.7,
+        };
+        WORLD_LNG_COPIES.forEach((offset) => {
+          const marker = L.circleMarker([rec.lat, rec.lon + offset], style);
+          marker._taxonKey = taxonKey;
+          marker._rec = rec;
+          marker._wrapOffset = offset;
+          bindHoverStickyPopup(marker, () => popupFor(rec, taxonKey));
+          if (show) marker.addTo(allPoints);
+          pointMarkers.push(marker);
         });
-        marker._taxonKey = taxonKey;
-        marker._rec = rec;
-        bindHoverStickyPopup(marker, () => popupFor(rec, taxonKey));
-        if (show) marker.addTo(allPoints);
-        pointMarkers.push(marker);
       });
     }
 
@@ -2429,24 +2788,26 @@
         if (lon < -109.06 || lon > -102.04 || lat < 36.99 || lat > 41.01) return;
         const sp = bySp[p.organism];
         if (!sp) return;
-        const marker = L.circleMarker([lat, lon], {
+        const style = {
           radius: p.location_type === "occurrence" ? 4 : 5,
           color: "#1c2419",
           weight: 0.8,
           fillColor: colorForTaxonKey(sp.taxonKey),
           fillOpacity: p.location_type === "occurrence" ? 0.55 : 0.9,
-        });
-        marker._taxonKey = sp.taxonKey;
-        bindHoverStickyPopup(
-          marker,
-          `<div class="popup">
+        };
+        const popupHtml = `<div class="popup">
           <h3>${p.label || p.site_id}</h3>
           <p><strong>${p.organism}</strong></p>
           <p><a href="${p.source_url}" target="_blank" rel="noopener">${p.source_name}</a></p>
-        </div>`
-        );
-        if (speciesPlotVisible(sp)) marker.addTo(allPoints);
-        pointMarkers.push(marker);
+        </div>`;
+        WORLD_LNG_COPIES.forEach((offset) => {
+          const marker = L.circleMarker([lat, lon + offset], style);
+          marker._taxonKey = sp.taxonKey;
+          marker._wrapOffset = offset;
+          bindHoverStickyPopup(marker, popupHtml);
+          if (speciesPlotVisible(sp)) marker.addTo(allPoints);
+          pointMarkers.push(marker);
+        });
         n++;
       });
       setStatus(`Showing ${n} default Colorado points (cached). Click “Fetch from GBIF” for a fresh pull.`);
@@ -3147,7 +3508,7 @@
     async function buildExportRows() {
       const index = await loadProvincesIndex();
       const rows = [];
-      pointMarkers.forEach((m) => {
+      primaryPointMarkers().forEach((m) => {
         const sp = getSpecies(m._taxonKey) || {};
         const rec = m._rec || {};
         const lat = rec.lat != null ? rec.lat : m.getLatLng().lat;
@@ -3179,11 +3540,12 @@
     }
 
     async function exportCsv() {
-      if (!pointMarkers.length) {
+      const n = primaryPointMarkers().length;
+      if (!n) {
         setStatus("No specimen locations to export yet. Add species first.", true);
         return;
       }
-      setStatus(`Building CSV with Udvardy biogeography for ${pointMarkers.length} locations…`);
+      setStatus(`Building CSV with Udvardy biogeography for ${n} locations…`);
       try {
         const rows = await buildExportRows();
         const cols = [
@@ -3215,7 +3577,7 @@
 
     function countForSpecies(sp) {
       const key = Number(sp.taxonKey);
-      return pointMarkers.filter((m) => Number(m._taxonKey) === key).length;
+      return primaryPointMarkers().filter((m) => Number(m._taxonKey) === key).length;
     }
 
     function openGallery() {
@@ -3253,8 +3615,23 @@
         meta.appendChild(sci);
         meta.appendChild(count);
 
+        const actions = document.createElement("div");
+        actions.className = "g-actions";
+        const similarBtn = document.createElement("button");
+        similarBtn.type = "button";
+        similarBtn.className = "btn secondary";
+        similarBtn.textContent = "View similar";
+        similarBtn.title = "iNaturalist similar species — add lookalikes";
+        similarBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeGallery();
+          openSimilarSpecies(sp);
+        });
+        actions.appendChild(similarBtn);
+
         top.appendChild(iconWrap);
         top.appendChild(meta);
+        top.appendChild(actions);
 
         const strip = document.createElement("div");
         strip.className = "photo-strip";
@@ -3290,7 +3667,7 @@
           });
       });
 
-      const total = pointMarkers.length;
+      const total = primaryPointMarkers().length;
       galleryMeta.textContent = `${species.length} species · ${total} mapped locations · photos via iNaturalist`;
       galleryModal.hidden = false;
     }
@@ -3310,6 +3687,366 @@
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !galleryModal.hidden) closeGallery();
+      if (e.key === "Escape" && similarModal && !similarModal.hidden) closeSimilarModal();
+      if (e.key === "Escape" && !treeModal.hidden) closeTreeModal();
+    });
+
+    // --- Species tree (iNaturalist taxonomy among mapped species) ---
+    const treeModal = document.getElementById("tree-modal");
+    const treeBody = document.getElementById("tree-body");
+    const treeMeta = document.getElementById("tree-meta");
+
+    function closeTreeModal() {
+      treeModal.hidden = true;
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function capitalizeRank(rank) {
+      const r = String(rank || "").trim();
+      if (!r) return "";
+      return r.charAt(0).toUpperCase() + r.slice(1);
+    }
+
+    function appendInatTaxonNode(parentUl, node, { showArrow = false } = {}) {
+      const kids = node.children || [];
+      const tips = node.tips || [];
+      const isMappedTip = tips.length > 0 && !kids.length;
+      const common =
+        (isMappedTip && tips[0] && (tips[0].sp.common || tips[0].common)) ||
+        node.common ||
+        node.name;
+      const sci = node.name;
+      const rankLabel = capitalizeRank(node.rank);
+
+      const li = document.createElement("li");
+      const row = document.createElement("div");
+      row.className = "inat-taxon" + (isMappedTip ? " is-tip" : "");
+
+      if (showArrow) {
+        const arrow = document.createElement("span");
+        arrow.className = "inat-taxon-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = "↳";
+        row.appendChild(arrow);
+      }
+
+      if (isMappedTip && tips[0] && tips[0].sp) {
+        const color = colorForSpecies(tips[0].sp);
+        row.appendChild(speciesIconEl(tips[0].sp, color, { link: true }));
+      }
+
+      const labelWrap = document.createElement(node.id ? "a" : "span");
+      if (node.id) {
+        labelWrap.className = "inat-taxon-link";
+        labelWrap.href = `https://www.inaturalist.org/taxa/${node.id}`;
+        labelWrap.target = "_blank";
+        labelWrap.rel = "noopener noreferrer";
+      }
+
+      const commonEl = document.createElement("span");
+      commonEl.className = "inat-taxon-common";
+      commonEl.textContent = common;
+      labelWrap.appendChild(commonEl);
+
+      const detail = document.createElement("span");
+      detail.className = "inat-taxon-detail";
+      if (rankLabel) {
+        detail.appendChild(document.createTextNode(`(${rankLabel} `));
+        const em = document.createElement("em");
+        em.textContent = sci;
+        detail.appendChild(em);
+        detail.appendChild(document.createTextNode(")"));
+      } else {
+        const em = document.createElement("em");
+        em.textContent = sci;
+        detail.appendChild(em);
+      }
+      labelWrap.appendChild(document.createTextNode(" "));
+      labelWrap.appendChild(detail);
+
+      row.appendChild(labelWrap);
+
+      if ((node.rank === "genus" || node.rank === "family") && node.id) {
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "inat-taxon-add";
+        const short = node.rank === "family" ? "Add family" : "Add genus";
+        addBtn.textContent = short;
+        addBtn.title =
+          node.rank === "family"
+            ? `Add all iNaturalist species in ${node.name} to the map`
+            : `Add all iNaturalist species in ${node.name} to the map`;
+        addBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          addAllSpeciesInClade(node, addBtn);
+        });
+        row.appendChild(addBtn);
+      }
+
+      li.appendChild(row);
+
+      if (kids.length) {
+        const nested = document.createElement("ul");
+        nested.className = "inat-taxonomy-list";
+        kids.forEach((child) => appendInatTaxonNode(nested, child, { showArrow: true }));
+        li.appendChild(nested);
+      }
+
+      parentUl.appendChild(li);
+    }
+
+    function renderRelatednessTree(result) {
+      if (!result.tree) {
+        treeBody.innerHTML = `<div class="tree-empty">No taxonomy to show.</div>`;
+        return;
+      }
+
+      const roots =
+        result.tree.id == null && result.tree.children
+          ? result.tree.children
+          : [result.tree];
+
+      treeBody.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "inat-taxonomy";
+      const list = document.createElement("ul");
+      list.className = "inat-taxonomy-list";
+      roots.forEach((root) => appendInatTaxonNode(list, root, { showArrow: false }));
+      wrap.appendChild(list);
+      treeBody.appendChild(wrap);
+
+      if (result.unresolved && result.unresolved.length) {
+        const note = document.createElement("p");
+        note.className = "tree-unresolved";
+        note.textContent = `Could not match in iNaturalist: ${result.unresolved
+          .map((sp) => sp.common || sp.scientific)
+          .join(", ")}.`;
+        treeBody.appendChild(note);
+      }
+      const note2 = document.createElement("p");
+      note2.className = "tree-unresolved";
+      note2.textContent =
+        "Undated taxonomy from iNaturalist. Shared ranks are shown once; the tree splits where your mapped species diverge. “Add genus” / “Add family” can map every species under that clade — you’ll get a warning above 20, and Stop cancels a long run.";
+      treeBody.appendChild(note2);
+
+      const n = result.tipCount || (result.lineages && result.lineages.length) || 0;
+      treeMeta.textContent = `${n} species · iNaturalist taxonomy`;
+    }
+
+    const bulkAddBar = document.getElementById("bulk-add-bar");
+    const bulkAddLabel = document.getElementById("bulk-add-label");
+    const btnStopBulk = document.getElementById("btn-stop-bulk");
+    const btnStopBulkTree = document.getElementById("btn-stop-bulk-tree");
+    let bulkAddActive = false;
+
+    function setBulkAddProgress(labelText) {
+      bulkAddActive = true;
+      if (bulkAddBar) bulkAddBar.hidden = false;
+      if (bulkAddLabel) bulkAddLabel.textContent = labelText || "Adding species…";
+      if (btnStopBulkTree) {
+        btnStopBulkTree.hidden = false;
+        btnStopBulkTree.disabled = false;
+      }
+      if (treeMeta) treeMeta.textContent = labelText || "Adding species…";
+    }
+
+    function clearBulkAddProgress() {
+      bulkAddActive = false;
+      if (bulkAddBar) bulkAddBar.hidden = true;
+      if (btnStopBulkTree) btnStopBulkTree.hidden = true;
+    }
+
+    function stopBulkAdd() {
+      if (!bulkAddActive && !fetchBusy) return;
+      cancelSpeciesFetches();
+      clearBulkAddProgress();
+      setStatus("Stopped adding species. Species already mapped stay on the list.");
+    }
+
+    function clearAllSpecies() {
+      if (!species.length) {
+        setStatus("No species to clear.");
+        return;
+      }
+      const n = species.length;
+      if (!window.confirm(`Remove all ${n} species from the list and map?`)) return;
+      cancelSpeciesFetches();
+      clearBulkAddProgress();
+      species.length = 0;
+      clearPoints();
+      renderSpeciesList();
+      setStatus(`Cleared ${n} species. Map is empty — add a species when ready.`);
+    }
+
+    async function addAllSpeciesInClade(node, btn) {
+      if (fetchBusy || !node || !node.id) return;
+      const api = window.INAT_TAXONOMY || window.OPENTREE_API;
+      if (!api || !api.speciesUnderTaxon) {
+        setStatus("Clade lookup failed to load.", true);
+        return;
+      }
+      const rank = String(node.rank || "").toLowerCase();
+      const label = node.common || node.name || rank || "clade";
+      const buttonLabel = rank === "family" ? "Add family" : "Add genus";
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Loading…";
+      }
+      const listRunId = ++fetchRunId;
+      beginFetch();
+      let holdFetch = true;
+      setBulkAddProgress(`Listing species in ${label}…`);
+      try {
+        const { items, total } = await api.speciesUnderTaxon(node.id);
+        if (listRunId !== fetchRunId) {
+          setStatus("Stopped before adding species.");
+          return;
+        }
+        if (!items.length) {
+          setStatus(`No active species found under ${label}.`, true);
+          return;
+        }
+        const onMapInat = new Set(species.map((s) => Number(s.inatId)).filter(Boolean));
+        const onMapSci = new Set(
+          species.map((s) =>
+            String(s.scientific || "")
+              .trim()
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+          )
+        );
+        const toAdd = items.filter((it) => {
+          const sci = String(it.scientific || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, " ");
+          return !onMapInat.has(Number(it.inatId)) && !onMapSci.has(sci);
+        });
+        if (!toAdd.length) {
+          setStatus(`All listed ${label} species are already on the map.`);
+          return;
+        }
+
+        // Pause busy UI for confirm so Stop isn't shown during the dialog
+        clearBulkAddProgress();
+        endFetch();
+        holdFetch = false;
+
+        if (toAdd.length > 20) {
+          const truncated =
+            total > items.length
+              ? ` (showing the ${items.length} most-observed of ${total} on iNaturalist)`
+              : "";
+          const ok = window.confirm(
+            `${label} would add ${toAdd.length} species${truncated}.\n\nThat can take a while. Continue?\n\nYou can press Stop anytime to interrupt.`
+          );
+          if (!ok) return;
+        } else if (toAdd.length > 6) {
+          const ok = window.confirm(`Add ${toAdd.length} species from ${label} to the map?`);
+          if (!ok) return;
+        }
+
+        if (fetchBusy) return;
+        const runId = ++fetchRunId;
+        beginFetch();
+        holdFetch = true;
+        setBulkAddProgress(`Adding 0 / ${toAdd.length} from ${label}…`);
+        let added = 0;
+        const skipped = items.length - toAdd.length;
+        let stopped = false;
+        for (let i = 0; i < toAdd.length; i++) {
+          if (runId !== fetchRunId) {
+            stopped = true;
+            break;
+          }
+          const item = toAdd[i];
+          const progress = `Adding ${i + 1} / ${toAdd.length} from ${label}…`;
+          setBulkAddProgress(progress);
+          if (btn) btn.textContent = `${i + 1}/${toAdd.length}`;
+          const sp = await addMappedSpecies(
+            {
+              scientific: item.scientific,
+              common: item.common,
+              inatId: item.inatId,
+              inatName: item.scientific,
+              inatCommon: item.common,
+            },
+            { runId }
+          );
+          if (runId !== fetchRunId) {
+            stopped = true;
+            break;
+          }
+          if (sp) added += 1;
+        }
+        if (stopped) {
+          setStatus(
+            `Stopped after adding ${added} of ${toAdd.length} from ${label}. Already-mapped species stay on the list.`
+          );
+        } else {
+          setStatus(
+            `Added ${added} species from ${label}${
+              skipped ? ` (${skipped} already on map)` : ""
+            }.`
+          );
+        }
+        if (added && treeModal && !treeModal.hidden) openTreeModal();
+      } catch (e) {
+        setStatus(e.message || String(e), true);
+      } finally {
+        clearBulkAddProgress();
+        if (holdFetch) endFetch();
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = buttonLabel;
+        }
+      }
+    }
+
+    async function openTreeModal() {
+      if (!species.length) {
+        setStatus("Add a species before opening the species tree.", true);
+        return;
+      }
+      treeBody.innerHTML = `<div class="tree-loading">Loading iNaturalist taxonomy…</div>`;
+      treeMeta.textContent = "";
+      treeModal.hidden = false;
+      try {
+        await Promise.all(species.map((sp) => ensurePreferredScientific(sp).catch(() => null)));
+        await ensurePhyloPics();
+        const packed = species.map((sp) => ({
+          scientific: preferredScientific(sp) || sp.scientific,
+          common: sp.common,
+          color: colorForSpecies(sp),
+          taxonKey: sp.taxonKey,
+          inatId: sp.inatId,
+          // Keep the live species object so PhyloPic masks / colors stay attached
+          sp,
+        }));
+        const api = window.INAT_TAXONOMY || window.OPENTREE_API;
+        const result = await api.relateSpecies(packed);
+        if (!result.tree) {
+          treeBody.innerHTML = `<div class="tree-empty">Matched taxa, but could not draw a tree.</div>`;
+          return;
+        }
+        renderRelatednessTree(result);
+      } catch (e) {
+        treeBody.innerHTML = `<div class="tree-empty">${escapeHtml(e.message || String(e))}</div>`;
+        treeMeta.textContent = "Taxonomy request failed";
+      }
+    }
+
+    document.getElementById("btn-tree").addEventListener("click", () => openTreeModal());
+    treeModal.querySelectorAll("[data-close-tree]").forEach((el) => {
+      el.addEventListener("click", closeTreeModal);
     });
 
     // --- GBIF search (runs on add / option change / boot) ---
@@ -3674,6 +4411,13 @@
       let total = 0;
       try {
         const list = species.slice();
+        if (!list.length) {
+          if (runId !== fetchRunId) return;
+          await setupColoradoMask();
+          updateOverlayAvailability();
+          setStatus("No species on the map. Add a scientific or common name to begin.");
+          return;
+        }
         for (const sp of list) {
           if (runId !== fetchRunId) return;
           if (!speciesStillActive(sp)) continue;
@@ -3710,45 +4454,326 @@
       beginFetch();
       setStatus(`Looking up “${name}” in GBIF…`);
       try {
-        const match = await window.GBIF_API.matchSpecies(name);
-        if (runId !== fetchRunId) return;
-        if (species.some((s) => s.taxonKey === match.taxonKey)) {
-          setStatus(`${match.scientific} is already on the map.`);
-          return;
-        }
-        const gbifCommon = await gbifEnglishCommon(match.taxonKey);
-        if (runId !== fetchRunId) return;
-        const sp = {
-          id: `sp_${match.taxonKey}`,
-          common: gbifCommon || match.common || match.scientific,
-          scientific: match.scientific,
-          taxonKey: match.taxonKey,
-          colorKey: "extra",
-        };
-        ensureSpeciesStyle(sp);
-        await ensurePreferredScientific(sp);
-        // If iNat didn't confirm a matching taxon, keep GBIF vernacular / scientific.
-        if (!sp.inatName || String(sp.inatName).toLowerCase() !== String(sp.scientific).toLowerCase()) {
-          sp.common = gbifCommon || match.common || match.scientific;
-        }
-        if (runId !== fetchRunId) return;
-        species.push(sp);
-        addInput.value = "";
-        renderSpeciesList();
-        const via =
-          match.matchType === "VERNACULAR" || match.matchType === "INAT"
-            ? ` (matched common name “${match.query}”)`
-            : "";
-        setStatus(`Searching GBIF for ${sp.common} · ${match.scientific}${via}…`);
-        const n = await fetchOneSpecies(sp, runId);
-        if (runId !== fetchRunId) return;
-        bringPointsFront();
-        setStatus(`Added ${sp.common} · ${match.scientific}: ${n} locations${via}.`);
+        await addMappedSpecies({ scientific: name }, { runId, clearInput: true });
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
         endFetch();
       }
+    }
+
+    /**
+     * Add a species from a scientific name and optional iNat fields, then map GBIF points.
+     */
+    async function addMappedSpecies(opts, { runId = null, clearInput = false } = {}) {
+      const scientificHint = String(opts.scientific || opts.inatName || "").trim();
+      if (!scientificHint) throw new Error("No species name to add.");
+
+      const match = await window.GBIF_API.matchSpecies(scientificHint);
+      if (runId != null && runId !== fetchRunId) return null;
+      if (species.some((s) => s.taxonKey === match.taxonKey)) {
+        setStatus(`${match.scientific} is already on the map.`);
+        return null;
+      }
+      // Also skip if same iNat taxon already loaded under a different GBIF key
+      if (opts.inatId && species.some((s) => Number(s.inatId) === Number(opts.inatId))) {
+        setStatus(`${opts.common || opts.scientific || match.scientific} is already on the map.`);
+        return null;
+      }
+
+      const gbifCommon = await gbifEnglishCommon(match.taxonKey);
+      if (runId != null && runId !== fetchRunId) return null;
+
+      const sp = {
+        id: `sp_${match.taxonKey}`,
+        common: opts.common || gbifCommon || match.common || match.scientific,
+        scientific: match.scientific,
+        taxonKey: match.taxonKey,
+        colorKey: "extra",
+      };
+      if (opts.inatId) {
+        sp.inatId = Number(opts.inatId);
+        sp.inatName = opts.inatName || match.scientific;
+        sp.inatCommon = opts.common || opts.inatCommon || "";
+        sp.inatSlug = String(sp.inatName || match.scientific).replace(/\s+/g, "-");
+        applyiNatLabels(sp);
+      }
+      ensureSpeciesStyle(sp);
+      await ensurePreferredScientific(sp);
+      if (!sp.inatName || String(sp.inatName).toLowerCase() !== String(sp.scientific).toLowerCase()) {
+        if (!opts.common) sp.common = gbifCommon || match.common || match.scientific;
+      }
+      if (runId != null && runId !== fetchRunId) return null;
+
+      species.push(sp);
+      if (clearInput) addInput.value = "";
+      renderSpeciesList();
+      syncSimilarCardStates();
+
+      const via =
+        match.matchType === "VERNACULAR" || match.matchType === "INAT"
+          ? ` (matched common name “${match.query}”)`
+          : opts.inatId
+            ? " (from iNat similar species)"
+            : "";
+      setStatus(`Searching GBIF for ${sp.common} · ${match.scientific}${via}…`);
+      const n = await fetchOneSpecies(sp, runId);
+      if (runId != null && runId !== fetchRunId) return null;
+      bringPointsFront();
+      setStatus(`Added ${sp.common} · ${match.scientific}: ${n} locations${via}.`);
+      syncSimilarCardStates();
+      return sp;
+    }
+
+    const similarModal = document.getElementById("similar-modal");
+    const similarGrid = document.getElementById("similar-grid");
+    const similarTitle = document.getElementById("similar-title");
+    const similarMeta = document.getElementById("similar-meta");
+    const similarInatLink = document.getElementById("similar-inat-link");
+    let similarForSp = null;
+    let similarItems = [];
+
+    function tipKeySci(name) {
+      return String(name || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function closeSimilarModal() {
+      similarForSp = null;
+      similarItems = [];
+      if (similarModal) similarModal.hidden = true;
+      if (similarGrid) similarGrid.innerHTML = "";
+    }
+
+    function syncSimilarCardStates() {
+      if (!similarModal || similarModal.hidden || !similarGrid) return;
+      const onMapInat = new Set(species.map((s) => Number(s.inatId)).filter(Boolean));
+      const onMapSci = new Set(species.map((s) => tipKeySci(s.scientific)));
+      similarGrid.querySelectorAll(".gallery-card[data-inat-id]").forEach((card) => {
+        const id = Number(card.dataset.inatId);
+        const sci = tipKeySci(card.dataset.scientific);
+        const already = onMapInat.has(id) || onMapSci.has(sci);
+        card.classList.toggle("is-on-map", already);
+        const addBtn = card.querySelector("[data-act='add-similar']");
+        if (!addBtn) return;
+        addBtn.disabled = already || fetchBusy;
+        addBtn.textContent = already ? "On map" : "Add to map";
+      });
+    }
+
+    function refreshSimilarGalleryIfOpen() {
+      syncSimilarCardStates();
+    }
+
+    function fillSimilarPhotoStrip(strip, item) {
+      const tempSp = {
+        scientific: item.scientific,
+        common: item.common,
+        inatId: item.inatId,
+        inatName: item.scientific,
+        inatSlug: String(item.scientific || "taxon").replace(/\s+/g, "-"),
+        inatCommon: item.common || "",
+      };
+      loadiNatPhotos(tempSp)
+        .then((photos) => {
+          strip.innerHTML = "";
+          if (!photos.length) {
+            if (item.photo) {
+              const img = document.createElement("img");
+              img.src = item.photo;
+              img.alt = item.common || item.scientific;
+              img.loading = "lazy";
+              const a = document.createElement("a");
+              a.href = `https://www.inaturalist.org/taxa/${item.inatId}`;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              a.appendChild(img);
+              strip.appendChild(a);
+            } else {
+              strip.innerHTML = `<div class="photo-strip-empty">No iNaturalist photos found.</div>`;
+            }
+            return;
+          }
+          photos.forEach((p) => {
+            const a = document.createElement("a");
+            a.href = p.page;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.title = p.attribution || "iNaturalist photo";
+            const img = document.createElement("img");
+            img.src = p.url;
+            img.alt = `${item.common || item.scientific} — iNaturalist`;
+            img.loading = "lazy";
+            a.appendChild(img);
+            strip.appendChild(a);
+          });
+        })
+        .catch(() => {
+          strip.innerHTML = `<div class="photo-strip-empty">Could not load photos.</div>`;
+        });
+    }
+
+    function renderSimilarGallery(items) {
+      if (!similarGrid) return;
+      similarGrid.innerHTML = "";
+      if (!items.length) {
+        similarGrid.innerHTML = `<div class="photo-strip-empty">No similar species returned.</div>`;
+        return;
+      }
+      const onMapInat = new Set(species.map((s) => Number(s.inatId)).filter(Boolean));
+      const onMapSci = new Set(species.map((s) => tipKeySci(s.scientific)));
+
+      items.forEach((item) => {
+        const already =
+          onMapInat.has(Number(item.inatId)) || onMapSci.has(tipKeySci(item.scientific));
+        const card = document.createElement("div");
+        card.className = "gallery-card" + (already ? " is-on-map" : "");
+        card.dataset.inatId = String(item.inatId);
+        card.dataset.scientific = item.scientific || "";
+
+        const top = document.createElement("div");
+        top.className = "gallery-card-top";
+
+        const iconWrap = document.createElement("div");
+        if (item.photo) {
+          const thumb = document.createElement("img");
+          thumb.className = "similar-thumb-fallback";
+          thumb.src = item.photo;
+          thumb.alt = "";
+          thumb.loading = "lazy";
+          iconWrap.appendChild(thumb);
+        } else {
+          const swatch = document.createElement("span");
+          swatch.className = "swatch";
+          swatch.style.background = "rgba(28,36,25,0.12)";
+          iconWrap.appendChild(swatch);
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "g-meta";
+        const name = document.createElement("div");
+        name.className = "g-name";
+        name.textContent = item.common || item.scientific;
+        const sci = document.createElement("div");
+        sci.className = "g-sci";
+        sci.textContent = item.scientific || "";
+        const count = document.createElement("div");
+        count.className = "g-count";
+        count.textContent = item.count
+          ? `Confused with this species ${item.count}× in iNat IDs`
+          : "Listed as similar on iNaturalist";
+        meta.appendChild(name);
+        meta.appendChild(sci);
+        meta.appendChild(count);
+
+        const actions = document.createElement("div");
+        actions.className = "g-actions";
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "btn";
+        addBtn.dataset.act = "add-similar";
+        addBtn.textContent = already ? "On map" : "Add to map";
+        addBtn.disabled = already || fetchBusy;
+        if (!already) {
+          addBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            addFromSimilar(item);
+          });
+        }
+        const inatBtn = document.createElement("a");
+        inatBtn.className = "btn secondary";
+        inatBtn.href = `https://www.inaturalist.org/taxa/${item.inatId}`;
+        inatBtn.target = "_blank";
+        inatBtn.rel = "noopener noreferrer";
+        inatBtn.textContent = "iNat";
+        actions.appendChild(addBtn);
+        actions.appendChild(inatBtn);
+
+        top.appendChild(iconWrap);
+        top.appendChild(meta);
+        top.appendChild(actions);
+
+        const strip = document.createElement("div");
+        strip.className = "photo-strip";
+        strip.innerHTML = `<div class="photo-strip-loading">Loading iNaturalist photos…</div>`;
+
+        card.appendChild(top);
+        card.appendChild(strip);
+        similarGrid.appendChild(card);
+        fillSimilarPhotoStrip(strip, item);
+      });
+    }
+
+    async function openSimilarSpecies(sp) {
+      if (!window.INAT_TAXONOMY) {
+        setStatus("Similar-species helper failed to load.", true);
+        return;
+      }
+      similarForSp = sp;
+      if (similarTitle) {
+        similarTitle.textContent = `Similar to ${sp.common || sp.scientific}`;
+      }
+      if (similarMeta) similarMeta.textContent = "Loading…";
+      if (similarGrid) {
+        similarGrid.innerHTML = `<div class="photo-strip-loading">Loading similar species from iNaturalist…</div>`;
+      }
+      if (similarModal) similarModal.hidden = false;
+      try {
+        await ensurePreferredScientific(sp);
+        if (!sp.inatId) throw new Error("No iNaturalist match for this species yet.");
+        if (similarInatLink) {
+          const slug = sp.inatSlug || String(sp.inatName || sp.scientific || "taxon").replace(/\s+/g, "-");
+          similarInatLink.href = `https://www.inaturalist.org/taxa/${sp.inatId}-${slug}`;
+        }
+        similarItems = await window.INAT_TAXONOMY.similarSpecies(sp.inatId, { perPage: 12 });
+        if (similarForSp !== sp) return;
+        renderSimilarGallery(similarItems);
+        if (similarMeta) {
+          similarMeta.textContent = `${similarItems.length} similar species · via iNaturalist`;
+        }
+        setStatus(
+          `Similar species for ${sp.common || sp.scientific}: ${similarItems.length} from iNaturalist.`
+        );
+      } catch (e) {
+        if (similarForSp !== sp) return;
+        if (similarGrid) {
+          similarGrid.innerHTML = `<div class="photo-strip-empty">${escapeHtml(e.message || String(e))}</div>`;
+        }
+        if (similarMeta) similarMeta.textContent = "Request failed";
+        setStatus(e.message || String(e), true);
+      }
+    }
+
+    async function addFromSimilar(item) {
+      if (fetchBusy || !item) return;
+      const runId = ++fetchRunId;
+      beginFetch();
+      syncSimilarCardStates();
+      try {
+        await addMappedSpecies(
+          {
+            scientific: item.scientific,
+            common: item.common,
+            inatId: item.inatId,
+            inatName: item.scientific,
+            inatCommon: item.common,
+          },
+          { runId }
+        );
+      } catch (e) {
+        if (runId === fetchRunId) setStatus(formatFetchError(e), true);
+      } finally {
+        endFetch();
+        syncSimilarCardStates();
+      }
+    }
+
+    if (similarModal) {
+      similarModal.querySelectorAll("[data-close-similar]").forEach((el) => {
+        el.addEventListener("click", closeSimilarModal);
+      });
     }
 
     // --- Actions ---
@@ -3848,6 +4873,10 @@
       });
     }
 
+    document.getElementById("btn-clear-species").addEventListener("click", () => clearAllSpecies());
+    if (btnStopBulk) btnStopBulk.addEventListener("click", () => stopBulkAdd());
+    if (btnStopBulkTree) btnStopBulkTree.addEventListener("click", () => stopBulkAdd());
+
     document.getElementById("btn-reset").addEventListener("click", async () => {
       regionFilter.checked = false;
       regionMode.value = "us_state";
@@ -3870,8 +4899,8 @@
     fillRegionSelect();
     regionFilter.checked = false;
     syncRegionControls();
-    renderSpeciesList();
     fitRegion(currentRegion().bbox);
+    renderSpeciesList();
     setupColoradoMask();
     refetchAllSpecies();
   </script>

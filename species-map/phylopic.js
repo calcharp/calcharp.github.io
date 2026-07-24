@@ -1,7 +1,9 @@
 /**
  * PhyloPic silhouette lookup (API v2).
- * Only returns images with classroom-friendly licenses:
- * CC0 / Public Domain, CC BY, CC BY-SA (no NC / ND-only / unknown).
+ * Classroom-friendly licenses only (display + link to PhyloPic):
+ * CC0 / Public Domain, CC BY, CC BY-SA, and NC variants (BY-NC, BY-NC-SA, …).
+ * Teaching use is non-commercial, so NC silhouettes (e.g. Adélie penguin) are OK.
+ * Rejects unknown / missing license hrefs.
  */
 window.PHYLOPIC_API = (() => {
   const API = "https://api.phylopic.org";
@@ -21,8 +23,8 @@ window.PHYLOPIC_API = (() => {
     if (!href) return false;
     const h = String(href).toLowerCase();
     if (h.includes("publicdomain") || h.includes("/zero/")) return true;
-    // Allow BY and BY-SA (attribution OK — we link to the PhyloPic page)
-    if (/\/licenses\/by(?:-sa)?\//.test(h)) return true;
+    // CC BY* including NC / ND (we only display + deep-link; attribution via PhyloPic)
+    if (/\/licenses\/by(?:-nc)?(?:-nd)?(?:-sa)?\//.test(h)) return true;
     return false;
   }
 
