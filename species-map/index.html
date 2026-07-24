@@ -1210,7 +1210,35 @@
      * Common-name chips and Wiki / OneZoom / PhyloPic prefer these.
      */
     function applyiNatLabels(sp) {
-      if (sp.inatCommon) sp.common = sp.inatCommon;
+      // Only adopt iNat common names when the scientific names agree.
+      if (
+        sp.inatCommon &&
+        sp.inatName &&
+        String(sp.inatName).toLowerCase() === String(sp.scientific || "").toLowerCase()
+      ) {
+        sp.common = sp.inatCommon;
+      }
+    }
+
+    /** Prefer an English vernacular from GBIF for the matched backbone taxon. */
+    async function gbifEnglishCommon(taxonKey) {
+      if (!taxonKey) return null;
+      try {
+        const r = await fetch(
+          `https://api.gbif.org/v1/species/${taxonKey}/vernacularNames?limit=40`
+        );
+        if (!r.ok) return null;
+        const results = (await r.json()).results || [];
+        const eng = results.filter((v) => {
+          const lang = String(v.language || "").toLowerCase();
+          return v.vernacularName && (!lang || lang === "eng" || lang === "en");
+        });
+        const pref = eng.find((v) => v.preferred) || eng[0];
+        const name = pref && String(pref.vernacularName || "").trim();
+        return name || null;
+      } catch {
+        return null;
+      }
     }
 
     async function resolveiNatTaxon(sp) {
@@ -1224,43 +1252,71 @@
         };
       }
       const queries = [sp.scientific, sp.common].filter(Boolean);
-      for (const q of queries) {
-        const url = new URL("https://api.inaturalist.org/v1/taxa");
+      const sciNorm = String(sp.scientific || "").toLowerCase().trim();
+      const looksBinomial = /^[a-z]+ [a-z]+/.test(sciNorm);
+      const nameEq = (t, n) => String(t.name || "").toLowerCase().trim() === n;
+
+      async function searchiNat(q, { autocomplete = false } = {}) {
+        const url = new URL(
+          autocomplete
+            ? "https://api.inaturalist.org/v1/taxa/autocomplete"
+            : "https://api.inaturalist.org/v1/taxa"
+        );
         url.searchParams.set("q", q);
-        url.searchParams.set("is_active", "true");
-        url.searchParams.set("per_page", "8");
+        if (!autocomplete) {
+          url.searchParams.set("is_active", "true");
+          url.searchParams.set("per_page", "8");
+        }
         const r = await fetch(url);
-        if (!r.ok) continue;
-        const results = (await r.json()).results || [];
-        if (!results.length) continue;
-        const qNorm = String(q || "").toLowerCase();
-        const sciNorm = String(sp.scientific || "").toLowerCase();
-        const nameEq = (t, n) => String(t.name || "").toLowerCase() === n;
-        const hit =
-          results.find((t) => nameEq(t, sciNorm)) ||
+        if (!r.ok) return [];
+        return (await r.json()).results || [];
+      }
+
+      function pickHit(results, q) {
+        if (!results.length) return null;
+        const qNorm = String(q || "").toLowerCase().trim();
+        return (
+          (sciNorm && results.find((t) => nameEq(t, sciNorm))) ||
           results.find((t) => nameEq(t, qNorm)) ||
           results.find(
             (t) =>
               t.rank === "species" &&
-              String(t.matched_term || "").toLowerCase() === qNorm
+              String(t.matched_term || "").toLowerCase().trim() === qNorm
           ) ||
-          results.find((t) => t.rank === "species") ||
-          results[0];
-        if (!hit || !hit.id) continue;
-        const name = String(hit.name || "").trim();
-        const common = String(hit.preferred_common_name || "").trim();
-        const slug = (name || sp.scientific || "taxon").replace(/\s+/g, "-");
-        sp.inatId = hit.id;
-        sp.inatSlug = slug;
-        if (name) sp.inatName = name;
-        if (common) sp.inatCommon = common;
-        applyiNatLabels(sp);
-        return {
-          id: hit.id,
-          slug,
-          name: sp.inatName || name,
-          common: sp.inatCommon || null,
-        };
+          // Loose fallback only when we don't already have a GBIF binomial —
+          // otherwise "Lynx lynx" can wrongly become Bobcat.
+          (!looksBinomial && results.find((t) => t.rank === "species")) ||
+          (!looksBinomial && results[0]) ||
+          null
+        );
+      }
+
+      for (const q of queries) {
+        // Autocomplete first for binomials — plain /taxa search ranks poorly for
+        // some scientific names (e.g. Lynx lynx → Bobcat).
+        const resultLists = looksBinomial
+          ? [await searchiNat(q, { autocomplete: true }), await searchiNat(q)]
+          : [await searchiNat(q), await searchiNat(q, { autocomplete: true })];
+        for (const results of resultLists) {
+          const hit = pickHit(results, q);
+          if (!hit || !hit.id) continue;
+          const name = String(hit.name || "").trim();
+          const common = String(hit.preferred_common_name || "").trim();
+          // Never attach an iNat taxon whose scientific name disagrees with GBIF.
+          if (sciNorm && name && name.toLowerCase() !== sciNorm) continue;
+          const slug = (name || sp.scientific || "taxon").replace(/\s+/g, "-");
+          sp.inatId = hit.id;
+          sp.inatSlug = slug;
+          if (name) sp.inatName = name;
+          if (common) sp.inatCommon = common;
+          applyiNatLabels(sp);
+          return {
+            id: hit.id,
+            slug,
+            name: sp.inatName || name,
+            common: sp.inatCommon || null,
+          };
+        }
       }
       return null;
     }
@@ -3299,15 +3355,21 @@
           setStatus(`${match.scientific} is already on the map.`);
           return;
         }
+        const gbifCommon = await gbifEnglishCommon(match.taxonKey);
+        if (runId !== fetchRunId) return;
         const sp = {
           id: `sp_${match.taxonKey}`,
-          common: match.common || match.scientific,
+          common: gbifCommon || match.common || match.scientific,
           scientific: match.scientific,
           taxonKey: match.taxonKey,
           colorKey: "extra",
         };
         ensureSpeciesStyle(sp);
         await ensurePreferredScientific(sp);
+        // If iNat didn't confirm a matching taxon, keep GBIF vernacular / scientific.
+        if (!sp.inatName || String(sp.inatName).toLowerCase() !== String(sp.scientific).toLowerCase()) {
+          sp.common = gbifCommon || match.common || match.scientific;
+        }
         if (runId !== fetchRunId) return;
         species.push(sp);
         addInput.value = "";
