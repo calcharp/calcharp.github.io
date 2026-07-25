@@ -847,6 +847,9 @@
       gap: 0.45rem;
       flex-wrap: wrap;
     }
+    .similar-top-actions {
+      margin: 0 0 0.85rem;
+    }
     .modal-meta {
       font-size: 0.8rem;
       color: rgba(28, 36, 25, 0.65);
@@ -1355,12 +1358,17 @@
         <button type="button" class="modal-close" data-close-similar aria-label="Close">×</button>
       </header>
       <p class="modal-lede" id="similar-lede">
-        Often confused on iNaturalist (same list as the Similar Species tab). Add any of these to the map.
+        Often confused on iNaturalist (same list as the Similar Species tab). Add any one, or all of them, to the map.
       </p>
+      <div class="modal-foot-actions similar-top-actions">
+        <button type="button" class="btn" id="btn-add-all-similar" title="Add every similar species not already on the map">
+          Add all
+        </button>
+        <a class="btn secondary" id="similar-inat-link" href="https://www.inaturalist.org/" target="_blank" rel="noopener">View on iNat</a>
+      </div>
       <div class="gallery-grid" id="similar-grid"></div>
       <footer class="modal-foot">
         <span class="modal-meta" id="similar-meta"></span>
-        <a class="btn secondary" id="similar-inat-link" href="https://www.inaturalist.org/" target="_blank" rel="noopener">View on iNat</a>
       </footer>
     </div>
   </div>
@@ -1391,7 +1399,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="regions.js?v=20260721f"></script>
   <script src="gbif.js?v=20260721f"></script>
-  <script src="phylopic.js?v=20260724b"></script>
+  <script src="phylopic.js?v=20260724c"></script>
   <script src="onezoom.js?v=20260721f"></script>
   <script src="opentree.js?v=20260724k"></script>
   <script src="overlays.js?v=20260721i"></script>
@@ -3714,6 +3722,39 @@
       return r.charAt(0).toUpperCase() + r.slice(1);
     }
 
+    /** iNat rank_level values (family=30 … species=10). */
+    const INAT_RANK_LEVELS = {
+      family: 30,
+      subfamily: 27,
+      supertribe: 26,
+      tribe: 25,
+      subtribe: 24,
+      genus: 20,
+      genushybrid: 20,
+      subgenus: 15,
+      section: 13,
+      subsection: 12,
+      complex: 11,
+      species: 10,
+      hybrid: 10,
+      subspecies: 5,
+      variety: 5,
+      form: 5,
+      infrahybrid: 5,
+    };
+
+    /** Family → just above species (subfamily, tribe, genus, subgenus, …). Not species or below. */
+    function isBulkAddableRank(rank) {
+      const level = INAT_RANK_LEVELS[String(rank || "").toLowerCase()];
+      return level != null && level > 10 && level <= 30;
+    }
+
+    function bulkAddButtonLabel(rank) {
+      const r = String(rank || "").toLowerCase();
+      if (!r) return "Add clade";
+      return `Add ${r}`;
+    }
+
     function appendInatTaxonNode(parentUl, node, { showArrow = false } = {}) {
       const kids = node.children || [];
       const tips = node.tips || [];
@@ -3773,16 +3814,13 @@
 
       row.appendChild(labelWrap);
 
-      if ((node.rank === "genus" || node.rank === "family") && node.id) {
+      if (isBulkAddableRank(node.rank) && node.id && !isMappedTip) {
         const addBtn = document.createElement("button");
         addBtn.type = "button";
         addBtn.className = "inat-taxon-add";
-        const short = node.rank === "family" ? "Add family" : "Add genus";
+        const short = bulkAddButtonLabel(node.rank);
         addBtn.textContent = short;
-        addBtn.title =
-          node.rank === "family"
-            ? `Add all iNaturalist species in ${node.name} to the map`
-            : `Add all iNaturalist species in ${node.name} to the map`;
+        addBtn.title = `Add all iNaturalist species in ${node.name || node.common || "this clade"} to the map`;
         addBtn.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -3834,7 +3872,7 @@
       const note2 = document.createElement("p");
       note2.className = "tree-unresolved";
       note2.textContent =
-        "Undated taxonomy from iNaturalist. Shared ranks are shown once; the tree splits where your mapped species diverge. “Add genus” / “Add family” can map every species under that clade — you’ll get a warning above 20, and Stop cancels a long run.";
+        "Undated taxonomy from iNaturalist. Shared ranks are shown once; the tree splits where your mapped species diverge. From family down to complex (genus, tribe, subfamily, …) you can add every species under that clade — you’ll get a warning above 20, and Stop cancels a long run.";
       treeBody.appendChild(note2);
 
       const n = result.tipCount || (result.lineages && result.lineages.length) || 0;
@@ -3895,7 +3933,7 @@
       }
       const rank = String(node.rank || "").toLowerCase();
       const label = node.common || node.name || rank || "clade";
-      const buttonLabel = rank === "family" ? "Add family" : "Add genus";
+      const buttonLabel = bulkAddButtonLabel(rank);
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Loading…";
@@ -4530,6 +4568,7 @@
     const similarTitle = document.getElementById("similar-title");
     const similarMeta = document.getElementById("similar-meta");
     const similarInatLink = document.getElementById("similar-inat-link");
+    const btnAddAllSimilar = document.getElementById("btn-add-all-similar");
     let similarForSp = null;
     let similarItems = [];
 
@@ -4540,15 +4579,35 @@
         .replace(/\s+/g, " ");
     }
 
+    function similarItemsNotOnMap() {
+      const onMapInat = new Set(species.map((s) => Number(s.inatId)).filter(Boolean));
+      const onMapSci = new Set(species.map((s) => tipKeySci(s.scientific)));
+      return similarItems.filter(
+        (it) =>
+          !onMapInat.has(Number(it.inatId)) && !onMapSci.has(tipKeySci(it.scientific))
+      );
+    }
+
+    function syncAddAllSimilarBtn() {
+      if (!btnAddAllSimilar) return;
+      const n = similarItemsNotOnMap().length;
+      btnAddAllSimilar.disabled = fetchBusy || bulkAddActive || !n;
+      btnAddAllSimilar.textContent = n ? `Add all (${n})` : "Add all";
+    }
+
     function closeSimilarModal() {
       similarForSp = null;
       similarItems = [];
       if (similarModal) similarModal.hidden = true;
       if (similarGrid) similarGrid.innerHTML = "";
+      syncAddAllSimilarBtn();
     }
 
     function syncSimilarCardStates() {
-      if (!similarModal || similarModal.hidden || !similarGrid) return;
+      if (!similarModal || similarModal.hidden || !similarGrid) {
+        syncAddAllSimilarBtn();
+        return;
+      }
       const onMapInat = new Set(species.map((s) => Number(s.inatId)).filter(Boolean));
       const onMapSci = new Set(species.map((s) => tipKeySci(s.scientific)));
       similarGrid.querySelectorAll(".gallery-card[data-inat-id]").forEach((card) => {
@@ -4558,9 +4617,10 @@
         card.classList.toggle("is-on-map", already);
         const addBtn = card.querySelector("[data-act='add-similar']");
         if (!addBtn) return;
-        addBtn.disabled = already || fetchBusy;
+        addBtn.disabled = already || fetchBusy || bulkAddActive;
         addBtn.textContent = already ? "On map" : "Add to map";
       });
+      syncAddAllSimilarBtn();
     }
 
     function refreshSimilarGalleryIfOpen() {
@@ -4704,6 +4764,7 @@
         similarGrid.appendChild(card);
         fillSimilarPhotoStrip(strip, item);
       });
+      syncAddAllSimilarBtn();
     }
 
     async function openSimilarSpecies(sp) {
@@ -4712,6 +4773,8 @@
         return;
       }
       similarForSp = sp;
+      similarItems = [];
+      syncAddAllSimilarBtn();
       if (similarTitle) {
         similarTitle.textContent = `Similar to ${sp.common || sp.scientific}`;
       }
@@ -4747,7 +4810,7 @@
     }
 
     async function addFromSimilar(item) {
-      if (fetchBusy || !item) return;
+      if (fetchBusy || bulkAddActive || !item) return;
       const runId = ++fetchRunId;
       beginFetch();
       syncSimilarCardStates();
@@ -4770,10 +4833,82 @@
       }
     }
 
+    async function addAllSimilarSpecies() {
+      if (fetchBusy || bulkAddActive) return;
+      const toAdd = similarItemsNotOnMap();
+      if (!toAdd.length) {
+        setStatus("All listed similar species are already on the map.");
+        syncAddAllSimilarBtn();
+        return;
+      }
+      const label = similarForSp
+        ? `similar to ${similarForSp.common || similarForSp.scientific}`
+        : "similar species";
+      if (toAdd.length > 20) {
+        const ok = window.confirm(
+          `Add ${toAdd.length} similar species to the map?\n\nThat can take a while. Continue?\n\nYou can press Stop anytime to interrupt.`
+        );
+        if (!ok) return;
+      } else if (toAdd.length > 1) {
+        const ok = window.confirm(`Add all ${toAdd.length} similar species to the map?`);
+        if (!ok) return;
+      }
+
+      const runId = ++fetchRunId;
+      beginFetch();
+      setBulkAddProgress(`Adding 0 / ${toAdd.length} ${label}…`);
+      syncSimilarCardStates();
+      let added = 0;
+      let stopped = false;
+      try {
+        for (let i = 0; i < toAdd.length; i++) {
+          if (runId !== fetchRunId) {
+            stopped = true;
+            break;
+          }
+          const item = toAdd[i];
+          setBulkAddProgress(`Adding ${i + 1} / ${toAdd.length} ${label}…`);
+          if (btnAddAllSimilar) btnAddAllSimilar.textContent = `${i + 1}/${toAdd.length}`;
+          const sp = await addMappedSpecies(
+            {
+              scientific: item.scientific,
+              common: item.common,
+              inatId: item.inatId,
+              inatName: item.scientific,
+              inatCommon: item.common,
+            },
+            { runId }
+          );
+          if (runId !== fetchRunId) {
+            stopped = true;
+            break;
+          }
+          if (sp) added += 1;
+          syncSimilarCardStates();
+        }
+        if (stopped) {
+          setStatus(
+            `Stopped after adding ${added} of ${toAdd.length} similar species. Already-mapped species stay on the list.`
+          );
+        } else {
+          setStatus(`Added ${added} similar species.`);
+        }
+      } catch (e) {
+        if (runId === fetchRunId) setStatus(formatFetchError(e), true);
+      } finally {
+        clearBulkAddProgress();
+        endFetch();
+        syncSimilarCardStates();
+      }
+    }
+
     if (similarModal) {
       similarModal.querySelectorAll("[data-close-similar]").forEach((el) => {
         el.addEventListener("click", closeSimilarModal);
       });
+    }
+    if (btnAddAllSimilar) {
+      btnAddAllSimilar.addEventListener("click", () => addAllSimilarSpecies());
     }
 
     // --- Actions ---
