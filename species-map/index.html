@@ -31,6 +31,10 @@
       display: grid;
       grid-template-columns: minmax(300px, 380px) 1fr;
       height: 100%;
+      transition: grid-template-columns 0.22s ease;
+    }
+    .shell.sidebar-collapsed {
+      grid-template-columns: 0 1fr;
     }
     aside {
       padding: 1.25rem 1.2rem;
@@ -39,6 +43,15 @@
       backdrop-filter: blur(8px);
       overflow: auto;
       z-index: 2;
+      min-width: 0;
+    }
+    .shell.sidebar-collapsed aside {
+      visibility: hidden;
+      pointer-events: none;
+      border-right: none;
+      padding-left: 0;
+      padding-right: 0;
+      overflow: hidden;
     }
     h1 {
       font-family: Fraunces, Georgia, serif;
@@ -1152,6 +1165,43 @@
       position: relative;
       min-height: 320px;
       height: 100%;
+      min-width: 0;
+    }
+    .sidebar-tab {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1100;
+      width: 1.2rem;
+      height: 3.4rem;
+      padding: 0;
+      margin: 0;
+      border: 1px solid rgba(28, 36, 25, 0.16);
+      border-left: none;
+      border-radius: 0 5px 5px 0;
+      background: var(--panel);
+      color: rgba(28, 36, 25, 0.65);
+      font: inherit;
+      font-size: 0.95rem;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 2px 0 10px rgba(28, 36, 25, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-tab:hover {
+      color: var(--sage);
+      background: #fff;
+    }
+    .sidebar-tab:focus-visible {
+      outline: 2px solid var(--sage);
+      outline-offset: 2px;
+    }
+    .shell.sidebar-collapsed .sidebar-tab {
+      border-left: 1px solid rgba(28, 36, 25, 0.16);
+      border-radius: 0 5px 5px 0;
     }
     #map { height: 100%; min-height: 320px; background: #f3efe6; }
     .leaflet-container { background: #f3efe6; }
@@ -1292,15 +1342,34 @@
 
     @media (max-width: 780px) {
       .shell { grid-template-columns: 1fr; grid-template-rows: auto 55vh; }
+      .shell.sidebar-collapsed {
+        grid-template-columns: 1fr;
+        grid-template-rows: 0 1fr;
+      }
       aside { border-right: none; border-bottom: 1px solid rgba(28,36,25,0.12); max-height: 45vh; }
+      .shell.sidebar-collapsed aside {
+        max-height: 0;
+        border-bottom: none;
+      }
+      .sidebar-tab {
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        width: 1.35rem;
+        height: 3.2rem;
+        border: 1px solid rgba(28, 36, 25, 0.16);
+        border-left: none;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 2px 0 10px rgba(28, 36, 25, 0.1);
+      }
       .viz-panel { top: 0.5rem; right: 0.5rem; width: min(280px, calc(100% - 1rem)); }
       .viz-body { max-height: min(45vh, 360px); }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside>
+  <div class="shell" id="app-shell">
+    <aside id="app-sidebar">
       <h1>Species Map Explorer</h1>
 
       <div class="add-row">
@@ -1449,6 +1518,15 @@
     </aside>
 
     <div class="map-wrap">
+      <button
+        type="button"
+        class="sidebar-tab"
+        id="btn-toggle-sidebar"
+        title="Hide sidebar"
+        aria-label="Hide sidebar"
+        aria-controls="app-sidebar"
+        aria-expanded="true"
+      >‹</button>
       <div id="map" role="application" aria-label="Species occurrence map"></div>
 
       <details class="viz-panel" id="viz-panel">
@@ -2672,6 +2750,38 @@
       attribution: "&copy; OSM &copy; CARTO | GBIF | Udvardy | WorldClim | AWS Terrain | NASA GIBS",
       maxZoom: 18,
     }).addTo(map);
+
+    const appShell = document.getElementById("app-shell");
+    const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+    function setSidebarCollapsed(collapsed) {
+      if (!appShell || !btnToggleSidebar) return;
+      appShell.classList.toggle("sidebar-collapsed", !!collapsed);
+      btnToggleSidebar.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      btnToggleSidebar.title = collapsed ? "Show sidebar" : "Hide sidebar";
+      btnToggleSidebar.setAttribute("aria-label", btnToggleSidebar.title);
+      btnToggleSidebar.textContent = collapsed ? "›" : "‹";
+      try {
+        localStorage.setItem("speciesMap.sidebarCollapsed", collapsed ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+        setTimeout(() => map.invalidateSize({ animate: false }), 240);
+      });
+    }
+    if (btnToggleSidebar) {
+      let startCollapsed = false;
+      try {
+        startCollapsed = localStorage.getItem("speciesMap.sidebarCollapsed") === "1";
+      } catch {
+        startCollapsed = false;
+      }
+      setSidebarCollapsed(startCollapsed);
+      btnToggleSidebar.addEventListener("click", () => {
+        setSidebarCollapsed(!appShell.classList.contains("sidebar-collapsed"));
+      });
+    }
 
     // Keep map from stealing scroll/drag while using the overlay panel
     const vizPanel = document.getElementById("viz-panel");
