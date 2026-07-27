@@ -2779,15 +2779,22 @@
     }
 
     // --- Map ---
+    // Allow enough zoom-out for a single polar-complete world frame; width-based
+    // multi-copy extremes are avoided in fitWorldView().
+    const MAP_MIN_ZOOM = 1.25;
+    const BERING_STRAIT_LNG = -169;
     const map = L.map("map", {
       zoomControl: true,
-      minZoom: 2,
+      minZoom: MAP_MIN_ZOOM,
+      zoomSnap: 0.25,
+      zoomDelta: 0.5,
       wheelPxPerZoomLevel: 120,
       worldCopyJump: true,
     });
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution: "&copy; OSM &copy; CARTO | GBIF | Udvardy | WorldClim | AWS Terrain | NASA GIBS",
       maxZoom: 18,
+      minZoom: 0,
     }).addTo(map);
 
     const appShell = document.getElementById("app-shell");
@@ -2903,15 +2910,22 @@
       const bbox = DEFAULT_MAP_BBOX;
       const bounds = L.latLngBounds([bbox[1], bbox[0]], [bbox[3], bbox[2]]);
       map.setMaxBounds(null);
-      map.setMinZoom(2);
+      map.setMinZoom(MAP_MIN_ZOOM);
       map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6 });
     }
 
-    /** Pacific-centered whole-world frame (ocean continuity easier to read than Atlantic-centered). */
+    /** Whole-world frame centered on the Bering Strait; zoom from height so poles fit. */
     function fitWorldView() {
       map.setMaxBounds(null);
-      map.setMinZoom(2);
-      map.setView([8, 150], 2, { animate: true });
+      map.setMinZoom(MAP_MIN_ZOOM);
+      const size = map.getSize();
+      const heightPx = Math.max(size.y, 1);
+      // Web Mercator world is square in pixels; size zoom so ±~85° fits vertically
+      // with a little margin so northern Greenland isn’t flush-clipped.
+      let z = Math.log2(heightPx / (256 * 1.12));
+      z = Math.round(z * 4) / 4;
+      z = Math.min(2.75, Math.max(MAP_MIN_ZOOM, z));
+      map.setView([0, BERING_STRAIT_LNG], z, { animate: true });
     }
 
     const WorldViewControl = L.Control.extend({
