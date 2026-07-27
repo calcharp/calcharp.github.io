@@ -2914,18 +2914,18 @@
       map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6 });
     }
 
-    /** Whole-world frame centered on the Bering Strait; zoom from height so poles fit. */
+    /** Whole-world frame centered on the Bering Strait; zoom so mercator top meets the viewport top. */
     function fitWorldView() {
       map.setMaxBounds(null);
       map.setMinZoom(MAP_MIN_ZOOM);
-      const size = map.getSize();
-      const heightPx = Math.max(size.y, 1);
-      // Web Mercator world is square in pixels; size zoom so ±~85° fits vertically
-      // with a little margin so northern Greenland isn’t flush-clipped.
-      let z = Math.log2(heightPx / (256 * 1.12));
-      z = Math.round(z * 4) / 4;
+      const heightPx = Math.max(map.getSize().y, 1);
+      // Exact fit: one Web Mercator world tall (= 256·2^z px) matches the map height.
+      let z = Math.log2(heightPx / 256);
       z = Math.min(2.75, Math.max(MAP_MIN_ZOOM, z));
+      const prevSnap = map.options.zoomSnap;
+      map.options.zoomSnap = 0;
       map.setView([0, BERING_STRAIT_LNG], z, { animate: true });
+      map.options.zoomSnap = prevSnap;
     }
 
     const WorldViewControl = L.Control.extend({
@@ -2937,7 +2937,7 @@
         );
         const link = L.DomUtil.create("a", "", container);
         link.href = "#";
-        link.title = "Zoom to whole world (Pacific-centered)";
+        link.title = "Zoom to whole world (Bering Strait–centered)";
         link.setAttribute("role", "button");
         link.setAttribute("aria-label", "Zoom to whole world (Pacific-centered)");
         link.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="3.5" ry="9" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.2 12h17.6M5.2 7.2h13.6M5.2 16.8h13.6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>`;
