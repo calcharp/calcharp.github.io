@@ -101,8 +101,9 @@ window.INAT_TAXONOMY = (() => {
 
   /**
    * Similar species — same endpoint as iNat’s Similar Species tab.
+   * @param {{ perPage?: number, excludeExtinct?: boolean }} [opts]
    */
-  async function similarSpecies(inatId, { perPage = 12 } = {}) {
+  async function similarSpecies(inatId, { perPage = 12, excludeExtinct = true } = {}) {
     const id = Number(inatId);
     if (!Number.isFinite(id)) return [];
     const url = new URL(`${BASE}/identifications/similar_species`);
@@ -113,6 +114,7 @@ window.INAT_TAXONOMY = (() => {
     for (const row of data.results || []) {
       const t = row.taxon || row;
       if (!t || !t.id || !t.name) continue;
+      if (excludeExtinct && t.extinct) continue;
       const rank = String(t.rank || "").toLowerCase();
       if (rank && !["species", "subspecies", "variety", "form"].includes(rank)) continue;
       if (seen.has(t.id)) continue;
@@ -126,6 +128,7 @@ window.INAT_TAXONOMY = (() => {
         count: Number(row.count) || 0,
         photo,
         rank: rank || "species",
+        extinct: !!t.extinct,
       });
       if (items.length >= perPage) break;
     }
@@ -198,16 +201,18 @@ window.INAT_TAXONOMY = (() => {
   /**
    * Active species (and optionally subspecies) under a higher taxon (e.g. genus).
    * Uses the same taxon_id + rank filter as iNat’s taxonomy browsing.
+   * @param {{ max?: number, excludeExtinct?: boolean }} [opts]
    */
-  async function speciesUnderTaxon(taxonId, { max = 2000 } = {}) {
+  async function speciesUnderTaxon(taxonId, { max = 2000, excludeExtinct = true } = {}) {
     const id = Number(taxonId);
     if (!Number.isFinite(id)) return { items: [], total: 0 };
     const items = [];
     const seen = new Set();
     let page = 1;
     let total = Infinity;
+    let skippedExtinct = 0;
     const perPage = 100;
-    while (items.length < max && items.length < total) {
+    while (items.length < max && items.length + skippedExtinct < total) {
       const url = new URL(`${BASE}/taxa`);
       url.searchParams.set("taxon_id", String(id));
       url.searchParams.set("rank", "species");
@@ -224,12 +229,17 @@ window.INAT_TAXONOMY = (() => {
         if (!t || !t.id || !t.name) continue;
         if (seen.has(t.id)) continue;
         seen.add(t.id);
+        if (excludeExtinct && t.extinct) {
+          skippedExtinct += 1;
+          continue;
+        }
         items.push({
           inatId: Number(t.id),
           scientific: String(t.name).trim(),
           common: String(t.preferred_common_name || "").trim(),
           rank: String(t.rank || "species").toLowerCase(),
           observations: Number(t.observations_count) || 0,
+          extinct: !!t.extinct,
         });
         if (items.length >= max) break;
       }
@@ -237,7 +247,11 @@ window.INAT_TAXONOMY = (() => {
       page += 1;
       if (page > 50) break;
     }
-    return { items, total: Number.isFinite(total) ? total : items.length };
+    return {
+      items,
+      total: Number.isFinite(total) ? total : items.length,
+      skippedExtinct,
+    };
   }
 
   return {

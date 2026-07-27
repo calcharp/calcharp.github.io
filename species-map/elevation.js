@@ -74,6 +74,7 @@ window.ELEVATION_TILES = (() => {
         maxNativeZoom: 15,
         opacity: 0.7,
         theme: "default",
+        noWrap: false,
         attribution:
           'Elevation <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">AWS Terrain Tiles</a> (Mapzen Terrarium)',
       },
@@ -86,9 +87,12 @@ window.ELEVATION_TILES = (() => {
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         const theme = this.options.theme || "default";
 
+        // Leaflet asks for world-copy tiles with x outside 0…2^z−1; wrap for the DEM URL
+        const tileRange = Math.pow(2, coords.z);
+        const tileX = ((coords.x % tileRange) + tileRange) % tileRange;
         const url = L.Util.template(TILE_URL, {
           z: coords.z,
-          x: coords.x,
+          x: tileX,
           y: coords.y,
         });
 

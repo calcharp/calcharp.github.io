@@ -1,9 +1,81 @@
 /** GBIF occurrence helpers for classroom map app. */
 (function () {
   const GBIF = "https://api.gbif.org/v1";
+  /** Soft ceiling on concurrent GBIF HTTP calls (shared across the page). */
+  let GBIF_MAX_INFLIGHT = 3;
+  let gbifInflight = 0;
+  const gbifWaiters = [];
+  /** After a 429/503, pause new GBIF requests until this timestamp. */
+  let gbifCooldownUntil = 0;
+  const matchCache = new Map();
+
+  function setMaxInflight(n) {
+    GBIF_MAX_INFLIGHT = Math.max(1, Math.min(8, Number(n) || 3));
+    while (gbifWaiters.length && gbifInflight < GBIF_MAX_INFLIGHT) {
+      gbifInflight += 1;
+      const resolve = gbifWaiters.shift();
+      if (resolve) resolve();
+    }
+  }
 
   function sleep(ms) {
     return new Promise((res) => setTimeout(res, ms));
+  }
+
+  function acquireGbifSlot() {
+    if (gbifInflight < GBIF_MAX_INFLIGHT) {
+      gbifInflight += 1;
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      gbifWaiters.push(resolve);
+    });
+  }
+
+  function releaseGbifSlot() {
+    gbifInflight = Math.max(0, gbifInflight - 1);
+    if (gbifWaiters.length && gbifInflight < GBIF_MAX_INFLIGHT) {
+      gbifInflight += 1;
+      const next = gbifWaiters.shift();
+      if (next) next();
+    }
+  }
+
+  /**
+   * fetch() wrapper with a global concurrency cap and Retry-After backoff on 429/503.
+   */
+  async function gbifFetchJson(url, { retries = 6 } = {}) {
+    let lastErr = null;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      await acquireGbifSlot();
+      try {
+        const cool = gbifCooldownUntil - Date.now();
+        if (cool > 0) await sleep(cool);
+        const r = await fetch(url);
+        if (r.status === 429 || r.status === 503) {
+          const ra = Number(r.headers.get("Retry-After"));
+          const delay = Number.isFinite(ra) && ra > 0
+            ? Math.min(30000, ra * 1000)
+            : Math.min(12000, 400 * 2 ** attempt + Math.random() * 200);
+          gbifCooldownUntil = Date.now() + delay;
+          lastErr = new Error(`GBIF rate limited (${r.status}). Retrying…`);
+          continue;
+        }
+        if (!r.ok) throw new Error(`GBIF request failed (${r.status})`);
+        return await r.json();
+      } catch (e) {
+        lastErr = e;
+        // Network blips: brief backoff then retry
+        if (attempt < retries && /failed to fetch|networkerror|load failed/i.test(String(e && e.message))) {
+          await sleep(300 * 2 ** attempt);
+          continue;
+        }
+        throw e;
+      } finally {
+        releaseGbifSlot();
+      }
+    }
+    throw lastErr || new Error("GBIF request failed after retries.");
   }
 
   /** First still image from a GBIF occurrence, sized for map popups when possible. */
@@ -56,16 +128,6 @@
       source_url: `https://www.gbif.org/occurrence/${o.key}`,
       source_name: "GBIF occurrence",
     };
-  }
-
-  function dedupe(rows) {
-    const seen = new Set();
-    return rows.filter((row) => {
-      const k = `${row.lat.toFixed(5)},${row.lon.toFixed(5)}`;
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
   }
 
   function normalizeLabel(s) {
@@ -140,9 +202,7 @@
   async function matchScientific(name) {
     const url = new URL(`${GBIF}/species/match`);
     url.searchParams.set("name", name);
-    const r = await fetch(url);
-    if (!r.ok) throw new Error("Species match failed");
-    return r.json();
+    return gbifFetchJson(url.toString());
   }
 
   function preferredVernacular(item) {
@@ -272,10 +332,12 @@
     async function runSearch(params) {
       const url = new URL(`${GBIF}/species/search`);
       Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-      const r = await fetch(url);
-      if (!r.ok) return [];
-      const j = await r.json();
-      return j.results || [];
+      try {
+        const j = await gbifFetchJson(url.toString());
+        return j.results || [];
+      } catch {
+        return [];
+      }
     }
 
     // Prefer vernacular field, then general search
@@ -333,6 +395,8 @@
   async function matchSpecies(name) {
     const query = String(name || "").trim();
     if (!query) throw new Error("Enter a species name");
+    const cacheKey = normalizeLabel(query);
+    if (matchCache.has(cacheKey)) return matchCache.get(cacheKey);
 
     const binomial = looksLikeBinomial(query);
     const j = await matchScientific(query);
@@ -346,37 +410,61 @@
 
     // True scientific names: trust GBIF backbone first
     if (binomial && solid) {
-      return resultFromMatch(j, query, j.matchType);
+      const out = resultFromMatch(j, query, j.matchType);
+      matchCache.set(cacheKey, out);
+      return out;
     }
 
     // Common names / typos: iNat first, then GBIF vernacular ranking
     try {
       const viaInat = await searchByiNat(query);
-      if (viaInat) return viaInat;
+      if (viaInat) {
+        matchCache.set(cacheKey, viaInat);
+        return viaInat;
+      }
     } catch {
       /* fall through */
     }
 
     const viaCommon = await searchByCommonName(query);
-    if (viaCommon) return viaCommon;
+    if (viaCommon) {
+      matchCache.set(cacheKey, viaCommon);
+      return viaCommon;
+    }
 
-    if (solid) return resultFromMatch(j, query, j.matchType);
+    if (solid) {
+      const out = resultFromMatch(j, query, j.matchType);
+      matchCache.set(cacheKey, out);
+      return out;
+    }
 
     if (j.usageKey && j.matchType && j.matchType !== "NONE") {
-      return resultFromMatch(j, query, j.matchType);
+      const out = resultFromMatch(j, query, j.matchType);
+      matchCache.set(cacheKey, out);
+      return out;
     }
 
     throw new Error(`No GBIF match for “${query}”`);
   }
 
-  async function fetchPage({
-    taxonKey,
-    country,
-    stateProvince,
-    yearMin,
-    offset,
-    limit,
-  }) {
+  /** Fast path for known scientific names (bulk taxonomy / similar species). */
+  async function matchScientificName(name) {
+    const query = String(name || "").trim();
+    if (!query) throw new Error("Enter a species name");
+    const cacheKey = `sci:${normalizeLabel(query)}`;
+    if (matchCache.has(cacheKey)) return matchCache.get(cacheKey);
+    const j = await matchScientific(query);
+    if (!j.usageKey || j.matchType === "NONE") {
+      // Fall back to the fuller matcher for odd names
+      return matchSpecies(query);
+    }
+    const out = resultFromMatch(j, query, j.matchType || "EXACT");
+    matchCache.set(cacheKey, out);
+    matchCache.set(normalizeLabel(query), out);
+    return out;
+  }
+
+  async function fetchPage({ taxonKey, yearMin, offset, limit, basisOfRecord = null }) {
     const url = new URL(`${GBIF}/occurrence/search`);
     url.searchParams.set("taxonKey", String(taxonKey));
     url.searchParams.set("hasCoordinate", "true");
@@ -385,177 +473,168 @@
     url.searchParams.set("limit", String(Math.min(300, limit)));
     url.searchParams.set("offset", String(offset));
     url.searchParams.set("year", `${yearMin},2030`);
-    if (country) url.searchParams.set("country", country);
-    if (stateProvince) url.searchParams.set("stateProvince", stateProvince);
-
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`GBIF search failed (${r.status})`);
-    return r.json();
+    const bases = Array.isArray(basisOfRecord)
+      ? basisOfRecord.filter(Boolean)
+      : basisOfRecord
+        ? [basisOfRecord]
+        : [];
+    bases.forEach((b) => url.searchParams.append("basisOfRecord", String(b)));
+    return gbifFetchJson(url.toString());
   }
 
   async function fetchOccurrencesFlat({
     taxonKey,
-    country,
-    stateProvince,
     maxRecords,
     yearMin,
     onProgress,
+    onBatch,
+    shouldParallelPages,
+    basisOfRecord = null,
   }) {
+    const pageSize = 300; // GBIF hard max per request
     const rows = [];
-    let offset = 0;
-    while (rows.length < maxRecords) {
-      const need = maxRecords - rows.length;
+    const seen = new Set();
+    const allowed =
+      Array.isArray(basisOfRecord) && basisOfRecord.length
+        ? new Set(basisOfRecord.map((b) => String(b).toUpperCase()))
+        : null;
+
+    function ingestPage(j) {
+      const results = j.results || [];
+      const batch = [];
+      for (const o of results) {
+        if (allowed) {
+          const basis = String(o.basisOfRecord || "").toUpperCase();
+          if (basis && !allowed.has(basis)) continue;
+        }
+        const rec = recordFromOccurrence(o);
+        if (!rec) continue;
+        const k = `${rec.lat.toFixed(5)},${rec.lon.toFixed(5)}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        batch.push(rec);
+        rows.push(rec);
+        if (rows.length >= maxRecords) break;
+      }
+      if (batch.length && onBatch) onBatch(batch, rows.length);
+      if (onProgress) onProgress(rows.length, Math.min(maxRecords, j.count || rows.length));
+      return results.length;
+    }
+
+    // First page: get count + initial points
+    const first = await fetchPage({
+      taxonKey,
+      yearMin,
+      offset: 0,
+      limit: Math.min(pageSize, maxRecords),
+      basisOfRecord,
+    });
+    const got = ingestPage(first);
+    if (!got || rows.length >= maxRecords) {
+      return rows.slice(0, maxRecords);
+    }
+
+    const totalAvailable = Number(first.count) || 0;
+    const target = Math.min(maxRecords, totalAvailable || maxRecords);
+    if (got >= target || (totalAvailable && got >= totalAvailable)) {
+      return rows.slice(0, maxRecords);
+    }
+
+    // Decide after the first round-trip so bulk jobs (3 species already
+    // in flight) stay sequential-per-species under the shared slot cap.
+    const parallelPages =
+      typeof shouldParallelPages === "function" ? !!shouldParallelPages() : !!shouldParallelPages;
+
+    if (parallelPages) {
+      const offsets = [];
+      for (let offset = pageSize; offset < target; offset += pageSize) {
+        offsets.push(offset);
+      }
+      if (offsets.length) {
+        await mapPool(offsets, offsets.length, async (offset) => {
+          if (rows.length >= maxRecords) return;
+          const need = Math.min(pageSize, target - offset);
+          if (need <= 0) return;
+          const j = await fetchPage({
+            taxonKey,
+            yearMin,
+            offset,
+            limit: need,
+            basisOfRecord,
+          });
+          if (rows.length < maxRecords) ingestPage(j);
+        });
+      }
+      return rows.slice(0, maxRecords);
+    }
+
+    let offset = pageSize;
+    while (rows.length < maxRecords && offset < target) {
+      const need = Math.min(pageSize, target - offset);
       const j = await fetchPage({
         taxonKey,
-        country,
-        stateProvince,
         yearMin,
         offset,
         limit: need,
+        basisOfRecord,
       });
-      const results = j.results || [];
-      if (!results.length) break;
-      for (const o of results) {
-        const rec = recordFromOccurrence(o);
-        if (rec) rows.push(rec);
-        if (rows.length >= maxRecords) break;
-      }
-      offset += results.length;
-      if (onProgress) onProgress(rows.length, j.count || rows.length);
-      if (offset >= (j.count || 0)) break;
-      await sleep(120);
+      const n = ingestPage(j);
+      if (!n) break;
+      offset += n;
+      if (totalAvailable && offset >= totalAvailable) break;
     }
-    return dedupe(rows).slice(0, maxRecords);
+    return rows.slice(0, maxRecords);
   }
 
-  async function countriesWithData(taxonKey, yearMin) {
-    const url = new URL(`${GBIF}/occurrence/search`);
-    url.searchParams.set("taxonKey", String(taxonKey));
-    url.searchParams.set("hasCoordinate", "true");
-    url.searchParams.set("hasGeospatialIssue", "false");
-    url.searchParams.set("occurrenceStatus", "PRESENT");
-    url.searchParams.set("limit", "0");
-    url.searchParams.set("year", `${yearMin},2030`);
-    url.searchParams.set("facet", "country");
-    url.searchParams.set("facetLimit", "250");
-
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`GBIF facet failed (${r.status})`);
-    const j = await r.json();
-    const counts = j.facets?.find((f) => f.field === "COUNTRY")?.counts || [];
-    return counts
-      .filter((c) => c.count > 0)
-      .map((c) => ({ country: c.name, count: c.count }))
-      .sort((a, b) => b.count - a.count);
-  }
-
-  async function fetchOccurrencesStratified({
-    taxonKey,
-    stateProvince,
-    maxRecords,
-    yearMin,
-    onProgress,
-  }) {
-    // If limited to a US state, stratification doesn't apply — flat fetch
-    if (stateProvince) {
-      return fetchOccurrencesFlat({
-        taxonKey,
-        country: "US",
-        stateProvince,
-        maxRecords,
-        yearMin,
-        onProgress,
-      });
-    }
-
-    const countries = await countriesWithData(taxonKey, yearMin);
-    if (!countries.length) return [];
-
-    const perCountry = Math.max(1, Math.ceil(maxRecords / countries.length));
-    const rows = [];
-    let doneCountries = 0;
-
-    for (const { country, count } of countries) {
-      if (rows.length >= maxRecords) break;
-      const quota = Math.min(perCountry, count, maxRecords - rows.length);
-      const batch = await fetchOccurrencesFlat({
-        taxonKey,
-        country,
-        maxRecords: quota,
-        yearMin,
-        onProgress: (n) => {
-          if (onProgress) {
-            onProgress(
-              rows.length + n,
-              maxRecords,
-              `${country} (${doneCountries + 1}/${countries.length})`
-            );
-          }
-        },
-      });
-      rows.push(...batch);
-      doneCountries += 1;
-      await sleep(100);
-    }
-
-    // If under max because some countries had few records, top up from the richest countries
-    if (rows.length < maxRecords && countries.length) {
-      const stillNeed = maxRecords - rows.length;
-      const top = countries[0].country;
-      const extra = await fetchOccurrencesFlat({
-        taxonKey,
-        country: top,
-        maxRecords: stillNeed + 50,
-        yearMin,
-      });
-      rows.push(...extra);
-    }
-
-    return dedupe(rows).slice(0, maxRecords);
-  }
+  /** How many species occurrence loads are in flight (for page-parallel decisions). */
+  let activeOccurrenceFetches = 0;
 
   async function fetchOccurrences(opts) {
     const {
       taxonKey,
-      country,
-      stateProvince,
       maxRecords = 1000,
       yearMin = 2000,
-      stratifyByCountry = false,
       onProgress,
+      onBatch,
+      basisOfRecord = null,
     } = opts;
 
     const capped = Math.max(1, Math.min(5000, Number(maxRecords) || 1000));
-
-    // Regional filter already set → flat search in that place
-    if (country || stateProvince) {
-      return fetchOccurrencesFlat({
-        taxonKey,
-        country,
-        stateProvince,
-        maxRecords: capped,
-        yearMin,
-        onProgress,
-      });
-    }
-
-    // Global
-    if (stratifyByCountry) {
-      return fetchOccurrencesStratified({
+    activeOccurrenceFetches += 1;
+    try {
+      return await fetchOccurrencesFlat({
         taxonKey,
         maxRecords: capped,
         yearMin,
         onProgress,
+        onBatch,
+        basisOfRecord,
+        // Only fan out pages when this species is alone — bulk adds of
+        // dozens/hundreds already keep the global HTTP slots busy.
+        shouldParallelPages: () => activeOccurrenceFetches === 1,
       });
+    } finally {
+      activeOccurrenceFetches = Math.max(0, activeOccurrenceFetches - 1);
     }
-
-    return fetchOccurrencesFlat({
-      taxonKey,
-      maxRecords: capped,
-      yearMin,
-      onProgress,
-    });
   }
 
-  window.GBIF_API = { matchSpecies, fetchOccurrences };
+  /**
+   * Run async work over items with a fixed concurrency (order of results matches input).
+   */
+  async function mapPool(items, concurrency, fn) {
+    const list = items || [];
+    const limit = Math.max(1, Math.min(concurrency || 1, list.length || 1));
+    const out = new Array(list.length);
+    let next = 0;
+    async function worker() {
+      while (next < list.length) {
+        const i = next++;
+        out[i] = await fn(list[i], i);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(limit, list.length) }, () => worker()));
+    return out;
+  }
+
+  window.GBIF_API = { matchSpecies, matchScientificName, fetchOccurrences, mapPool, setMaxInflight };
 })();

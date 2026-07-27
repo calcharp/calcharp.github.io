@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Species map explorer — GBIF</title>
+  <title>Species Map Explorer — GBIF</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
@@ -44,14 +44,8 @@
       font-family: Fraunces, Georgia, serif;
       font-size: clamp(1.3rem, 2vw, 1.65rem);
       line-height: 1.15;
-      margin: 0 0 0.3rem;
+      margin: 0 0 0.85rem;
       letter-spacing: -0.02em;
-    }
-    .lede {
-      margin: 0 0 0.9rem;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      color: rgba(28, 36, 25, 0.75);
     }
     .section-label {
       font-size: 0.68rem;
@@ -81,6 +75,51 @@
       color: rgba(28, 36, 25, 0.65);
       margin: 0.35rem 0 0.2rem;
     }
+    label.field.check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.45rem;
+      margin-top: 0.65rem;
+      line-height: 1.35;
+      cursor: pointer;
+    }
+    label.field.check input {
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+      accent-color: var(--sage);
+    }
+    .basis-block {
+      margin-top: 0.75rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid rgba(28, 36, 25, 0.1);
+    }
+    .basis-block > .field {
+      margin-bottom: 0.35rem;
+    }
+    .basis-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+    }
+    .basis-checks label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: rgba(28, 36, 25, 0.72);
+      line-height: 1.3;
+      cursor: pointer;
+    }
+    .basis-checks input {
+      margin-top: 0.12rem;
+      flex-shrink: 0;
+      accent-color: var(--sage);
+    }
+    .basis-checks .basis-note {
+      font-size: 0.72rem;
+      color: rgba(28, 36, 25, 0.5);
+      font-weight: 400;
+    }
     select, input[type="text"], input[type="number"] {
       width: 100%;
       font: inherit;
@@ -100,31 +139,29 @@
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      margin: 0.35rem 0;
-    }
-    .species-list-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin: 0 0 0.45rem;
-    }
-    .species-list-actions .btn {
-      font-size: 0.78rem;
-      padding: 0.28rem 0.55rem;
+      margin: 0.55rem 0 0.15rem;
+      max-height: min(40vh, 280px);
+      overflow: auto;
     }
     .bulk-add-bar {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.65rem;
+      flex-direction: column;
+      gap: 0.4rem;
       margin: 0.45rem 0 0.15rem;
-      padding: 0.45rem 0.55rem;
-      border: 1px solid rgba(139, 46, 26, 0.35);
-      background: rgba(196, 92, 38, 0.12);
+      padding: 0.5rem 0.55rem;
+      border: 1px solid rgba(28, 36, 25, 0.12);
+      background: rgba(255, 255, 255, 0.45);
       font-size: 0.82rem;
       color: var(--ink);
     }
     .bulk-add-bar[hidden] {
       display: none !important;
+    }
+    .bulk-add-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
     }
     .bulk-add-bar .btn,
     #btn-stop-bulk-tree {
@@ -556,7 +593,7 @@
     }
     .btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
     .data-actions { margin-top: 0.45rem; }
-    .data-actions .btn { flex: 1; min-width: 0; font-size: 0.82rem; padding: 0.45rem 0.55rem; }
+    .data-actions .btn { flex: 1; min-width: 0; font-size: 0.78rem; padding: 0.45rem 0.4rem; }
 
     .modal[hidden] { display: none !important; }
     .modal {
@@ -591,11 +628,51 @@
       gap: 0.75rem;
       margin-bottom: 0.35rem;
     }
+    .modal-head-start {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+    .modal-head-start h2 {
+      min-width: 0;
+    }
+    .modal-back {
+      flex-shrink: 0;
+      border: 1px solid rgba(28, 36, 25, 0.18);
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink);
+      font: inherit;
+      font-size: 1.05rem;
+      line-height: 1;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 2px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .modal-back:hover {
+      border-color: var(--sage);
+      color: var(--sage);
+    }
     .modal-head h2 {
       font-family: Fraunces, Georgia, serif;
       font-size: 1.35rem;
       margin: 0;
       letter-spacing: -0.02em;
+    }
+    .modal-search {
+      margin: 0.35rem 0 0.75rem;
+    }
+    .modal-search .add-suggest-wrap {
+      width: 100%;
+    }
+    .gallery-card.is-search-hit {
+      outline: 2px solid var(--sage);
+      outline-offset: 2px;
+    }
+    .gallery-card.is-search-hidden {
+      display: none !important;
     }
     .modal-close {
       border: none;
@@ -862,6 +939,42 @@
       line-height: 1.35;
     }
     .status.error { color: #8b2e1a; }
+    .fetch-progress {
+      margin-top: 0.55rem;
+      padding: 0.5rem 0.55rem;
+      border: 1px solid rgba(28, 36, 25, 0.1);
+      background: rgba(255, 255, 255, 0.45);
+    }
+    .fetch-progress[hidden] {
+      display: none !important;
+    }
+    .fetch-progress-label {
+      font-size: 0.78rem;
+      color: rgba(28, 36, 25, 0.65);
+      margin-bottom: 0.4rem;
+    }
+    .fetch-progress-track {
+      height: 0.35rem;
+      border-radius: 999px;
+      background: rgba(28, 36, 25, 0.1);
+      overflow: hidden;
+    }
+    .fetch-progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--sage);
+      transition: width 0.25s ease;
+    }
+    .fetch-progress.is-indeterminate .fetch-progress-fill,
+    .bulk-add-bar.is-indeterminate .fetch-progress-fill {
+      width: 35%;
+      animation: fetch-progress-slide 1.1s ease-in-out infinite;
+    }
+    @keyframes fetch-progress-slide {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(320%); }
+    }
     .control-row {
       display: flex;
       align-items: center;
@@ -971,14 +1084,16 @@
       font-weight: 400;
     }
     .advanced,
-    .about {
+    .about,
+    .help {
       margin-top: 0.75rem;
       border: 1px solid rgba(28, 36, 25, 0.12);
       border-radius: 2px;
       background: rgba(255,255,255,0.35);
     }
     .advanced > summary,
-    .about > summary {
+    .about > summary,
+    .help > summary {
       cursor: pointer;
       list-style: none;
       padding: 0.55rem 0.65rem;
@@ -988,24 +1103,30 @@
       user-select: none;
     }
     .advanced > summary::-webkit-details-marker,
-    .about > summary::-webkit-details-marker { display: none; }
+    .about > summary::-webkit-details-marker,
+    .help > summary::-webkit-details-marker { display: none; }
     .advanced > summary::before,
-    .about > summary::before {
+    .about > summary::before,
+    .help > summary::before {
       content: "▸ ";
       display: inline-block;
       transition: transform 0.15s ease;
     }
     .advanced[open] > summary::before,
-    .about[open] > summary::before { transform: rotate(90deg); }
+    .about[open] > summary::before,
+    .help[open] > summary::before { transform: rotate(90deg); }
     .advanced-body,
-    .about-body { padding: 0 0.65rem 0.75rem; }
+    .about-body,
+    .help-body { padding: 0 0.65rem 0.75rem; }
     .advanced .section-label { margin-top: 0.55rem; }
-    .about-body {
+    .about-body,
+    .help-body {
       font-size: 0.78rem;
       line-height: 1.45;
       color: rgba(28, 36, 25, 0.78);
     }
-    .about-body p { margin: 0.35rem 0 0.55rem; }
+    .about-body p,
+    .help-body p { margin: 0.35rem 0 0.55rem; }
     .about-body h3 {
       margin: 0.55rem 0 0.25rem;
       font-size: 0.72rem;
@@ -1019,6 +1140,7 @@
       padding-left: 1.1rem;
     }
     .about-body li { margin: 0.2rem 0; }
+    .help-body a { color: var(--sage); }
 
     .note-co {
       font-size: 0.75rem;
@@ -1179,19 +1301,8 @@
 <body>
   <div class="shell">
     <aside>
-      <h1>Species map explorer</h1>
-      <p class="lede">
-        Add a species to map its GBIF occurrences worldwide.
-        Defaults: American pika · black-tailed prairie dog.
-      </p>
+      <h1>Species Map Explorer</h1>
 
-      <p class="section-label">Species</p>
-      <div class="species-list" id="species-list"></div>
-      <div class="species-list-actions">
-        <button type="button" class="btn secondary" id="btn-clear-species" title="Remove every species from the list and map">
-          Clear all
-        </button>
-      </div>
       <div class="add-row">
         <div class="add-suggest-wrap">
           <input
@@ -1212,40 +1323,78 @@
         <button type="button" class="btn secondary" id="btn-gallery">Species gallery</button>
         <button type="button" class="btn secondary" id="btn-tree">Taxonomy</button>
         <button type="button" class="btn secondary" id="btn-export">Export CSV</button>
+        <button type="button" class="btn secondary" id="btn-clear-species" title="Remove every mapped taxon from the list and map">
+          Clear all
+        </button>
+      </div>
+      <div class="species-list" id="species-list"></div>
+      <div class="fetch-progress" id="fetch-progress" hidden>
+        <div class="fetch-progress-label" id="fetch-progress-label">Loading map data…</div>
+        <div class="fetch-progress-track" id="fetch-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="fetch-progress-fill" id="fetch-progress-fill"></div>
+        </div>
       </div>
       <div class="bulk-add-bar" id="bulk-add-bar" hidden>
-        <span id="bulk-add-label">Adding species…</span>
-        <button type="button" class="btn" id="btn-stop-bulk" title="Stop adding more species">Stop</button>
+        <div class="bulk-add-row">
+          <span id="bulk-add-label">Adding species…</span>
+          <button type="button" class="btn" id="btn-stop-bulk" title="Stop adding more species">Stop</button>
+        </div>
+        <div class="fetch-progress-track" id="bulk-add-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="fetch-progress-fill" id="bulk-add-fill"></div>
+        </div>
       </div>
       <div class="status" id="status" aria-live="polite"></div>
 
       <details class="advanced">
         <summary>Advanced options</summary>
         <div class="advanced-body">
-          <label class="layer" style="margin-bottom:0.35rem">
-            <input type="checkbox" id="region-filter" />
-            <span>Limit search to a region</span>
-          </label>
-          <div class="row-2" id="region-controls" hidden>
-            <div>
-              <label class="field" for="region-mode">Type</label>
-              <select id="region-mode">
-                <option value="us_state">US state</option>
-                <option value="country">Country</option>
-              </select>
-            </div>
-            <div>
-              <label class="field" for="region-select">Place</label>
-              <select id="region-select"></select>
-            </div>
-          </div>
-
           <label class="field" for="sample-size">Number of examples (per species)</label>
           <input type="number" id="sample-size" min="50" max="5000" step="50" value="1000" />
-          <label class="layer" style="margin-top:0.45rem">
-            <input type="checkbox" id="stratify-country" />
-            <span>Stratify by country (better global coverage)</span>
+          <label class="field check" for="exclude-extinct">
+            <input type="checkbox" id="exclude-extinct" checked />
+            <span>Prevent extinct taxon matching in taxonomic and similarity searches</span>
           </label>
+          <label class="field check" for="species-rank-only">
+            <input type="checkbox" id="species-rank-only" checked />
+            <span>Limit searches to match at the species level</span>
+          </label>
+          <div class="basis-block" id="basis-of-record-block">
+            <div class="field">Allowed observation types</div>
+            <div class="basis-checks">
+              <label>
+                <input type="checkbox" data-basis="HUMAN_OBSERVATION" checked />
+                <span>Human observations</span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="MACHINE_OBSERVATION" checked />
+                <span>Machine observations</span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="MATERIAL_SAMPLE" />
+                <span>Material samples</span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="MATERIAL_CITATION" />
+                <span>Material citations</span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="OCCURRENCE" checked />
+                <span>Generic occurrences</span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="PRESERVED_SPECIMEN" />
+                <span>Preserved specimens <span class="basis-note">(museums / herbaria)</span></span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="LIVING_SPECIMEN" />
+                <span>Living specimens <span class="basis-note">(zoos / gardens)</span></span>
+              </label>
+              <label>
+                <input type="checkbox" data-basis="FOSSIL_SPECIMEN" />
+                <span>Fossil specimens</span>
+              </label>
+            </div>
+          </div>
         </div>
       </details>
 
@@ -1263,6 +1412,20 @@
             They don’t “run out” of years — WorldClim 2.1’s free global climate layers are published as a fixed
             <strong>1970–2000</strong> 30-year normal (Fick &amp; Hijmans 2017). That baseline is still the classroom
             standard for species distribution work. Later decades exist in other products; this map uses the classic WorldClim normal.
+          </p>
+        </div>
+      </details>
+
+      <details class="help">
+        <summary>Help</summary>
+        <div class="help-body">
+          <p>
+            Add a species to map its GBIF occurrences worldwide.
+            Defaults: American pika · black-tailed prairie dog.
+          </p>
+          <p>
+            I, Caleb Charpentier, am the maintainer, and I can be contacted at
+            <a href="mailto:calebcharpentier00@gmail.com">calebcharpentier00@gmail.com</a>.
           </p>
         </div>
       </details>
@@ -1341,7 +1504,20 @@
         <h2 id="gallery-title">Species gallery</h2>
         <button type="button" class="modal-close" data-close-gallery aria-label="Close">×</button>
       </header>
-      <p class="modal-lede">PhyloPic silhouettes plus iNaturalist taxon photos (scroll sideways). Click a photo or silhouette for its source page. Export includes location and Udvardy biogeography.</p>
+      <div class="modal-search">
+        <div class="add-suggest-wrap">
+          <input
+            type="search"
+            id="gallery-search"
+            placeholder="Search species in this gallery…"
+            autocomplete="off"
+            aria-autocomplete="list"
+            aria-controls="gallery-suggest"
+            aria-expanded="false"
+          />
+          <ul id="gallery-suggest" class="species-suggest" role="listbox" hidden></ul>
+        </div>
+      </div>
       <div class="gallery-grid" id="gallery-grid"></div>
       <footer class="modal-foot">
         <span class="modal-meta" id="gallery-meta"></span>
@@ -1354,12 +1530,26 @@
     <div class="modal-backdrop" data-close-similar></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="similar-title">
       <header class="modal-head">
-        <h2 id="similar-title">Similar species</h2>
+        <div class="modal-head-start">
+          <button type="button" class="modal-back" id="btn-similar-back" title="Back to species gallery" aria-label="Back to species gallery">←</button>
+          <h2 id="similar-title">Similar species</h2>
+        </div>
         <button type="button" class="modal-close" data-close-similar aria-label="Close">×</button>
       </header>
-      <p class="modal-lede" id="similar-lede">
-        Often confused on iNaturalist (same list as the Similar Species tab). Add any one, or all of them, to the map.
-      </p>
+      <div class="modal-search">
+        <div class="add-suggest-wrap">
+          <input
+            type="search"
+            id="similar-search"
+            placeholder="Search similar species…"
+            autocomplete="off"
+            aria-autocomplete="list"
+            aria-controls="similar-suggest"
+            aria-expanded="false"
+          />
+          <ul id="similar-suggest" class="species-suggest" role="listbox" hidden></ul>
+        </div>
+      </div>
       <div class="modal-foot-actions similar-top-actions">
         <button type="button" class="btn" id="btn-add-all-similar" title="Add every similar species not already on the map">
           Add all
@@ -1380,11 +1570,6 @@
         <h2 id="tree-title">Taxonomy</h2>
         <button type="button" class="modal-close" data-close-tree aria-label="Close">×</button>
       </header>
-      <p class="modal-lede">
-        Shared taxonomy for species on the map, from
-        <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>
-        (same ancestry text as the taxon Taxonomy tab). Branches split where lineages diverge.
-      </p>
       <div id="tree-body"></div>
       <footer class="modal-foot">
         <span class="modal-meta" id="tree-meta"></span>
@@ -1397,22 +1582,15 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="regions.js?v=20260721f"></script>
-  <script src="gbif.js?v=20260721f"></script>
+  <script src="regions.js?v=20260726b"></script>
+  <script src="gbif.js?v=20260727a"></script>
   <script src="phylopic.js?v=20260724c"></script>
   <script src="onezoom.js?v=20260721f"></script>
-  <script src="opentree.js?v=20260724k"></script>
-  <script src="overlays.js?v=20260721i"></script>
-  <script src="elevation.js?v=20260721f"></script>
+  <script src="opentree.js?v=20260727a"></script>
+  <script src="overlays.js?v=20260726c"></script>
+  <script src="elevation.js?v=20260727a"></script>
   <script src="udvardy.js?v=20260721f"></script>
-  <script src="locations.js?v=20260721f"></script>
   <script>
-    const COLORS = {
-      "American pika|survey_plot": true,
-      "American pika|sampling_station": true,
-      "American pika|occurrence": true,
-      "Black-tailed prairie dog|occurrence": true,
-    };
     const POINT_COLORS = {
       pika: "#3d6f8c",
       dog: "#b85c38",
@@ -1430,88 +1608,91 @@
 
     const OVERLAY_THEME = "default";
     let species = structuredClone(window.REGIONS.default_species);
-    let coOutline = null;
-    let coMask = null;
     let fetchRunId = 0;
+    let bulkAddActive = false;
+    const SPECIES_FETCH_CONCURRENCY = 3;
+    /** Bulk clade / similar-species adds can push harder; still capped by GBIF slots. */
+    const SPECIES_FETCH_CONCURRENCY_BULK = 5;
+    const GBIF_INFLIGHT_DEFAULT = 3;
+    const GBIF_INFLIGHT_BULK = 5;
+    /** Default map frame: contiguous US–focused (searches stay worldwide). */
+    const DEFAULT_MAP_BBOX = [-125, 24, -66, 50];
 
     function cancelSpeciesFetches() {
       fetchRunId += 1;
     }
 
-    const regionFilter = document.getElementById("region-filter");
-    const regionControls = document.getElementById("region-controls");
-    const regionMode = document.getElementById("region-mode");
-    const regionSelect = document.getElementById("region-select");
     const speciesListEl = document.getElementById("species-list");
     const statusEl = document.getElementById("status");
-    const noteCo = document.getElementById("note-co");
+    const fetchProgressEl = document.getElementById("fetch-progress");
+    const fetchProgressLabel = document.getElementById("fetch-progress-label");
+    const fetchProgressTrack = document.getElementById("fetch-progress-track");
+    const fetchProgressFill = document.getElementById("fetch-progress-fill");
 
     function setStatus(msg, isError) {
       statusEl.textContent = msg || "";
       statusEl.classList.toggle("error", !!isError);
     }
 
-    function fillRegionSelect() {
-      const mode = regionMode.value;
-      regionSelect.innerHTML = "";
-      const items = mode === "us_state" ? window.REGIONS.us_states : window.REGIONS.countries;
-      items.forEach((item) => {
-        const opt = document.createElement("option");
-        opt.value = mode === "us_state" ? item.name : item.iso2;
-        opt.textContent = item.name;
-        if (mode === "us_state" && item.name === "Colorado") opt.selected = true;
-        if (mode === "country" && item.iso2 === "US") opt.selected = true;
-        regionSelect.appendChild(opt);
-      });
+    /** Shared fractional progress for parallel species fetches. */
+    let loadProgressState = null;
+
+    function paintProgressBar(fillEl, trackEl, ratio) {
+      const indeterminate = ratio == null || !Number.isFinite(ratio);
+      const pct = indeterminate ? 0 : Math.max(0, Math.min(100, ratio * 100));
+      if (fillEl) fillEl.style.width = indeterminate ? "" : `${pct}%`;
+      if (trackEl) trackEl.setAttribute("aria-valuenow", indeterminate ? "0" : String(Math.round(pct)));
+      return indeterminate;
     }
 
-    function syncRegionControls() {
-      regionControls.hidden = !regionFilter.checked;
-      updateOverlayAvailability();
+    function setFetchProgress({ label = "Loading map data…", ratio = null } = {}) {
+      if (!fetchProgressEl || bulkAddActive) return;
+      fetchProgressEl.hidden = false;
+      if (fetchProgressLabel) fetchProgressLabel.textContent = label;
+      const indeterminate = paintProgressBar(fetchProgressFill, fetchProgressTrack, ratio);
+      fetchProgressEl.classList.toggle("is-indeterminate", indeterminate);
     }
 
-    function currentRegion() {
-      // Global search when region filter is off
-      if (!regionFilter.checked) {
-        return {
-          mode: "global",
-          name: "Worldwide",
-          country: null,
-          stateProvince: null,
-          // Default map frame: contiguous US–focused
-          bbox: [-125, 24, -66, 50],
-          isColorado: false,
-        };
-      }
-      const mode = regionMode.value;
-      if (mode === "us_state") {
-        const st = window.REGIONS.us_states.find((s) => s.name === regionSelect.value);
-        return {
-          mode,
-          name: st.name,
-          country: "US",
-          stateProvince: st.gbif_stateProvince,
-          bbox: st.bbox,
-          isColorado: st.name === "Colorado",
-        };
-      }
-      const c = window.REGIONS.countries.find((x) => x.iso2 === regionSelect.value);
-      return {
-        mode,
-        name: c.name,
-        country: c.iso2,
-        stateProvince: null,
-        bbox: c.bbox,
-        isColorado: false,
+    function hideFetchProgress() {
+      if (!fetchProgressEl) return;
+      fetchProgressEl.hidden = true;
+      fetchProgressEl.classList.remove("is-indeterminate");
+      paintProgressBar(fetchProgressFill, fetchProgressTrack, 0);
+    }
+
+    function startLoadProgress(totalUnits, label = "Loading map data…", { bulk = false } = {}) {
+      loadProgressState = {
+        total: Math.max(1, totalUnits),
+        fractions: new Map(),
+        label,
       };
+      if (bulk) {
+        setBulkAddProgress(label, 0);
+      } else {
+        setFetchProgress({ label, ratio: 0 });
+      }
+    }
+
+    function reportLoadProgress(unitId, fraction) {
+      if (!loadProgressState) return;
+      loadProgressState.fractions.set(String(unitId), Math.max(0, Math.min(1, fraction)));
+      let sum = 0;
+      for (const v of loadProgressState.fractions.values()) sum += v;
+      const ratio = sum / loadProgressState.total;
+      if (bulkAddActive) {
+        updateBulkAddBar(loadProgressState.label, ratio);
+      } else {
+        setFetchProgress({ label: loadProgressState.label, ratio });
+      }
+    }
+
+    function clearLoadProgress() {
+      loadProgressState = null;
+      hideFetchProgress();
     }
 
     function updateOverlayAvailability() {
-      // All environment overlays are global now
-      if (noteCo) {
-        noteCo.style.display = "none";
-        noteCo.textContent = "";
-      }
+      /* Environment overlays are global; kept as a hook for future filters. */
     }
 
     /**
@@ -1745,7 +1926,7 @@
       }
     }
 
-    function renderSpeciesList() {
+    function renderSpeciesList({ skipPhylo = false } = {}) {
       species.forEach(ensureSpeciesStyle);
       speciesListEl.innerHTML = "";
       const clearBtn = document.getElementById("btn-clear-species");
@@ -1790,8 +1971,35 @@
         });
         speciesListEl.appendChild(row);
       });
-      ensurePhyloPics();
+      if (!skipPhylo) ensurePhyloPics();
       renderColorPanel();
+    }
+
+    let bulkListPaintTimer = null;
+    let bulkListPaintPending = 0;
+
+    function scheduleBulkSpeciesListPaint() {
+      bulkListPaintPending += 1;
+      if (bulkListPaintPending >= 6) {
+        bulkListPaintPending = 0;
+        clearTimeout(bulkListPaintTimer);
+        bulkListPaintTimer = null;
+        renderSpeciesList({ skipPhylo: true });
+        return;
+      }
+      clearTimeout(bulkListPaintTimer);
+      bulkListPaintTimer = setTimeout(() => {
+        bulkListPaintPending = 0;
+        bulkListPaintTimer = null;
+        renderSpeciesList({ skipPhylo: true });
+      }, 450);
+    }
+
+    function flushBulkSpeciesListPaint() {
+      clearTimeout(bulkListPaintTimer);
+      bulkListPaintTimer = null;
+      bulkListPaintPending = 0;
+      renderSpeciesList();
     }
 
     /** Look up the live species record — single source of truth for name/color. */
@@ -2542,18 +2750,12 @@
       }
     }
 
-    function fitRegion(bbox) {
-      // bbox: [west, south, east, north]
+    function fitDefaultView() {
+      const bbox = DEFAULT_MAP_BBOX;
       const bounds = L.latLngBounds([bbox[1], bbox[0]], [bbox[3], bbox[2]]);
-      if (currentRegion().mode === "global") {
-        map.setMaxBounds(null);
-        map.setMinZoom(2);
-        map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6 });
-        return;
-      }
+      map.setMaxBounds(null);
       map.setMinZoom(2);
-      map.setMaxBounds(bounds.pad(0.15));
-      map.fitBounds(bounds, { padding: [20, 20], maxZoom: 8 });
+      map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6 });
     }
 
     function fitToPoints() {
@@ -2562,7 +2764,7 @@
         return speciesPlotVisible(sp) && allPoints.hasLayer(m);
       });
       if (!specimensVisible() || !visibleMarkers.length) {
-        fitRegion(currentRegion().bbox);
+        fitDefaultView();
         return;
       }
       const group = L.featureGroup(visibleMarkers);
@@ -2781,64 +2983,6 @@
       });
     }
 
-    function loadDefaultColoradoCached() {
-      clearPoints();
-      const bySp = {
-        "American pika": species.find((s) => s.colorKey === "pika"),
-        "Black-tailed prairie dog": species.find((s) => s.colorKey === "dog"),
-      };
-      let n = 0;
-      (window.LOCATIONS?.features || []).forEach((f) => {
-        const p = f.properties;
-        const key = `${p.organism}|${p.location_type}`;
-        const [lon, lat] = f.geometry.coordinates;
-        if (!COLORS[key]) return;
-        if (lon < -109.06 || lon > -102.04 || lat < 36.99 || lat > 41.01) return;
-        const sp = bySp[p.organism];
-        if (!sp) return;
-        const style = {
-          radius: p.location_type === "occurrence" ? 4 : 5,
-          color: "#1c2419",
-          weight: 0.8,
-          fillColor: colorForTaxonKey(sp.taxonKey),
-          fillOpacity: p.location_type === "occurrence" ? 0.55 : 0.9,
-        };
-        const popupHtml = `<div class="popup">
-          <h3>${p.label || p.site_id}</h3>
-          <p><strong>${p.organism}</strong></p>
-          <p><a href="${p.source_url}" target="_blank" rel="noopener">${p.source_name}</a></p>
-        </div>`;
-        WORLD_LNG_COPIES.forEach((offset) => {
-          const marker = L.circleMarker([lat, lon + offset], style);
-          marker._taxonKey = sp.taxonKey;
-          marker._wrapOffset = offset;
-          bindHoverStickyPopup(marker, popupHtml);
-          if (speciesPlotVisible(sp)) marker.addTo(allPoints);
-          pointMarkers.push(marker);
-        });
-        n++;
-      });
-      setStatus(`Showing ${n} default Colorado points (cached). Click “Fetch from GBIF” for a fresh pull.`);
-    }
-
-    async function setupColoradoMask() {
-      if (coOutline) { map.removeLayer(coOutline); coOutline = null; }
-      if (coMask) { map.removeLayer(coMask); coMask = null; }
-      const reg = currentRegion();
-      if (!reg.isColorado) return;
-      const [co, mask] = await Promise.all([
-        fetch("colorado.geojson").then((r) => r.json()),
-        fetch("colorado_mask.geojson").then((r) => r.json()),
-      ]);
-      coOutline = L.geoJSON(co, {
-        style: { color: "#1c2419", weight: 1.5, opacity: 0.55, fill: false },
-      }).addTo(map);
-      coMask = L.geoJSON(mask, {
-        style: { fillColor: "#f3efe6", fillOpacity: 1, color: "#f3efe6", weight: 0 },
-        interactive: false,
-      }).addTo(map);
-    }
-
     // --- Udvardy biogeography overlays (global) ---
     const udvardyCache = {};
     const udvardyLayers = {};
@@ -2962,8 +3106,51 @@
       return `<div class="popup"><h3>${props.name || "—"}</h3><p>${title}</p></div>`;
     }
 
+    /** Shift GeoJSON coordinates by longitude offset (for ±360° world copies). */
+    function shiftLngInCoords(coords, offset) {
+      if (!Array.isArray(coords) || !coords.length) return coords;
+      if (typeof coords[0] === "number") {
+        const out = coords.slice();
+        out[0] = coords[0] + offset;
+        return out;
+      }
+      return coords.map((c) => shiftLngInCoords(c, offset));
+    }
+
+    function shiftGeometryLng(geometry, offset) {
+      if (!geometry) return geometry;
+      if (geometry.type === "GeometryCollection") {
+        return {
+          type: "GeometryCollection",
+          geometries: (geometry.geometries || []).map((g) => shiftGeometryLng(g, offset)),
+        };
+      }
+      return {
+        type: geometry.type,
+        coordinates: shiftLngInCoords(geometry.coordinates, offset),
+      };
+    }
+
+    /** Clone a FeatureCollection onto the main world and ±360° copies (like occurrence points). */
+    function wrapGeoJsonForWorldCopies(geojson) {
+      const src = geojson && geojson.features ? geojson.features : [];
+      const features = [];
+      WORLD_LNG_COPIES.forEach((offset) => {
+        src.forEach((feat) => {
+          if (!feat || !feat.geometry) return;
+          features.push({
+            type: "Feature",
+            properties: feat.properties || {},
+            geometry:
+              offset === 0 ? feat.geometry : shiftGeometryLng(feat.geometry, offset),
+          });
+        });
+      });
+      return { type: "FeatureCollection", features };
+    }
+
     function buildUdvardyLayer(meta, geojson) {
-      return L.geoJSON(geojson, {
+      return L.geoJSON(wrapGeoJsonForWorldCopies(geojson), {
         style: (feat) => styleForUdvardyFeature(meta, feat.properties || {}),
         onEachFeature: (feat, layer) => {
           layer.bindPopup(udvardyPopup(meta, feat.properties || {}));
@@ -3302,6 +3489,7 @@
         maxZoom: 12,
         opacity: Number(opacityInput.value),
         crossOrigin: true,
+        noWrap: false,
       }
     );
 
@@ -3311,6 +3499,26 @@
       const t = theme || OVERLAY_THEME;
       const base = meta.files && meta.files[t] ? meta.files[t] : meta.file;
       return `${base}?v=20260721i`;
+    }
+
+    /** Image overlays only cover one world — clone bounds at ±360° like points. */
+    function buildWrappedImageOverlay(url, bounds, opts) {
+      const group = L.layerGroup();
+      const south = bounds[0][0];
+      const west = bounds[0][1];
+      const north = bounds[1][0];
+      const east = bounds[1][1];
+      WORLD_LNG_COPIES.forEach((offset) => {
+        group.addLayer(
+          L.imageOverlay(url, [[south, west + offset], [north, east + offset]], opts)
+        );
+      });
+      group.setOpacity = (op) => {
+        group.eachLayer((layer) => {
+          if (layer.setOpacity) layer.setOpacity(op);
+        });
+      };
+      return group;
     }
 
     function clearActiveOverlayLayers() {
@@ -3327,7 +3535,7 @@
       const prev = overlayLayers[meta.id];
       const wasOn = prev && map.hasLayer(prev.layer);
       if (prev && map.hasLayer(prev.layer)) map.removeLayer(prev.layer);
-      const img = L.imageOverlay(overlayUrl(meta, OVERLAY_THEME), meta.bounds, {
+      const img = buildWrappedImageOverlay(overlayUrl(meta, OVERLAY_THEME), meta.bounds, {
         opacity: Number(opacityInput.value),
         interactive: false,
       });
@@ -3588,13 +3796,192 @@
       return primaryPointMarkers().filter((m) => Number(m._taxonKey) === key).length;
     }
 
-    function openGallery() {
+    /** Local typeahead for gallery / similar lists (no iNat round-trip). */
+    function createLocalSpeciesSearch({ input, listEl, getItems, onPick, onQueryChange }) {
+      let items = [];
+      let active = -1;
+      let timer = null;
+
+      function hide() {
+        items = [];
+        active = -1;
+        listEl.hidden = true;
+        listEl.innerHTML = "";
+        input.setAttribute("aria-expanded", "false");
+        input.removeAttribute("aria-activedescendant");
+      }
+
+      function scoreLocal(item, q) {
+        const common = String(item.common || "").toLowerCase();
+        const sci = String(item.scientific || "").toLowerCase();
+        if (!q) return 0;
+        if (common === q || sci === q) return 100;
+        if (common.startsWith(q) || sci.startsWith(q)) return 80;
+        if (common.includes(q) || sci.includes(q)) return 60;
+        const words = `${common} ${sci}`.split(/\s+/);
+        if (words.some((w) => w.startsWith(q))) return 50;
+        return 0;
+      }
+
+      function paint() {
+        listEl.innerHTML = "";
+        if (!items.length) {
+          hide();
+          return;
+        }
+        items.forEach((item, idx) => {
+          const li = document.createElement("li");
+          li.setAttribute("role", "option");
+          li.id = `${input.id}-opt-${idx}`;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "species-suggest-item" + (idx === active ? " is-active" : "");
+          btn.innerHTML = `
+            <span class="species-suggest-common">${item.common || item.scientific}</span>
+            <span class="species-suggest-sci">${item.scientific || ""}</span>`;
+          btn.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            choose(idx);
+          });
+          li.appendChild(btn);
+          listEl.appendChild(li);
+        });
+        listEl.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        if (active >= 0) input.setAttribute("aria-activedescendant", `${input.id}-opt-${active}`);
+        else input.removeAttribute("aria-activedescendant");
+      }
+
+      function choose(idx) {
+        const item = items[idx];
+        if (!item) return;
+        hide();
+        input.value = item.common || item.scientific || "";
+        if (onPick) onPick(item);
+      }
+
+      function refresh() {
+        const q = input.value.trim().toLowerCase();
+        if (onQueryChange) onQueryChange(q);
+        if (q.length < 1) {
+          hide();
+          return;
+        }
+        const ranked = getItems()
+          .map((item) => ({ item, score: scoreLocal(item, q) }))
+          .filter((x) => x.score > 0)
+          .sort((a, b) => b.score - a.score || String(a.item.common || a.item.scientific).localeCompare(String(b.item.common || b.item.scientific)))
+          .slice(0, 12)
+          .map((x) => x.item);
+        items = ranked;
+        active = ranked.length ? 0 : -1;
+        paint();
+      }
+
+      input.addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(refresh, 80);
+      });
+      input.addEventListener("focus", () => {
+        if (input.value.trim()) refresh();
+      });
+      input.addEventListener("blur", () => {
+        setTimeout(hide, 120);
+      });
+      input.addEventListener("keydown", (e) => {
+        const open = !listEl.hidden && items.length;
+        if (e.key === "ArrowDown" && open) {
+          e.preventDefault();
+          active = (active + 1) % items.length;
+          paint();
+          return;
+        }
+        if (e.key === "ArrowUp" && open) {
+          e.preventDefault();
+          active = (active - 1 + items.length) % items.length;
+          paint();
+          return;
+        }
+        if (e.key === "Escape") {
+          if (open) {
+            e.preventDefault();
+            e.stopPropagation();
+            hide();
+          }
+          return;
+        }
+        if (e.key === "Enter" && open && active >= 0) {
+          e.preventDefault();
+          choose(active);
+        }
+      });
+
+      return {
+        clear() {
+          input.value = "";
+          hide();
+          if (onQueryChange) onQueryChange("");
+        },
+        refresh,
+      };
+    }
+
+    function tipKeySci(name) {
+      return String(name || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function galleryCardKey(sp) {
+      return String(sp.taxonKey || tipKeySci(sp.scientific) || sp.common || "");
+    }
+
+    function scrollGalleryCardIntoView(card, modalEl) {
+      if (!card || !modalEl) return;
+      const modalCard = modalEl.querySelector(".modal-card");
+      card.classList.add("is-search-hit");
+      card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      if (modalCard) {
+        // Keep a little breathing room under the sticky-ish head/search
+        modalCard.scrollTop = Math.max(0, modalCard.scrollTop - 8);
+      }
+      clearTimeout(card._hitTimer);
+      card._hitTimer = setTimeout(() => card.classList.remove("is-search-hit"), 1600);
+    }
+
+    function filterGalleryCards(grid, query, keyAttrs = ["common", "scientific"]) {
+      if (!grid) return;
+      const q = String(query || "").trim().toLowerCase();
+      grid.querySelectorAll(".gallery-card").forEach((card) => {
+        if (!q) {
+          card.classList.remove("is-search-hidden");
+          return;
+        }
+        const hay = keyAttrs.map((k) => String(card.dataset[k] || "").toLowerCase()).join(" ");
+        const hit =
+          hay.includes(q) ||
+          hay.split(/\s+/).some((w) => w.startsWith(q));
+        card.classList.toggle("is-search-hidden", !hit);
+      });
+    }
+
+    let galleryScrollTop = 0;
+    let galleryOpenedFromSimilar = false;
+    const gallerySearchInput = document.getElementById("gallery-search");
+    const gallerySuggestEl = document.getElementById("gallery-suggest");
+
+    function openGallery({ restoreScroll = false } = {}) {
       galleryGrid.innerHTML = "";
+      if (gallerySearchInput) gallerySearchInput.value = "";
       species.forEach((sp) => {
         const color = colorForSpecies(sp);
         const card = document.createElement("div");
         card.className = "gallery-card";
         card.style.color = color;
+        card.dataset.common = sp.common || "";
+        card.dataset.scientific = sp.scientific || "";
+        card.dataset.key = galleryCardKey(sp);
 
         const top = document.createElement("div");
         top.className = "gallery-card-top";
@@ -3632,6 +4019,9 @@
         similarBtn.title = "iNaturalist similar species — add lookalikes";
         similarBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          const modalCard = galleryModal.querySelector(".modal-card");
+          galleryScrollTop = modalCard ? modalCard.scrollTop : 0;
+          galleryOpenedFromSimilar = true;
           closeGallery();
           openSimilarSpecies(sp);
         });
@@ -3678,13 +4068,44 @@
       const total = primaryPointMarkers().length;
       galleryMeta.textContent = `${species.length} species · ${total} mapped locations · photos via iNaturalist`;
       galleryModal.hidden = false;
+      if (restoreScroll) {
+        const modalCard = galleryModal.querySelector(".modal-card");
+        const apply = () => {
+          if (modalCard) modalCard.scrollTop = galleryScrollTop;
+        };
+        requestAnimationFrame(apply);
+        setTimeout(apply, 80);
+        setTimeout(apply, 320);
+      }
     }
 
     function closeGallery() {
       galleryModal.hidden = true;
+      if (galleryLocalSearch) galleryLocalSearch.clear();
     }
 
+    const galleryLocalSearch =
+      gallerySearchInput && gallerySuggestEl
+        ? createLocalSpeciesSearch({
+            input: gallerySearchInput,
+            listEl: gallerySuggestEl,
+            getItems: () =>
+              species.map((sp) => ({
+                common: sp.common || sp.scientific,
+                scientific: sp.scientific,
+                key: galleryCardKey(sp),
+              })),
+            onQueryChange: (q) => filterGalleryCards(galleryGrid, q),
+            onPick: (item) => {
+              filterGalleryCards(galleryGrid, "");
+              const card = galleryGrid.querySelector(`.gallery-card[data-key="${CSS.escape(item.key)}"]`);
+              scrollGalleryCardIntoView(card, galleryModal);
+            },
+          })
+        : null;
+
     document.getElementById("btn-gallery").addEventListener("click", async () => {
+      galleryOpenedFromSimilar = false;
       await ensurePhyloPics();
       openGallery();
     });
@@ -3881,25 +4302,47 @@
 
     const bulkAddBar = document.getElementById("bulk-add-bar");
     const bulkAddLabel = document.getElementById("bulk-add-label");
+    const bulkAddTrack = document.getElementById("bulk-add-track");
+    const bulkAddFill = document.getElementById("bulk-add-fill");
     const btnStopBulk = document.getElementById("btn-stop-bulk");
     const btnStopBulkTree = document.getElementById("btn-stop-bulk-tree");
-    let bulkAddActive = false;
 
-    function setBulkAddProgress(labelText) {
-      bulkAddActive = true;
+    function updateBulkAddBar(labelText, ratio = null) {
       if (bulkAddBar) bulkAddBar.hidden = false;
       if (bulkAddLabel) bulkAddLabel.textContent = labelText || "Adding species…";
+      const indeterminate = paintProgressBar(bulkAddFill, bulkAddTrack, ratio);
+      if (bulkAddBar) bulkAddBar.classList.toggle("is-indeterminate", indeterminate);
+      if (treeMeta) treeMeta.textContent = labelText || "Adding species…";
+    }
+
+    function setBulkAddProgress(labelText, ratio = null) {
+      bulkAddActive = true;
+      if (window.GBIF_API && window.GBIF_API.setMaxInflight) {
+        window.GBIF_API.setMaxInflight(GBIF_INFLIGHT_BULK);
+      }
+      hideFetchProgress();
+      setStatus("");
+      updateBulkAddBar(labelText, ratio);
       if (btnStopBulkTree) {
         btnStopBulkTree.hidden = false;
         btnStopBulkTree.disabled = false;
       }
-      if (treeMeta) treeMeta.textContent = labelText || "Adding species…";
     }
 
     function clearBulkAddProgress() {
       bulkAddActive = false;
-      if (bulkAddBar) bulkAddBar.hidden = true;
+      loadProgressState = null;
+      if (window.GBIF_API && window.GBIF_API.setMaxInflight) {
+        window.GBIF_API.setMaxInflight(GBIF_INFLIGHT_DEFAULT);
+      }
+      if (bulkAddBar) {
+        bulkAddBar.hidden = true;
+        bulkAddBar.classList.remove("is-indeterminate");
+      }
+      paintProgressBar(bulkAddFill, bulkAddTrack, 0);
       if (btnStopBulkTree) btnStopBulkTree.hidden = true;
+      flushBulkSpeciesListPaint();
+      bringPointsFront();
     }
 
     function stopBulkAdd() {
@@ -3924,6 +4367,11 @@
       setStatus(`Cleared ${n} species. Map is empty — add a species when ready.`);
     }
 
+    function shouldExcludeExtinctTaxa() {
+      const el = document.getElementById("exclude-extinct");
+      return !el || el.checked;
+    }
+
     async function addAllSpeciesInClade(node, btn) {
       if (fetchBusy || !node || !node.id) return;
       const api = window.INAT_TAXONOMY || window.OPENTREE_API;
@@ -3939,11 +4387,13 @@
         btn.textContent = "Loading…";
       }
       const listRunId = ++fetchRunId;
+      setBulkAddProgress(`Listing species in ${label}…`);
       beginFetch();
       let holdFetch = true;
-      setBulkAddProgress(`Listing species in ${label}…`);
       try {
-        const { items, total } = await api.speciesUnderTaxon(node.id);
+        const { items, total } = await api.speciesUnderTaxon(node.id, {
+          excludeExtinct: shouldExcludeExtinctTaxa(),
+        });
         if (listRunId !== fetchRunId) {
           setStatus("Stopped before adding species.");
           return;
@@ -3994,21 +4444,18 @@
 
         if (fetchBusy) return;
         const runId = ++fetchRunId;
+        startLoadProgress(toAdd.length, `Adding species from ${label}…`, { bulk: true });
         beginFetch();
         holdFetch = true;
-        setBulkAddProgress(`Adding 0 / ${toAdd.length} from ${label}…`);
         let added = 0;
         const skipped = items.length - toAdd.length;
         let stopped = false;
-        for (let i = 0; i < toAdd.length; i++) {
+        await window.GBIF_API.mapPool(toAdd, SPECIES_FETCH_CONCURRENCY_BULK, async (item, i) => {
           if (runId !== fetchRunId) {
             stopped = true;
-            break;
+            return;
           }
-          const item = toAdd[i];
-          const progress = `Adding ${i + 1} / ${toAdd.length} from ${label}…`;
-          setBulkAddProgress(progress);
-          if (btn) btn.textContent = `${i + 1}/${toAdd.length}`;
+          const progressId = `bulk-${i}`;
           const sp = await addMappedSpecies(
             {
               scientific: item.scientific,
@@ -4017,14 +4464,16 @@
               inatName: item.scientific,
               inatCommon: item.common,
             },
-            { runId }
+            { runId, progressId }
           );
+          reportLoadProgress(progressId, 1);
           if (runId !== fetchRunId) {
             stopped = true;
-            break;
+            return;
           }
           if (sp) added += 1;
-        }
+        });
+        if (runId !== fetchRunId) stopped = true;
         if (stopped) {
           setStatus(
             `Stopped after adding ${added} of ${toAdd.length} from ${label}. Already-mapped species stay on the list.`
@@ -4247,9 +4696,15 @@
       return ordered.slice(0, 14);
     }
 
-    async function inatAutocompleteRaw(q) {
+    function shouldLimitSuggestToSpecies() {
+      const el = document.getElementById("species-rank-only");
+      return !el || el.checked;
+    }
+
+    async function inatAutocompleteRaw(q, { rank = null } = {}) {
       const url = new URL("https://api.inaturalist.org/v1/taxa/autocomplete");
       url.searchParams.set("q", q);
+      if (rank) url.searchParams.set("rank", String(rank));
       const r = await fetch(url);
       if (!r.ok) return [];
       return (await r.json()).results || [];
@@ -4265,9 +4720,11 @@
       const qNorm = q.toLowerCase();
       const qSound = suggestSoundex(qNorm);
       const qCollapsed = qNorm.replace(/(.)\1+/g, "$1");
+      const speciesOnly = shouldLimitSuggestToSpecies();
       try {
         const variants = phoneticQueryVariants(qNorm);
-        const primary = await inatAutocompleteRaw(q);
+        const autoOpts = speciesOnly ? { rank: "species" } : {};
+        const primary = await inatAutocompleteRaw(q, autoOpts);
         if (reqId !== suggestReqId) return;
 
         const looksUseful = (t) => {
@@ -4296,7 +4753,7 @@
           for (let i = 0; i < variants.length && useful.length < 2; i += 4) {
             const batch = variants.slice(i, i + 4);
             const extras = await Promise.all(
-              batch.map((v) => inatAutocompleteRaw(v).catch(() => []))
+              batch.map((v) => inatAutocompleteRaw(v, autoOpts).catch(() => []))
             );
             if (reqId !== suggestReqId) return;
             extras.forEach((list) => {
@@ -4306,15 +4763,19 @@
           }
         }
 
+        const allowedRanks = speciesOnly
+          ? new Set(["species"])
+          : new Set(["species", "subspecies", "variety", "form", "genus"]);
+
         const seen = new Set();
         const items = [];
         for (const t of results) {
           const scientific = String(t.name || "").trim();
           if (!scientific) continue;
           const rank = String(t.rank || "").toLowerCase();
-          if (rank && !["species", "subspecies", "variety", "form", "genus"].includes(rank)) {
-            continue;
-          }
+          if (rank && !allowedRanks.has(rank)) continue;
+          // Extra guard: binomial species only when limiting to species level
+          if (speciesOnly && !/^\S+\s+\S+/.test(scientific)) continue;
           const key = scientific.toLowerCase();
           if (seen.has(key)) continue;
           seen.add(key);
@@ -4396,11 +4857,18 @@
     function beginFetch() {
       activeFetchCount += 1;
       setFetchBusy(true);
+      if (activeFetchCount === 1 && !bulkAddActive) {
+        setStatus("");
+        setFetchProgress({ label: "Loading map data…" });
+      }
     }
 
     function endFetch() {
       activeFetchCount = Math.max(0, activeFetchCount - 1);
-      if (activeFetchCount === 0) setFetchBusy(false);
+      if (activeFetchCount === 0) {
+        setFetchBusy(false);
+        if (!bulkAddActive) clearLoadProgress();
+      }
     }
 
     function speciesStillActive(sp) {
@@ -4415,28 +4883,60 @@
       return msg;
     }
 
-    async function fetchOneSpecies(sp, runId) {
-      const reg = currentRegion();
+    function getAllowedBasisOfRecord() {
+      const boxes = document.querySelectorAll("#basis-of-record-block input[data-basis]");
+      const selected = [...boxes]
+        .filter((el) => el.checked)
+        .map((el) => String(el.dataset.basis || "").toUpperCase())
+        .filter(Boolean);
+      return selected;
+    }
+
+    function resetBasisOfRecordDefaults() {
+      document.querySelectorAll("#basis-of-record-block input[data-basis]").forEach((el) => {
+        const basis = String(el.dataset.basis || "").toUpperCase();
+        el.checked = ![
+          "LIVING_SPECIMEN",
+          "PRESERVED_SPECIMEN",
+          "FOSSIL_SPECIMEN",
+          "MATERIAL_SAMPLE",
+          "MATERIAL_CITATION",
+        ].includes(basis);
+      });
+    }
+
+    async function fetchOneSpecies(sp, runId, { progressId = null } = {}) {
       const maxRecords = Number(document.getElementById("sample-size").value) || 1000;
-      const stratifyByCountry = document.getElementById("stratify-country").checked;
       if (!speciesStillActive(sp)) return 0;
       removePointsForSpecies(sp);
+      let painted = 0;
+      const unitId = progressId != null ? progressId : sp.taxonKey;
+      const basisOfRecord = getAllowedBasisOfRecord();
+      if (!basisOfRecord.length) {
+        throw new Error("Select at least one allowed observation type in Advanced options.");
+      }
       const recs = await window.GBIF_API.fetchOccurrences({
         taxonKey: sp.taxonKey,
-        country: reg.country || undefined,
-        stateProvince: reg.stateProvince || undefined,
         maxRecords,
-        stratifyByCountry: !reg.country && !reg.stateProvince && stratifyByCountry,
-        onProgress: (n, count, detail) => {
+        basisOfRecord,
+        onBatch: (batch) => {
           if (runId != null && runId !== fetchRunId) return;
           if (!speciesStillActive(sp)) return;
-          const extra = detail ? ` · ${detail}` : "";
-          setStatus(`${sp.common || sp.scientific}: ${n} / ${count || maxRecords}${extra}`);
+          addPoints(batch, sp);
+          const first = painted === 0;
+          painted += batch.length;
+          if (first) bringPointsFront();
+        },
+        onProgress: (n, count) => {
+          if (runId != null && runId !== fetchRunId) return;
+          if (!speciesStillActive(sp)) return;
+          const denom = Math.max(1, Math.min(maxRecords, count || maxRecords));
+          reportLoadProgress(unitId, Math.min(1, n / denom));
         },
       });
       if (runId != null && runId !== fetchRunId) return 0;
       if (!speciesStillActive(sp)) return 0;
-      addPoints(recs, sp);
+      reportLoadProgress(unitId, 1);
       return recs.length;
     }
 
@@ -4444,39 +4944,38 @@
       // Allow a newer reload to supersede an older one (e.g. remove-during-load)
       const runId = ++fetchRunId;
       beginFetch();
-      const reg = currentRegion();
       clearPoints();
       let total = 0;
       try {
         const list = species.slice();
         if (!list.length) {
           if (runId !== fetchRunId) return;
-          await setupColoradoMask();
           updateOverlayAvailability();
           setStatus("No species on the map. Add a scientific or common name to begin.");
           return;
         }
-        for (const sp of list) {
-          if (runId !== fetchRunId) return;
-          if (!speciesStillActive(sp)) continue;
-          setStatus(`Searching GBIF for ${sp.common || sp.scientific} (${reg.name})…`);
-          try {
-            total += await fetchOneSpecies(sp, runId);
-          } catch (e) {
-            if (runId !== fetchRunId) return;
-            if (!speciesStillActive(sp)) continue;
-            throw e;
+        startLoadProgress(list.length, "Loading map data…");
+        const counts = await window.GBIF_API.mapPool(
+          list,
+          SPECIES_FETCH_CONCURRENCY,
+          async (sp) => {
+            if (runId !== fetchRunId) return 0;
+            if (!speciesStillActive(sp)) return 0;
+            try {
+              return await fetchOneSpecies(sp, runId);
+            } catch (e) {
+              if (runId !== fetchRunId) return 0;
+              if (!speciesStillActive(sp)) return 0;
+              throw e;
+            }
           }
-        }
+        );
         if (runId !== fetchRunId) return;
+        total = counts.reduce((a, n) => a + (Number(n) || 0), 0);
         bringPointsFront();
         if (fit) fitToPoints();
-        await setupColoradoMask();
         updateOverlayAvailability();
-        const stratifyByCountry = document.getElementById("stratify-country").checked;
-        const modeNote = stratifyByCountry && reg.mode === "global" ? "stratified by country" : "flat sample";
-        const maxRecords = Number(document.getElementById("sample-size").value) || 1000;
-        setStatus(`Mapped ${total} locations from GBIF (${reg.name}, ${modeNote}, up to ${maxRecords}/species).`);
+        setStatus(`Showing ${total} observation locations on the map.`);
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
@@ -4490,7 +4989,7 @@
       if (!name) return;
       const runId = ++fetchRunId;
       beginFetch();
-      setStatus(`Looking up “${name}” in GBIF…`);
+      setFetchProgress({ label: "Looking up taxon…" });
       try {
         await addMappedSpecies({ scientific: name }, { runId, clearInput: true });
       } catch (e) {
@@ -4503,28 +5002,39 @@
     /**
      * Add a species from a scientific name and optional iNat fields, then map GBIF points.
      */
-    async function addMappedSpecies(opts, { runId = null, clearInput = false } = {}) {
+    async function addMappedSpecies(opts, { runId = null, clearInput = false, progressId = null } = {}) {
       const scientificHint = String(opts.scientific || opts.inatName || "").trim();
       if (!scientificHint) throw new Error("No species name to add.");
 
-      const match = await window.GBIF_API.matchSpecies(scientificHint);
+      const bulk = !!bulkAddActive;
+      // Bulk taxonomy / similar lists already have clean scientific names — skip
+      // the slower common-name / iNat match pathways.
+      const match = bulk && window.GBIF_API.matchScientificName
+        ? await window.GBIF_API.matchScientificName(scientificHint)
+        : await window.GBIF_API.matchSpecies(scientificHint);
       if (runId != null && runId !== fetchRunId) return null;
       if (species.some((s) => s.taxonKey === match.taxonKey)) {
-        setStatus(`${match.scientific} is already on the map.`);
+        if (!bulk) setStatus(`${match.scientific} is already on the map.`);
         return null;
       }
       // Also skip if same iNat taxon already loaded under a different GBIF key
       if (opts.inatId && species.some((s) => Number(s.inatId) === Number(opts.inatId))) {
-        setStatus(`${opts.common || opts.scientific || match.scientific} is already on the map.`);
+        if (!bulk) {
+          setStatus(`${opts.common || opts.scientific || match.scientific} is already on the map.`);
+        }
         return null;
       }
 
-      const gbifCommon = await gbifEnglishCommon(match.taxonKey);
-      if (runId != null && runId !== fetchRunId) return null;
+      // Prefer names we already have (iNat bulk); only hit GBIF vernaculars when needed
+      let gbifCommon = null;
+      if (!bulk && !opts.common && !opts.inatCommon) {
+        gbifCommon = await gbifEnglishCommon(match.taxonKey);
+        if (runId != null && runId !== fetchRunId) return null;
+      }
 
       const sp = {
         id: `sp_${match.taxonKey}`,
-        common: opts.common || gbifCommon || match.common || match.scientific,
+        common: opts.common || opts.inatCommon || gbifCommon || match.common || match.scientific,
         scientific: match.scientific,
         taxonKey: match.taxonKey,
         colorKey: "extra",
@@ -4537,29 +5047,33 @@
         applyiNatLabels(sp);
       }
       ensureSpeciesStyle(sp);
-      await ensurePreferredScientific(sp);
-      if (!sp.inatName || String(sp.inatName).toLowerCase() !== String(sp.scientific).toLowerCase()) {
-        if (!opts.common) sp.common = gbifCommon || match.common || match.scientific;
+      // Bulk already carries iNat ids/names; defer OneZoom/iNat polish until later
+      if (!bulk || !sp.inatId) {
+        await ensurePreferredScientific(sp);
+        if (!sp.inatName || String(sp.inatName).toLowerCase() !== String(sp.scientific).toLowerCase()) {
+          if (!opts.common) sp.common = gbifCommon || match.common || match.scientific;
+        }
       }
       if (runId != null && runId !== fetchRunId) return null;
 
       species.push(sp);
       if (clearInput) addInput.value = "";
-      renderSpeciesList();
-      syncSimilarCardStates();
+      if (bulk) scheduleBulkSpeciesListPaint();
+      else {
+        renderSpeciesList();
+        syncSimilarCardStates();
+      }
 
-      const via =
-        match.matchType === "VERNACULAR" || match.matchType === "INAT"
-          ? ` (matched common name “${match.query}”)`
-          : opts.inatId
-            ? " (from iNat similar species)"
-            : "";
-      setStatus(`Searching GBIF for ${sp.common} · ${match.scientific}${via}…`);
-      const n = await fetchOneSpecies(sp, runId);
+      if (!bulk && !loadProgressState) {
+        startLoadProgress(1, "Loading map data…");
+      }
+      const n = await fetchOneSpecies(sp, runId, { progressId: progressId != null ? progressId : sp.taxonKey });
       if (runId != null && runId !== fetchRunId) return null;
-      bringPointsFront();
-      setStatus(`Added ${sp.common} · ${match.scientific}: ${n} locations${via}.`);
-      syncSimilarCardStates();
+      if (!bulk) {
+        bringPointsFront();
+        setStatus(`Added ${sp.common || sp.scientific}: ${n} locations on the map.`);
+        syncSimilarCardStates();
+      }
       return sp;
     }
 
@@ -4569,14 +5083,32 @@
     const similarMeta = document.getElementById("similar-meta");
     const similarInatLink = document.getElementById("similar-inat-link");
     const btnAddAllSimilar = document.getElementById("btn-add-all-similar");
+    const btnSimilarBack = document.getElementById("btn-similar-back");
+    const similarSearchInput = document.getElementById("similar-search");
+    const similarSuggestEl = document.getElementById("similar-suggest");
     let similarForSp = null;
     let similarItems = [];
+    let similarLocalSearch = null;
 
-    function tipKeySci(name) {
-      return String(name || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
+    if (similarSearchInput && similarSuggestEl) {
+      similarLocalSearch = createLocalSpeciesSearch({
+        input: similarSearchInput,
+        listEl: similarSuggestEl,
+        getItems: () =>
+          similarItems.map((it) => ({
+            common: it.common || it.scientific,
+            scientific: it.scientific,
+            key: String(it.inatId || tipKeySci(it.scientific)),
+          })),
+        onQueryChange: (q) => filterGalleryCards(similarGrid, q),
+        onPick: (item) => {
+          filterGalleryCards(similarGrid, "");
+          const card = similarGrid.querySelector(
+            `.gallery-card[data-key="${CSS.escape(String(item.key))}"]`
+          );
+          scrollGalleryCardIntoView(card, similarModal);
+        },
+      });
     }
 
     function similarItemsNotOnMap() {
@@ -4595,12 +5127,24 @@
       btnAddAllSimilar.textContent = n ? `Add all (${n})` : "Add all";
     }
 
-    function closeSimilarModal() {
+    function closeSimilarModal({ returnToGallery = false } = {}) {
       similarForSp = null;
       similarItems = [];
+      if (similarLocalSearch) similarLocalSearch.clear();
       if (similarModal) similarModal.hidden = true;
       if (similarGrid) similarGrid.innerHTML = "";
       syncAddAllSimilarBtn();
+      if (returnToGallery) {
+        const restore = galleryOpenedFromSimilar;
+        galleryOpenedFromSimilar = false;
+        openGallery({ restoreScroll: restore });
+      } else {
+        galleryOpenedFromSimilar = false;
+      }
+    }
+
+    function backToGalleryFromSimilar() {
+      closeSimilarModal({ returnToGallery: true });
     }
 
     function syncSimilarCardStates() {
@@ -4692,6 +5236,8 @@
         card.className = "gallery-card" + (already ? " is-on-map" : "");
         card.dataset.inatId = String(item.inatId);
         card.dataset.scientific = item.scientific || "";
+        card.dataset.common = item.common || "";
+        card.dataset.key = String(item.inatId || tipKeySci(item.scientific));
 
         const top = document.createElement("div");
         top.className = "gallery-card-top";
@@ -4774,6 +5320,7 @@
       }
       similarForSp = sp;
       similarItems = [];
+      if (similarLocalSearch) similarLocalSearch.clear();
       syncAddAllSimilarBtn();
       if (similarTitle) {
         similarTitle.textContent = `Similar to ${sp.common || sp.scientific}`;
@@ -4790,7 +5337,10 @@
           const slug = sp.inatSlug || String(sp.inatName || sp.scientific || "taxon").replace(/\s+/g, "-");
           similarInatLink.href = `https://www.inaturalist.org/taxa/${sp.inatId}-${slug}`;
         }
-        similarItems = await window.INAT_TAXONOMY.similarSpecies(sp.inatId, { perPage: 12 });
+        similarItems = await window.INAT_TAXONOMY.similarSpecies(sp.inatId, {
+          perPage: 12,
+          excludeExtinct: shouldExcludeExtinctTaxa(),
+        });
         if (similarForSp !== sp) return;
         renderSimilarGallery(similarItems);
         if (similarMeta) {
@@ -4855,20 +5405,18 @@
       }
 
       const runId = ++fetchRunId;
+      startLoadProgress(toAdd.length, `Adding ${label}…`, { bulk: true });
       beginFetch();
-      setBulkAddProgress(`Adding 0 / ${toAdd.length} ${label}…`);
       syncSimilarCardStates();
       let added = 0;
       let stopped = false;
       try {
-        for (let i = 0; i < toAdd.length; i++) {
+        await window.GBIF_API.mapPool(toAdd, SPECIES_FETCH_CONCURRENCY_BULK, async (item, i) => {
           if (runId !== fetchRunId) {
             stopped = true;
-            break;
+            return;
           }
-          const item = toAdd[i];
-          setBulkAddProgress(`Adding ${i + 1} / ${toAdd.length} ${label}…`);
-          if (btnAddAllSimilar) btnAddAllSimilar.textContent = `${i + 1}/${toAdd.length}`;
+          const progressId = `similar-${i}`;
           const sp = await addMappedSpecies(
             {
               scientific: item.scientific,
@@ -4877,15 +5425,17 @@
               inatName: item.scientific,
               inatCommon: item.common,
             },
-            { runId }
+            { runId, progressId }
           );
+          reportLoadProgress(progressId, 1);
           if (runId !== fetchRunId) {
             stopped = true;
-            break;
+            return;
           }
           if (sp) added += 1;
           syncSimilarCardStates();
-        }
+        });
+        if (runId !== fetchRunId) stopped = true;
         if (stopped) {
           setStatus(
             `Stopped after adding ${added} of ${toAdd.length} similar species. Already-mapped species stay on the list.`
@@ -4904,38 +5454,34 @@
 
     if (similarModal) {
       similarModal.querySelectorAll("[data-close-similar]").forEach((el) => {
-        el.addEventListener("click", closeSimilarModal);
+        el.addEventListener("click", () => closeSimilarModal());
       });
+    }
+    if (btnSimilarBack) {
+      btnSimilarBack.addEventListener("click", () => backToGalleryFromSimilar());
     }
     if (btnAddAllSimilar) {
       btnAddAllSimilar.addEventListener("click", () => addAllSimilarSpecies());
     }
 
     // --- Actions ---
-    regionFilter.addEventListener("change", () => {
-      syncRegionControls();
-      const reg = currentRegion();
-      fitRegion(reg.bbox);
-      setupColoradoMask();
-      refetchAllSpecies();
-    });
-    regionMode.addEventListener("change", () => {
-      fillRegionSelect();
-      updateOverlayAvailability();
-      const reg = currentRegion();
-      fitRegion(reg.bbox);
-      setupColoradoMask();
-      if (regionFilter.checked) refetchAllSpecies();
-    });
-    regionSelect.addEventListener("change", () => {
-      updateOverlayAvailability();
-      const reg = currentRegion();
-      fitRegion(reg.bbox);
-      setupColoradoMask();
-      if (regionFilter.checked) refetchAllSpecies();
-    });
     document.getElementById("sample-size").addEventListener("change", () => refetchAllSpecies());
-    document.getElementById("stratify-country").addEventListener("change", () => refetchAllSpecies());
+    const basisBlock = document.getElementById("basis-of-record-block");
+    if (basisBlock) {
+      basisBlock.addEventListener("change", () => {
+        if (!getAllowedBasisOfRecord().length) {
+          setStatus("Select at least one allowed observation type.", true);
+          return;
+        }
+        refetchAllSpecies();
+      });
+    }
+    const speciesRankOnlyEl = document.getElementById("species-rank-only");
+    if (speciesRankOnlyEl) {
+      speciesRankOnlyEl.addEventListener("change", () => {
+        if (addInput.value.trim().length >= 2) scheduleSpeciesSuggest();
+      });
+    }
 
     addBtn.addEventListener("click", () => {
       hideSpeciesSuggest();
@@ -5013,30 +5559,25 @@
     if (btnStopBulkTree) btnStopBulkTree.addEventListener("click", () => stopBulkAdd());
 
     document.getElementById("btn-reset").addEventListener("click", async () => {
-      regionFilter.checked = false;
-      regionMode.value = "us_state";
-      fillRegionSelect();
-      regionSelect.value = "Colorado";
-      syncRegionControls();
       document.getElementById("sample-size").value = "1000";
-      document.getElementById("stratify-country").checked = false;
+      resetBasisOfRecordDefaults();
+      const excludeExtinct = document.getElementById("exclude-extinct");
+      if (excludeExtinct) excludeExtinct.checked = true;
+      const speciesRankOnly = document.getElementById("species-rank-only");
+      if (speciesRankOnly) speciesRankOnly.checked = true;
       species = structuredClone(window.REGIONS.default_species);
       renderSpeciesList();
       setOverlay(GLOBAL_ELEV_ID);
       setUdvardy(null);
       showSpecimens.checked = true;
       syncSpecimenVisibility();
-      fitRegion(currentRegion().bbox);
+      fitDefaultView();
       await refetchAllSpecies();
     });
 
     // Boot — load default species from GBIF
-    fillRegionSelect();
-    regionFilter.checked = false;
-    syncRegionControls();
-    fitRegion(currentRegion().bbox);
+    fitDefaultView();
     renderSpeciesList();
-    setupColoradoMask();
     refetchAllSpecies();
   </script>
 </body>
