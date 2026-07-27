@@ -37,13 +37,17 @@
       grid-template-columns: 0 1fr;
     }
     aside {
-      padding: 1.25rem 1.2rem;
+      padding: 1.25rem 1.2rem 0.55rem;
       border-right: 1px solid rgba(28, 36, 25, 0.12);
       background: var(--panel);
       backdrop-filter: blur(8px);
-      overflow: auto;
+      overflow: hidden;
+      overflow-y: auto;
       z-index: 2;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     .shell.sidebar-collapsed aside {
       visibility: hidden;
@@ -153,10 +157,30 @@
       flex-direction: column;
       gap: 0.35rem;
       margin: 0.55rem 0 0.15rem;
-      max-height: min(48vh, 336px);
+      flex: 1 1 auto;
+      min-height: 12rem;
+      max-height: none;
       overflow: auto;
       padding-right: 0.45rem;
       scrollbar-gutter: stable;
+    }
+    aside > h1,
+    aside > .add-row,
+    aside > .btn-row,
+    aside > .fetch-progress,
+    aside > .bulk-add-bar,
+    aside > .status,
+    aside > .advanced,
+    aside > .about,
+    aside > .help,
+    aside > .sources {
+      flex-shrink: 0;
+    }
+    aside > .sources {
+      padding-top: 0.15rem;
+    }
+    aside > .sources h2 {
+      margin: 0.35rem 0 0;
     }
     .bulk-add-bar {
       display: flex;
