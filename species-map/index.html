@@ -6,7 +6,7 @@
   <title>Species Map Explorer — GBIF</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root {
@@ -1658,11 +1658,14 @@
         </h2>
         <div class="sources-popover" id="sources-popover" hidden>
           <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a> — occurrence data<br />
+          <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a> — taxonomy, photos, and related taxa<br />
           <a href="https://www.phylopic.org/" target="_blank" rel="noopener">PhyloPic</a> — silhouettes<br />
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> /
+          <a href="https://carto.com/attribution/" target="_blank" rel="noopener">CARTO</a> — basemap tiles<br />
           <a href="https://data-gis.unep-wcmc.org/server/rest/services/Bio-geographicalRegions/Udvardy_Biogeographical_Provinces_1975/FeatureServer" target="_blank" rel="noopener">Udvardy provinces (1975)</a> via UNEP-WCMC<br />
           <a href="https://www.worldclim.org/" target="_blank" rel="noopener">WorldClim 2.1</a> — global climate normals<br />
           <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">AWS Terrain Tiles</a> — global elevation<br />
-          <a href="https://nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a> — MODIS NDVI greenness
+          <a href="https://nasa-gibs.github.io/gibs-api-docs/" target="_blank" rel="noopener">NASA GIBS</a> — MODIS NDVI greenness
         </div>
       </div>
     </aside>
@@ -2093,7 +2096,7 @@
           url,
           attribution: p.attribution || "",
           license: p.license_code || "",
-          page: `https://www.inaturalist.org/taxa/${hit.id}-${hit.slug}`,
+          page: `https://www.inaturalist.org/taxa/${hit.id}`,
         });
       };
       (taxon && taxon.taxon_photos ? taxon.taxon_photos : []).forEach((tp) => pushPhoto(tp.photo));
@@ -2108,7 +2111,7 @@
         const hit = await resolveiNatTaxon(sp);
         if (hit) {
           window.open(
-            `https://www.inaturalist.org/taxa/${hit.id}-${hit.slug}`,
+            `https://www.inaturalist.org/taxa/${hit.id}`,
             "_blank",
             "noopener,noreferrer"
           );
@@ -3923,7 +3926,7 @@
       units: "vegetation index",
       period: "MODIS Terra · Jul 2010",
       source_name: "NASA GIBS / MODIS",
-      source_url: "https://nasa.gov/gibs",
+      source_url: "https://nasa-gibs.github.io/gibs-api-docs/",
     };
     const globalNdviLayer = L.tileLayer(
       "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_L3_NDVI_Monthly/default/2010-07-01/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png",
@@ -5935,8 +5938,8 @@
         await ensurePreferredScientific(sp);
         if (!sp.inatId) throw new Error("No iNaturalist match for this species yet.");
         if (similarInatLink) {
-          const slug = sp.inatSlug || String(sp.inatName || sp.scientific || "taxon").replace(/\s+/g, "-");
-          similarInatLink.href = `https://www.inaturalist.org/taxa/${sp.inatId}-${slug}`;
+          // ID-only URLs always resolve; hand-built slugs can 404 on iNat.
+          similarInatLink.href = `https://www.inaturalist.org/taxa/${sp.inatId}`;
         }
         similarItems = await window.INAT_TAXONOMY.similarSpecies(sp.inatId, {
           perPage: 12,
