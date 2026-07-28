@@ -88,6 +88,20 @@ window.PHYLOPIC_API = (() => {
     return buildPromise;
   }
 
+  function licenseLabel(href) {
+    const h = String(href || "").toLowerCase();
+    if (!h) return "Unknown license";
+    if (h.includes("/zero/") || h.includes("publicdomain/zero")) return "CC0 1.0 (Public Domain)";
+    if (h.includes("publicdomain")) return "Public Domain";
+    if (h.includes("/by-nc-sa/")) return "CC BY-NC-SA";
+    if (h.includes("/by-nc-nd/")) return "CC BY-NC-ND";
+    if (h.includes("/by-nc/")) return "CC BY-NC";
+    if (h.includes("/by-sa/")) return "CC BY-SA";
+    if (h.includes("/by-nd/")) return "CC BY-ND";
+    if (h.includes("/by/")) return "CC BY";
+    return "Open license";
+  }
+
   function imageFromMeta(img) {
     if (!img || !img.uuid) return null;
     const links = img._links || {};
@@ -128,13 +142,26 @@ window.PHYLOPIC_API = (() => {
 
     const src = thumbUrls[0];
     if (!src) return null;
+    // Image.attribution is the credit line artists request (may list many authors).
+    // links.contributor is often the PhyloPic uploader, not the silhouette artist.
+    const credit = String(img.attribution || "").trim()
+      || (links.contributor && links.contributor.title)
+      || null;
+    const contributor = (links.contributor && links.contributor.title) || null;
+    const taxonTitle =
+      (links.self && links.self.title)
+      || (links.specificNode && links.specificNode.title)
+      || null;
     return {
       uuid: img.uuid,
       src,
       thumbUrls,
       pageUrl: `${SITE}/images/${img.uuid}`,
       license: licenseHref,
-      attribution: (links.contributor && links.contributor.title) || null,
+      licenseLabel: licenseLabel(licenseHref),
+      attribution: credit,
+      contributor,
+      taxonTitle,
     };
   }
 

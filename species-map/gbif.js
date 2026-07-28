@@ -482,6 +482,16 @@
     return gbifFetchJson(url.toString());
   }
 
+  function coordKey(rec) {
+    return `${Number(rec.lat).toFixed(5)},${Number(rec.lon).toFixed(5)}`;
+  }
+
+  /**
+   * Fetch up to maxRecords unique coordinated occurrences.
+   * Pass seedRecords + startOffset to continue a prior sample instead of
+   * restarting from page 0 (used when raising “examples per species”).
+   * @returns {{ records: object[], nextOffset: number, exhausted: boolean }}
+   */
   async function fetchOccurrencesFlat({
     taxonKey,
     maxRecords,
@@ -490,6 +500,8 @@
     onBatch,
     shouldParallelPages,
     basisOfRecord = null,
+    seedRecords = null,
+    startOffset = 0,
   }) {
     const pageSize = 300; // GBIF hard max per request
     const rows = [];
@@ -499,8 +511,22 @@
         ? new Set(basisOfRecord.map((b) => String(b).toUpperCase()))
         : null;
 
-    function ingestPage(j) {
+    for (const rec of seedRecords || []) {
+      if (!rec || rec.lat == null || rec.lon == null) continue;
+      const k = coordKey(rec);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      rows.push(rec);
+      if (rows.length >= maxRecords) break;
+    }
+
+    let nextOffset = Math.max(0, Number(startOffset) || 0);
+    let exhausted = false;
+    let totalAvailable = null;
+
+    function ingestPage(j, pageOffset) {
       const results = j.results || [];
+      if (typeof j.count === "number") totalAvailable = j.count;
       const batch = [];
       for (const o of results) {
         if (allowed) {
@@ -509,7 +535,7 @@
         }
         const rec = recordFromOccurrence(o);
         if (!rec) continue;
-        const k = `${rec.lat.toFixed(5)},${rec.lon.toFixed(5)}`;
+        const k = coordKey(rec);
         if (seen.has(k)) continue;
         seen.add(k);
         batch.push(rec);
@@ -518,26 +544,36 @@
       }
       if (batch.length && onBatch) onBatch(batch, rows.length);
       if (onProgress) onProgress(rows.length, Math.min(maxRecords, j.count || rows.length));
+      const pageEnd = pageOffset + results.length;
+      if (pageEnd > nextOffset) nextOffset = pageEnd;
+      if (!results.length) exhausted = true;
+      if (totalAvailable != null && nextOffset >= totalAvailable) exhausted = true;
       return results.length;
     }
 
-    // First page: get count + initial points
+    if (rows.length >= maxRecords) {
+      return { records: rows.slice(0, maxRecords), nextOffset, exhausted };
+    }
+
+    // First request from the resume offset (0 on a fresh load)
     const first = await fetchPage({
       taxonKey,
       yearMin,
-      offset: 0,
-      limit: Math.min(pageSize, maxRecords),
+      offset: nextOffset,
+      limit: Math.min(pageSize, Math.max(1, maxRecords - rows.length)),
       basisOfRecord,
     });
-    const got = ingestPage(first);
+    const firstOffset = nextOffset;
+    const got = ingestPage(first, firstOffset);
     if (!got || rows.length >= maxRecords) {
-      return rows.slice(0, maxRecords);
+      if (!got) exhausted = true;
+      return { records: rows.slice(0, maxRecords), nextOffset, exhausted };
     }
 
-    const totalAvailable = Number(first.count) || 0;
-    const target = Math.min(maxRecords, totalAvailable || maxRecords);
-    if (got >= target || (totalAvailable && got >= totalAvailable)) {
-      return rows.slice(0, maxRecords);
+    const available = totalAvailable != null ? totalAvailable : 0;
+    if (available && rows.length >= available) {
+      exhausted = true;
+      return { records: rows.slice(0, maxRecords), nextOffset, exhausted };
     }
 
     // Decide after the first round-trip so bulk jobs (3 species already
@@ -546,44 +582,53 @@
       typeof shouldParallelPages === "function" ? !!shouldParallelPages() : !!shouldParallelPages;
 
     if (parallelPages) {
+      // Page through roughly one GBIF-result window of size maxRecords (same
+      // heuristic as before); unique kept rows may be slightly under target.
+      const base = Math.max(0, Number(startOffset) || 0);
+      const offsetCeil = available
+        ? Math.min(available, Math.max(nextOffset, base + maxRecords))
+        : Math.max(nextOffset, base + maxRecords);
       const offsets = [];
-      for (let offset = pageSize; offset < target; offset += pageSize) {
+      for (let offset = nextOffset; offset < offsetCeil; offset += pageSize) {
         offsets.push(offset);
       }
       if (offsets.length) {
         await mapPool(offsets, offsets.length, async (offset) => {
           if (rows.length >= maxRecords) return;
-          const need = Math.min(pageSize, target - offset);
-          if (need <= 0) return;
           const j = await fetchPage({
             taxonKey,
             yearMin,
             offset,
-            limit: need,
+            limit: pageSize,
             basisOfRecord,
           });
-          if (rows.length < maxRecords) ingestPage(j);
+          if (rows.length < maxRecords) ingestPage(j, offset);
         });
       }
-      return rows.slice(0, maxRecords);
+      if (available && nextOffset >= available) exhausted = true;
+      return { records: rows.slice(0, maxRecords), nextOffset, exhausted };
     }
 
-    let offset = pageSize;
-    while (rows.length < maxRecords && offset < target) {
-      const need = Math.min(pageSize, target - offset);
+    while (rows.length < maxRecords && !exhausted) {
+      if (available && nextOffset >= available) {
+        exhausted = true;
+        break;
+      }
+      const pageOffset = nextOffset;
       const j = await fetchPage({
         taxonKey,
         yearMin,
-        offset,
-        limit: need,
+        offset: pageOffset,
+        limit: Math.min(pageSize, Math.max(1, maxRecords - rows.length)),
         basisOfRecord,
       });
-      const n = ingestPage(j);
-      if (!n) break;
-      offset += n;
-      if (totalAvailable && offset >= totalAvailable) break;
+      const n = ingestPage(j, pageOffset);
+      if (!n) {
+        exhausted = true;
+        break;
+      }
     }
-    return rows.slice(0, maxRecords);
+    return { records: rows.slice(0, maxRecords), nextOffset, exhausted };
   }
 
   /** How many species occurrence loads are in flight (for page-parallel decisions). */
@@ -597,6 +642,8 @@
       onProgress,
       onBatch,
       basisOfRecord = null,
+      seedRecords = null,
+      startOffset = 0,
     } = opts;
 
     const capped = Math.max(1, Math.min(5000, Number(maxRecords) || 1000));
@@ -609,9 +656,11 @@
         onProgress,
         onBatch,
         basisOfRecord,
+        seedRecords,
+        startOffset,
         // Only fan out pages when this species is alone — bulk adds of
         // dozens/hundreds already keep the global HTTP slots busy.
-        shouldParallelPages: () => activeOccurrenceFetches === 1,
+        shouldParallelPages: () => activeOccurrenceFetches === 1 && !(seedRecords && seedRecords.length),
       });
     } finally {
       activeOccurrenceFetches = Math.max(0, activeOccurrenceFetches - 1);

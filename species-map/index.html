@@ -1030,9 +1030,11 @@
       font-size: 0.85rem;
       color: rgba(28, 36, 25, 0.8);
     }
-    .species-chip a.phylo-link:hover .phylo-sil {
-      outline: 2px solid var(--sky);
-      outline-offset: 1px;
+    .phylo-wrap {
+      position: relative;
+      display: inline-flex;
+      flex-shrink: 0;
+      align-items: center;
     }
     .phylo-sil {
       display: inline-block;
@@ -1049,15 +1051,122 @@
       -webkit-mask-source-type: alpha;
       flex-shrink: 0;
     }
-    .species-chip a.phylo-link {
+    button.phylo-link,
+    a.phylo-link {
       display: inline-flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       color: inherit;
       text-decoration: none;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      border-radius: 0;
+      cursor: pointer;
+      font: inherit;
+      line-height: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    button.phylo-link:hover .phylo-sil,
+    a.phylo-link:hover .phylo-sil {
+      outline: 2px solid var(--sky);
+      outline-offset: 1px;
+    }
+    button.phylo-link:focus-visible {
+      outline: 2px solid var(--sage);
+      outline-offset: 2px;
     }
     .species-chip .phylo-sil {
       width: 26px;
       height: 20px;
+    }
+    .phylo-credit-popover {
+      position: fixed;
+      z-index: 2400;
+      width: min(17.5rem, calc(100vw - 1.5rem));
+      max-height: min(70vh, 22rem);
+      overflow: auto;
+      padding: 0.7rem 0.75rem 0.75rem;
+      border: 1px solid rgba(28, 36, 25, 0.14);
+      border-radius: 6px;
+      background: #faf8f4;
+      box-shadow: 0 10px 28px rgba(28, 36, 25, 0.18);
+      color: rgba(28, 36, 25, 0.88);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+    .phylo-credit-popover[hidden] {
+      display: none !important;
+    }
+    .phylo-credit-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+    }
+    .phylo-credit-head strong {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .phylo-credit-close {
+      flex-shrink: 0;
+      width: 1.35rem;
+      height: 1.35rem;
+      padding: 0;
+      border: 1px solid rgba(28, 36, 25, 0.16);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.8);
+      color: rgba(28, 36, 25, 0.65);
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+    .phylo-credit-close:hover {
+      color: var(--ink);
+      border-color: rgba(28, 36, 25, 0.35);
+    }
+    .phylo-credit-taxon {
+      margin: 0 0 0.65rem;
+      color: rgba(28, 36, 25, 0.7);
+    }
+    .phylo-credit-taxon em {
+      font-style: italic;
+    }
+    .phylo-credit-row {
+      margin: 0 0 0.55rem;
+    }
+    .phylo-credit-label {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(28, 36, 25, 0.5);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .phylo-credit-value {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .phylo-credit-popover a {
+      color: var(--sage);
+    }
+    .phylo-credit-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.65rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid rgba(28, 36, 25, 0.1);
+    }
+    .phylo-credit-actions a {
+      font-weight: 600;
     }
     .legend { font-size: 0.75rem; margin: 0.35rem 0 0.5rem; color: rgba(28,36,25,0.65); line-height: 1.35; }
     .ramp { height: 10px; border-radius: 2px; margin: 0.25rem 0 0.15rem; border: 1px solid rgba(28,36,25,0.15); }
@@ -1702,8 +1811,8 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="regions.js?v=20260726b"></script>
-  <script src="gbif.js?v=20260727a"></script>
-  <script src="phylopic.js?v=20260724c"></script>
+  <script src="gbif.js?v=20260728a"></script>
+  <script src="phylopic.js?v=20260728a"></script>
   <script src="onezoom.js?v=20260721f"></script>
   <script src="opentree.js?v=20260727a"></script>
   <script src="overlays.js?v=20260726c"></script>
@@ -1729,6 +1838,8 @@
     let species = structuredClone(window.REGIONS.default_species);
     let fetchRunId = 0;
     let bulkAddActive = false;
+    let fetchBusy = false;
+    let activeFetchCount = 0;
     const SPECIES_FETCH_CONCURRENCY = 3;
     /** Bulk clade / similar-species adds can push harder; still capped by GBIF slots. */
     const SPECIES_FETCH_CONCURRENCY_BULK = 5;
@@ -1739,6 +1850,11 @@
 
     function cancelSpeciesFetches() {
       fetchRunId += 1;
+      // Drop bookkeeping immediately so a superseded load can't leave the
+      // progress bar stuck after a newer add/refetch has already finished.
+      activeFetchCount = 0;
+      setFetchBusy(false);
+      if (!bulkAddActive) clearLoadProgress();
     }
 
     const speciesListEl = document.getElementById("species-list");
@@ -2046,6 +2162,7 @@
     }
 
     function renderSpeciesList({ skipPhylo = false } = {}) {
+      closePhyloCredit();
       species.forEach(ensureSpeciesStyle);
       speciesListEl.innerHTML = "";
       const clearBtn = document.getElementById("btn-clear-species");
@@ -2688,6 +2805,119 @@
       }
     }
 
+    let phyloCreditPopover = null;
+    let phyloCreditAnchor = null;
+    let phyloCreditCloserBound = false;
+
+    function ensurePhyloCreditPopover() {
+      if (phyloCreditPopover) return phyloCreditPopover;
+      phyloCreditPopover = document.createElement("div");
+      phyloCreditPopover.id = "phylo-credit-popover";
+      phyloCreditPopover.className = "phylo-credit-popover";
+      phyloCreditPopover.hidden = true;
+      phyloCreditPopover.setAttribute("role", "dialog");
+      phyloCreditPopover.setAttribute("aria-label", "PhyloPic silhouette credit");
+      document.body.appendChild(phyloCreditPopover);
+      if (!phyloCreditCloserBound) {
+        phyloCreditCloserBound = true;
+        document.addEventListener("click", (e) => {
+          if (!phyloCreditPopover || phyloCreditPopover.hidden) return;
+          if (phyloCreditPopover.contains(e.target)) return;
+          if (phyloCreditAnchor && phyloCreditAnchor.contains(e.target)) return;
+          closePhyloCredit();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closePhyloCredit();
+        });
+        window.addEventListener(
+          "resize",
+          () => {
+            if (phyloCreditPopover && !phyloCreditPopover.hidden && phyloCreditAnchor) {
+              positionPhyloCredit(phyloCreditAnchor);
+            }
+          },
+          { passive: true }
+        );
+      }
+      return phyloCreditPopover;
+    }
+
+    function closePhyloCredit() {
+      if (!phyloCreditPopover) return;
+      phyloCreditPopover.hidden = true;
+      phyloCreditPopover.innerHTML = "";
+      if (phyloCreditAnchor) {
+        phyloCreditAnchor.setAttribute("aria-expanded", "false");
+      }
+      phyloCreditAnchor = null;
+    }
+
+    function positionPhyloCredit(anchor) {
+      const pop = ensurePhyloCreditPopover();
+      const rect = anchor.getBoundingClientRect();
+      const pad = 8;
+      const width = pop.offsetWidth || Math.min(280, window.innerWidth - 24);
+      let left = rect.left;
+      let top = rect.bottom + 6;
+      pop.style.left = "0px";
+      pop.style.top = "0px";
+      // Measure after content is in the DOM
+      const popH = pop.offsetHeight || 180;
+      const popW = pop.offsetWidth || width;
+      if (left + popW > window.innerWidth - pad) {
+        left = Math.max(pad, window.innerWidth - popW - pad);
+      }
+      if (left < pad) left = pad;
+      if (top + popH > window.innerHeight - pad && rect.top > popH + pad) {
+        top = rect.top - popH - 6;
+      }
+      if (top < pad) top = pad;
+      pop.style.left = `${Math.round(left)}px`;
+      pop.style.top = `${Math.round(top)}px`;
+    }
+
+    function openPhyloCredit(phy, sp, anchor) {
+      const pop = ensurePhyloCreditPopover();
+      if (phyloCreditAnchor === anchor && !pop.hidden) {
+        closePhyloCredit();
+        return;
+      }
+      closePhyloCredit();
+      const credit = phy.attribution || phy.contributor || "Unknown creator";
+      const licenseHref = phy.license || "";
+      const licenseName = phy.licenseLabel || "Open license";
+      const taxon = phy.taxonTitle || sp.scientific || "";
+      const common = sp.common && sp.common !== taxon ? sp.common : "";
+      pop.innerHTML = `
+        <div class="phylo-credit-head">
+          <strong>PhyloPic silhouette</strong>
+          <button type="button" class="phylo-credit-close" aria-label="Close credit">&times;</button>
+        </div>
+        <p class="phylo-credit-taxon">${
+          common ? `${escapeHtml(common)} · ` : ""
+        }${taxon ? `<em>${escapeHtml(taxon)}</em>` : ""}</p>
+        <div class="phylo-credit-row">
+          <span class="phylo-credit-label">Credit</span>
+          <p class="phylo-credit-value">${escapeHtml(credit)}</p>
+        </div>
+        <div class="phylo-credit-row">
+          <span class="phylo-credit-label">License</span>
+          <p class="phylo-credit-value">${
+            licenseHref
+              ? `<a href="${escapeHtml(licenseHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(licenseName)}</a>`
+              : escapeHtml(licenseName)
+          }</p>
+        </div>
+        <div class="phylo-credit-actions">
+          <a href="${escapeHtml(phy.pageUrl)}" target="_blank" rel="noopener noreferrer">View on PhyloPic</a>
+        </div>`;
+      pop.querySelector(".phylo-credit-close")?.addEventListener("click", () => closePhyloCredit());
+      pop.hidden = false;
+      phyloCreditAnchor = anchor;
+      anchor.setAttribute("aria-expanded", "true");
+      positionPhyloCredit(anchor);
+    }
+
     function speciesIconEl(sp, color, { link = true } = {}) {
       const phy = sp.phylopic;
       // Only use blob maskUrl for CSS masks — raw PhyloPic URLs often fail as masks
@@ -2700,27 +2930,45 @@
         sil.style.maskImage = `url("${phy.maskUrl}")`;
         sil.style.maskMode = "alpha";
         if (!link) return sil;
-        const a = document.createElement("a");
-        a.className = "phylo-link";
-        a.href = phy.pageUrl;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.title = `PhyloPic silhouette${phy.attribution ? ` · ${phy.attribution}` : ""} (opens source page)`;
-        a.setAttribute("aria-label", `PhyloPic page for ${sp.common || sp.scientific}`);
-        a.appendChild(sil);
-        return a;
+        const wrap = document.createElement("span");
+        wrap.className = "phylo-wrap";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "phylo-link";
+        btn.setAttribute("aria-expanded", "false");
+        btn.setAttribute("aria-haspopup", "dialog");
+        const credit = phy.attribution || phy.contributor || "";
+        btn.setAttribute(
+          "aria-label",
+          `Silhouette credit for ${sp.common || sp.scientific}${credit ? ` (${credit})` : ""}`
+        );
+        btn.appendChild(sil);
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openPhyloCredit(phy, sp, btn);
+        });
+        wrap.appendChild(btn);
+        return wrap;
       }
       const swatch = circleSwatch(color);
       if (phy && phy.pageUrl && link) {
-        const a = document.createElement("a");
-        a.className = "phylo-link";
-        a.href = phy.pageUrl;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.title = `PhyloPic page${phy.attribution ? ` · ${phy.attribution}` : ""}`;
-        a.setAttribute("aria-label", `PhyloPic page for ${sp.common || sp.scientific}`);
-        a.appendChild(swatch);
-        return a;
+        const wrap = document.createElement("span");
+        wrap.className = "phylo-wrap";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "phylo-link";
+        btn.setAttribute("aria-expanded", "false");
+        btn.setAttribute("aria-haspopup", "dialog");
+        btn.setAttribute("aria-label", `Silhouette credit for ${sp.common || sp.scientific}`);
+        btn.appendChild(swatch);
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openPhyloCredit(phy, sp, btn);
+        });
+        wrap.appendChild(btn);
+        return wrap;
       }
       return swatch;
     }
@@ -4582,10 +4830,10 @@
         btn.disabled = true;
         btn.textContent = "Loading…";
       }
-      const listRunId = ++fetchRunId;
       setBulkAddProgress(`Listing species in ${label}…`);
-      beginFetch();
+      const listRunId = beginFetchRun();
       let holdFetch = true;
+      let heldRunId = listRunId;
       try {
         const { items, total } = await api.speciesUnderTaxon(node.id, {
           excludeExtinct: shouldExcludeExtinctTaxa(),
@@ -4621,7 +4869,7 @@
 
         // Pause busy UI for confirm so Stop isn't shown during the dialog
         clearBulkAddProgress();
-        endFetch();
+        endFetch(listRunId);
         holdFetch = false;
 
         if (toAdd.length > 20) {
@@ -4639,10 +4887,10 @@
         }
 
         if (fetchBusy) return;
-        const runId = ++fetchRunId;
         startLoadProgress(toAdd.length, `Adding species from ${label}…`, { bulk: true });
-        beginFetch();
+        const runId = beginFetchRun();
         holdFetch = true;
+        heldRunId = runId;
         let added = 0;
         const skipped = items.length - toAdd.length;
         let stopped = false;
@@ -4686,7 +4934,7 @@
         setStatus(e.message || String(e), true);
       } finally {
         clearBulkAddProgress();
-        if (holdFetch) endFetch();
+        if (holdFetch) endFetch(heldRunId);
         if (btn) {
           btn.disabled = false;
           btn.textContent = buttonLabel;
@@ -4733,8 +4981,6 @@
     });
 
     // --- GBIF search (runs on add / option change / boot) ---
-    let fetchBusy = false;
-    let activeFetchCount = 0;
     const addBtn = document.getElementById("btn-add-species");
     const addInput = document.getElementById("species-add");
     const suggestEl = document.getElementById("species-suggest");
@@ -5059,7 +5305,22 @@
       }
     }
 
-    function endFetch() {
+    /**
+     * Start an exclusive load run. Invalidates in-flight work and resets the
+     * busy counter so a cancelled refetch can't keep the loader visible after
+     * a newer add has already completed.
+     */
+    function beginFetchRun() {
+      fetchRunId += 1;
+      activeFetchCount = 0;
+      if (!bulkAddActive) clearLoadProgress();
+      beginFetch();
+      return fetchRunId;
+    }
+
+    function endFetch(runId) {
+      // Superseded runs must not touch counter/UI — the newer run owns them.
+      if (runId != null && runId !== fetchRunId) return;
       activeFetchCount = Math.max(0, activeFetchCount - 1);
       if (activeFetchCount === 0) {
         setFetchBusy(false);
@@ -5101,20 +5362,78 @@
       });
     }
 
-    async function fetchOneSpecies(sp, runId, { progressId = null } = {}) {
-      const maxRecords = Number(document.getElementById("sample-size").value) || 1000;
-      if (!speciesStillActive(sp)) return 0;
+    function basisSignature() {
+      return getAllowedBasisOfRecord().slice().sort().join("|");
+    }
+
+    function sampleTargetSize() {
+      return Math.max(50, Math.min(5000, Number(document.getElementById("sample-size").value) || 1000));
+    }
+
+    function ensureSpeciesSample(sp) {
+      if (!sp._sample) {
+        sp._sample = {
+          records: [],
+          nextOffset: 0,
+          exhausted: false,
+          basisKey: "",
+        };
+      }
+      return sp._sample;
+    }
+
+    function paintedCountForSpecies(sp) {
+      const key = Number(sp.taxonKey);
+      return pointMarkers.filter((m) => Number(m._taxonKey) === key && !m._wrapOffset).length;
+    }
+
+    /** Rebuild map markers for a species from its cached sample (first `limit` records). */
+    function syncSpeciesMarkersFromSample(sp, limit) {
+      const sample = ensureSpeciesSample(sp);
       removePointsForSpecies(sp);
-      let painted = 0;
+      const keep = Math.max(0, Math.min(limit, sample.records.length));
+      if (keep) addPoints(sample.records.slice(0, keep), sp);
+      return keep;
+    }
+
+    async function fetchOneSpecies(sp, runId, { progressId = null, mode = "replace" } = {}) {
+      const maxRecords = sampleTargetSize();
+      if (!speciesStillActive(sp)) return 0;
       const unitId = progressId != null ? progressId : sp.taxonKey;
       const basisOfRecord = getAllowedBasisOfRecord();
       if (!basisOfRecord.length) {
         throw new Error("Select at least one allowed observation type in Advanced options.");
       }
-      const recs = await window.GBIF_API.fetchOccurrences({
+      const basisKey = basisSignature();
+      const sample = ensureSpeciesSample(sp);
+      const basisChanged = sample.basisKey && sample.basisKey !== basisKey;
+
+      if (mode === "replace" || basisChanged) {
+        sample.records = [];
+        sample.nextOffset = 0;
+        sample.exhausted = false;
+        sample.basisKey = basisKey;
+        removePointsForSpecies(sp);
+      } else {
+        sample.basisKey = basisKey;
+      }
+
+      // Already have enough cached rows — just show the requested prefix.
+      if (sample.records.length >= maxRecords || (sample.exhausted && mode !== "replace")) {
+        const n = syncSpeciesMarkersFromSample(sp, maxRecords);
+        reportLoadProgress(unitId, 1);
+        return n;
+      }
+
+      let painted = paintedCountForSpecies(sp);
+      const seedRecords = sample.records.slice();
+      const startOffset = sample.nextOffset || 0;
+      const result = await window.GBIF_API.fetchOccurrences({
         taxonKey: sp.taxonKey,
         maxRecords,
         basisOfRecord,
+        seedRecords,
+        startOffset,
         onBatch: (batch) => {
           if (runId != null && runId !== fetchRunId) return;
           if (!speciesStillActive(sp)) return;
@@ -5131,16 +5450,103 @@
         },
       });
       if (runId != null && runId !== fetchRunId) return 0;
-      if (!speciesStillActive(sp)) return 0;
+      if (!speciesStillActive(sp)) {
+        reportLoadProgress(unitId, 1);
+        return 0;
+      }
+      sample.records = (result && result.records) || [];
+      sample.nextOffset = (result && result.nextOffset) || sample.nextOffset || 0;
+      sample.exhausted = !!(result && result.exhausted);
+      sample.basisKey = basisKey;
+      // Ensure displayed markers match the target (handles seed-only completions).
+      if (paintedCountForSpecies(sp) !== Math.min(maxRecords, sample.records.length)) {
+        syncSpeciesMarkersFromSample(sp, maxRecords);
+      }
       reportLoadProgress(unitId, 1);
-      return recs.length;
+      return Math.min(maxRecords, sample.records.length);
+    }
+
+    /**
+     * Respond to “examples per species” edits without a full wipe when possible:
+     * smaller → trim markers from cache; larger → fetch only the missing tail.
+     */
+    async function adjustSampleSize() {
+      const target = sampleTargetSize();
+      const list = species.slice();
+      if (!list.length) {
+        setStatus("No species on the map. Add a scientific or common name to begin.");
+        return;
+      }
+
+      const basisKey = basisSignature();
+      const needsFetch = list.filter((sp) => {
+        const sample = ensureSpeciesSample(sp);
+        if (sample.basisKey && sample.basisKey !== basisKey) return true;
+        if (sample.records.length >= target) return false;
+        if (sample.exhausted) return false;
+        return true;
+      });
+      const canTrimOnly = needsFetch.length === 0;
+
+      if (canTrimOnly) {
+        let total = 0;
+        list.forEach((sp) => {
+          total += syncSpeciesMarkersFromSample(sp, target);
+        });
+        bringPointsFront();
+        setStatus(`Showing ${total} observation locations on the map.`);
+        return;
+      }
+
+      const runId = beginFetchRun();
+      try {
+        startLoadProgress(list.length, "Updating sample size…");
+        const counts = await window.GBIF_API.mapPool(
+          list,
+          SPECIES_FETCH_CONCURRENCY,
+          async (sp) => {
+            if (runId !== fetchRunId) return 0;
+            if (!speciesStillActive(sp)) return 0;
+            const sample = ensureSpeciesSample(sp);
+            if (sample.basisKey && sample.basisKey !== basisKey) {
+              return fetchOneSpecies(sp, runId, { mode: "replace" });
+            }
+            if (sample.records.length >= target) {
+              const n = syncSpeciesMarkersFromSample(sp, target);
+              reportLoadProgress(sp.taxonKey, 1);
+              return n;
+            }
+            if (sample.exhausted) {
+              const n = syncSpeciesMarkersFromSample(sp, target);
+              reportLoadProgress(sp.taxonKey, 1);
+              return n;
+            }
+            return fetchOneSpecies(sp, runId, { mode: "topup" });
+          }
+        );
+        if (runId !== fetchRunId) return;
+        const total = counts.reduce((a, n) => a + (Number(n) || 0), 0);
+        bringPointsFront();
+        setStatus(`Showing ${total} observation locations on the map.`);
+      } catch (e) {
+        if (runId === fetchRunId) setStatus(formatFetchError(e), true);
+      } finally {
+        endFetch(runId);
+      }
     }
 
     async function refetchAllSpecies({ fit = false } = {}) {
       // Allow a newer reload to supersede an older one (e.g. remove-during-load)
-      const runId = ++fetchRunId;
-      beginFetch();
+      const runId = beginFetchRun();
       clearPoints();
+      species.forEach((sp) => {
+        sp._sample = {
+          records: [],
+          nextOffset: 0,
+          exhausted: false,
+          basisKey: "",
+        };
+      });
       let total = 0;
       try {
         const list = species.slice();
@@ -5158,7 +5564,7 @@
             if (runId !== fetchRunId) return 0;
             if (!speciesStillActive(sp)) return 0;
             try {
-              return await fetchOneSpecies(sp, runId);
+              return await fetchOneSpecies(sp, runId, { mode: "replace" });
             } catch (e) {
               if (runId !== fetchRunId) return 0;
               if (!speciesStillActive(sp)) return 0;
@@ -5175,7 +5581,7 @@
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
-        endFetch();
+        endFetch(runId);
       }
     }
 
@@ -5183,15 +5589,14 @@
       if (fetchBusy) return;
       const name = addInput.value.trim();
       if (!name) return;
-      const runId = ++fetchRunId;
-      beginFetch();
+      const runId = beginFetchRun();
       setFetchProgress({ label: "Looking up taxon…" });
       try {
         await addMappedSpecies({ scientific: name }, { runId, clearInput: true });
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
-        endFetch();
+        endFetch(runId);
       }
     }
 
@@ -5557,8 +5962,7 @@
 
     async function addFromSimilar(item) {
       if (fetchBusy || bulkAddActive || !item) return;
-      const runId = ++fetchRunId;
-      beginFetch();
+      const runId = beginFetchRun();
       syncSimilarCardStates();
       try {
         await addMappedSpecies(
@@ -5574,7 +5978,7 @@
       } catch (e) {
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
-        endFetch();
+        endFetch(runId);
         syncSimilarCardStates();
       }
     }
@@ -5600,9 +6004,8 @@
         if (!ok) return;
       }
 
-      const runId = ++fetchRunId;
       startLoadProgress(toAdd.length, `Adding ${label}…`, { bulk: true });
-      beginFetch();
+      const runId = beginFetchRun();
       syncSimilarCardStates();
       let added = 0;
       let stopped = false;
@@ -5643,7 +6046,7 @@
         if (runId === fetchRunId) setStatus(formatFetchError(e), true);
       } finally {
         clearBulkAddProgress();
-        endFetch();
+        endFetch(runId);
         syncSimilarCardStates();
       }
     }
@@ -5661,7 +6064,7 @@
     }
 
     // --- Actions ---
-    document.getElementById("sample-size").addEventListener("change", () => refetchAllSpecies());
+    document.getElementById("sample-size").addEventListener("change", () => adjustSampleSize());
     const basisBlock = document.getElementById("basis-of-record-block");
     if (basisBlock) {
       basisBlock.addEventListener("change", () => {
