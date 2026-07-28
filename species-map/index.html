@@ -4972,6 +4972,7 @@
         heldRunId = runId;
         let added = 0;
         const skipped = items.length - toAdd.length;
+        const failed = [];
         let stopped = false;
         await window.GBIF_API.mapPool(toAdd, SPECIES_FETCH_CONCURRENCY_BULK, async (item, i) => {
           if (runId !== fetchRunId) {
@@ -4979,27 +4980,48 @@
             return;
           }
           const progressId = `bulk-${i}`;
-          const sp = await addMappedSpecies(
-            {
-              scientific: item.scientific,
-              common: item.common,
-              inatId: item.inatId,
-              inatName: item.scientific,
-              inatCommon: item.common,
-            },
-            { runId, progressId, bulk: true }
-          );
-          reportLoadProgress(progressId, 1);
-          if (runId !== fetchRunId) {
-            stopped = true;
-            return;
+          try {
+            const sp = await addMappedSpecies(
+              {
+                scientific: item.scientific,
+                common: item.common,
+                inatId: item.inatId,
+                inatName: item.scientific,
+                inatCommon: item.common,
+              },
+              { runId, progressId, bulk: true }
+            );
+            if (runId !== fetchRunId) {
+              stopped = true;
+              return;
+            }
+            if (sp) added += 1;
+          } catch (e) {
+            if (runId !== fetchRunId) {
+              stopped = true;
+              return;
+            }
+            failed.push(item.scientific || item.common || "unknown");
+            // Keep going — one bad GBIF match must not kill the bulk run / hide the bar.
+            if (failed.length <= 3) {
+              setStatus(e.message || String(e), true);
+            } else if (failed.length === 4) {
+              setStatus(`Several species had no GBIF match; continuing… (${failed.length} so far)`, true);
+            }
+          } finally {
+            reportLoadProgress(progressId, 1);
           }
-          if (sp) added += 1;
         });
         if (runId !== fetchRunId) stopped = true;
         if (stopped) {
           setStatus(
             `Stopped after adding ${added} of ${toAdd.length} from ${label}. Already-mapped species stay on the list.`
+          );
+        } else if (failed.length) {
+          const sample = failed.slice(0, 3).join(", ");
+          const more = failed.length > 3 ? ` (+${failed.length - 3} more)` : "";
+          setStatus(
+            `Added ${added} from ${label}; ${failed.length} had no GBIF match (${sample}${more}).`
           );
         } else {
           setStatus(
@@ -6089,6 +6111,7 @@
       const runId = beginFetchRun();
       syncSimilarCardStates();
       let added = 0;
+      const failed = [];
       let stopped = false;
       try {
         await window.GBIF_API.mapPool(toAdd, SPECIES_FETCH_CONCURRENCY_BULK, async (item, i) => {
@@ -6097,29 +6120,43 @@
             return;
           }
           const progressId = `similar-${i}`;
-          const sp = await addMappedSpecies(
-            {
-              scientific: item.scientific,
-              common: item.common,
-              inatId: item.inatId,
-              inatName: item.scientific,
-              inatCommon: item.common,
-            },
-            { runId, progressId, bulk: true }
-          );
-          reportLoadProgress(progressId, 1);
-          if (runId !== fetchRunId) {
-            stopped = true;
-            return;
+          try {
+            const sp = await addMappedSpecies(
+              {
+                scientific: item.scientific,
+                common: item.common,
+                inatId: item.inatId,
+                inatName: item.scientific,
+                inatCommon: item.common,
+              },
+              { runId, progressId, bulk: true }
+            );
+            if (runId !== fetchRunId) {
+              stopped = true;
+              return;
+            }
+            if (sp) added += 1;
+            syncSimilarCardStates();
+          } catch (e) {
+            if (runId !== fetchRunId) {
+              stopped = true;
+              return;
+            }
+            failed.push(item.scientific || item.common || "unknown");
+            if (failed.length <= 3) {
+              setStatus(e.message || String(e), true);
+            }
+          } finally {
+            reportLoadProgress(progressId, 1);
           }
-          if (sp) added += 1;
-          syncSimilarCardStates();
         });
         if (runId !== fetchRunId) stopped = true;
         if (stopped) {
           setStatus(
             `Stopped after adding ${added} of ${toAdd.length} similar species. Already-mapped species stay on the list.`
           );
+        } else if (failed.length) {
+          setStatus(`Added ${added} similar species; ${failed.length} had no GBIF match.`);
         } else {
           setStatus(`Added ${added} similar species.`);
         }
