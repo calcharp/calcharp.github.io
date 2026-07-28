@@ -1643,9 +1643,10 @@
             Defaults: American pika · black-tailed prairie dog.
           </p>
           <p>
-            Map points come from GBIF (which often already includes many iNaturalist observations).
-            Separate iNaturalist calls are mainly for example photos, taxonomy, and similar-species tools —
-            so some overlap with GBIF points is expected, not a second occurrence layer.
+            Map points come only from GBIF (which often already includes many iNaturalist observations).
+            iNaturalist is used separately for gallery photos, taxonomy, and similar-species tools —
+            those observations are not plotted as their own layer, but a gallery photo may still be
+            from an observation that also shows up as a GBIF point on the map.
           </p>
           <p>
             I, Caleb Charpentier, am the maintainer, and I can be contacted at
@@ -1662,9 +1663,11 @@
           </button>
         </h2>
         <div class="sources-popover" id="sources-popover" hidden>
-          <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a> — occurrence data (may include iNat observations)<br />
-          <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a> — example photos, taxonomy, similar taxa<br />
+          <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a> — occurrence points on the map<br />
+          <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a> — gallery photos, taxonomy, similar taxa<br />
           <a href="https://www.phylopic.org/" target="_blank" rel="noopener">PhyloPic</a> — silhouettes<br />
+          <a href="https://www.onezoom.org/" target="_blank" rel="noopener">OneZoom</a> — tree of life (OZ button)<br />
+          <a href="https://en.wikipedia.org/" target="_blank" rel="noopener">Wikipedia</a> — Wiki button opens a search tab (not embedded)<br />
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> /
           <a href="https://carto.com/attribution/" target="_blank" rel="noopener">CARTO</a> — basemap tiles<br />
           <a href="https://data-gis.unep-wcmc.org/server/rest/services/Bio-geographicalRegions/Udvardy_Biogeographical_Provinces_1975/FeatureServer" target="_blank" rel="noopener">Udvardy provinces (1975)</a> via UNEP-WCMC<br />
