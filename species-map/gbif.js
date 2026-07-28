@@ -646,12 +646,13 @@
       startOffset = 0,
     } = opts;
 
-    const capped = Math.max(1, Math.min(5000, Number(maxRecords) || 1000));
+    const n = Math.floor(Number(maxRecords));
+    const limit = Number.isFinite(n) && n >= 0 ? n : 1000;
     activeOccurrenceFetches += 1;
     try {
       return await fetchOccurrencesFlat({
         taxonKey,
-        maxRecords: capped,
+        maxRecords: limit,
         yearMin,
         onProgress,
         onBatch,
