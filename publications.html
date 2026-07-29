@@ -17,36 +17,19 @@
   <div class="container">
     <header class="header">
       <div class="header__logo">
-        <a class="logo" href="index.html"><svg class="logo__home" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg>Caleb Charpentier</a>
+        <span class="logo">Caleb Charpentier</span>
       </div>
       <nav class="navbar js-navbar">
         <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
           <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
         </button>
         <ul class="navbar__menu">
+          <li><a href="index.html" class="nav-home" aria-label="Home"><svg class="nav-home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg></a></li>
           <li><a href="research.html" target="_self">Research</a></li>
-          <li class="has-submenu">
-            <a href="software.html" target="_self" aria-haspopup="true">Software</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="software.html#species-map-explorer" target="_self">Species Map Explorer</a></li>
-              <li><a href="software.html#traitblender" target="_self">TraitBlender</a></li>
-              <li><a href="software.html#phylonn" target="_self">PhyloNN</a></li>
-              <li><a href="software.html#rphenoscate" target="_self">RPhenoscate</a></li>
-              <li><a href="software.html#revticulate" target="_self">Revticulate</a></li>
-              <li><a href="software.html#sisrs" target="_self">SISRS</a></li>
-            </ul>
-          </li>
+          <li><a href="software.html" target="_self">Software</a></li>
           <li><a href="cv.html" target="_self">CV</a></li>
           <li><a href="publications.html" target="_self" aria-current="page">Publications</a></li>
-          <li class="has-submenu">
-            <a href="talks.html" target="_self" aria-haspopup="true">Misc</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="talks.html" target="_self">Talks</a></li>
-              <li><a href="blog.html" target="_self">Blog</a></li>
-              <li><a href="reading-group.html" target="_self">Reading Group</a></li>
-              <li><a href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_self">EcoEvoJobSearcher</a></li>
-            </ul>
-          </li>
+          <li><a href="talks.html" target="_self">Talks</a></li>
         </ul>
       </nav>
     </header>
@@ -54,13 +37,14 @@
     <main class="content page">
       <article class="post">
         <header>
-          <h1 class="post__title">Publications</h1>
+          <h1 class="post__title">
+            Publications
+            <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="publications-scholar-link" aria-label="Google Scholar">
+              <img class="publications-scholar-logo" src="img/google-scholar-logo.svg" alt="" width="28" height="28">
+            </a>
+          </h1>
         </header>
         <div class="post__entry">
-          <p class="publications-intro">
-            <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="publications-scholar-link"><span class="nav-link__label">Google Scholar</span><span class="nav-external-icon" aria-hidden="true">↗</span></a>
-          </p>
-
           <section class="publication-year">
             <h2>2025</h2>
             <ul class="publication-list">
@@ -103,6 +87,7 @@
               </li>
             </ul>
           </section>
+        </div>
       </article>
     </main>
 

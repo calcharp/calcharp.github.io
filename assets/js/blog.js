@@ -9,6 +9,8 @@
     return;
   }
 
+  var postLimit = parseInt(feedEl.getAttribute("data-limit") || "0", 10);
+
   function stripHtml(html) {
     var tmp = document.createElement("div");
     tmp.innerHTML = html || "";
@@ -114,7 +116,12 @@
         return;
       }
 
-      renderPosts(data.items);
+      var items = data.items;
+      if (postLimit > 0) {
+        items = items.slice(0, postLimit);
+      }
+
+      renderPosts(items);
     })
     .catch(function () {
       renderError();

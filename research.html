@@ -17,36 +17,19 @@
   <div class="container">
     <header class="header">
       <div class="header__logo">
-        <a class="logo" href="index.html"><svg class="logo__home" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg>Caleb Charpentier</a>
+        <span class="logo">Caleb Charpentier</span>
       </div>
       <nav class="navbar js-navbar">
         <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
           <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
         </button>
         <ul class="navbar__menu">
+          <li><a href="index.html" class="nav-home" aria-label="Home"><svg class="nav-home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg></a></li>
           <li><a href="research.html" target="_self" aria-current="page">Research</a></li>
-          <li class="has-submenu">
-            <a href="software.html" target="_self" aria-haspopup="true">Software</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="software.html#species-map-explorer" target="_self">Species Map Explorer</a></li>
-              <li><a href="software.html#traitblender" target="_self">TraitBlender</a></li>
-              <li><a href="software.html#phylonn" target="_self">PhyloNN</a></li>
-              <li><a href="software.html#rphenoscate" target="_self">RPhenoscate</a></li>
-              <li><a href="software.html#revticulate" target="_self">Revticulate</a></li>
-              <li><a href="software.html#sisrs" target="_self">SISRS</a></li>
-            </ul>
-          </li>
+          <li><a href="software.html" target="_self">Software</a></li>
           <li><a href="cv.html" target="_self">CV</a></li>
           <li><a href="publications.html" target="_self">Publications</a></li>
-          <li class="has-submenu">
-            <a href="talks.html" target="_self" aria-haspopup="true">Misc</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="talks.html" target="_self">Talks</a></li>
-              <li><a href="blog.html" target="_self">Blog</a></li>
-              <li><a href="reading-group.html" target="_self">Reading Group</a></li>
-              <li><a href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_self">EcoEvoJobSearcher</a></li>
-            </ul>
-          </li>
+          <li><a href="talks.html" target="_self">Talks</a></li>
         </ul>
       </nav>
     </header>
@@ -57,52 +40,127 @@
           <h1 class="post__title">Research</h1>
         </header>
         <div class="post__entry">
-          <section class="research-section">
-            <h2>Deep Comparative Methods</h2>
-            <img class="research-section__image research-section__image--left-wide" src="img/phylonn.png" alt="PhyloNN diagram">
-            <p>
-              While deep learning models can fit functions to any sort of data, they still always include inductive assumptions about how that data behaves / the processes that led to it being what it is. When dealing with images, convolutional neural networks allow us to incorporate biases about the spatial distribution of patterns. When dealing with time-series data, LSTMs allow us to incorporate biases about the order of elements in a sequence.
-            </p>
-            <p>
-              When dealing with evolutionary data, we can incorporate similar biases, by using clever restructuring of autoencoders and multi-task learning algorithms to bias our models with information from phylogeny, ontogeny, or other biological processes. In this way, we can ground increasingly high-dimensional, or even raw, datasets in our understanding of reality, and possibily discover new processes that we far more difficult to uncover previously.
-            </p>
-            <p>
-              <a href="https://arxiv.org/pdf/2306.03228.pdf" target="_blank" rel="noopener">The PhyloNN Paper</a>
-            </p>
-          </section>
+          <div class="software-tabs" data-panel-tabs>
+            <div class="software-tabs__list" role="tablist" aria-label="Research topics">
+              <button class="software-tabs__tab" type="button" role="tab" id="tab-imageomics" aria-controls="imageomics" aria-selected="true">
+                <img class="software-tabs__thumb" src="img/imageomics.jpg" alt="" width="36" height="36">
+                <span class="software-tabs__label">Imageomics</span>
+              </button>
+              <button class="software-tabs__tab" type="button" role="tab" id="tab-deep-comparative-methods" aria-controls="deep-comparative-methods" aria-selected="false" tabindex="-1">
+                <img class="software-tabs__thumb" src="img/phylonn.png" alt="" width="36" height="36">
+                <span class="software-tabs__label">Deep Comparative Methods</span>
+              </button>
+              <button class="software-tabs__tab" type="button" role="tab" id="tab-synthetic-datasets" aria-controls="synthetic-datasets" aria-selected="false" tabindex="-1">
+                <img class="software-tabs__thumb" src="img/snail_morphospace.png" alt="" width="36" height="36">
+                <span class="software-tabs__label">Synthetic Datasets</span>
+              </button>
+              <button class="software-tabs__tab" type="button" role="tab" id="tab-ontologies" aria-controls="ontologies" aria-selected="false" tabindex="-1">
+                <img class="software-tabs__thumb" src="img/phenoscape.png" alt="" width="36" height="36">
+                <span class="software-tabs__label">Trait Ontologies</span>
+              </button>
+            </div>
 
-          <section class="research-section">
-            <h2>Synthetic Evolutionary Image and 3D Mesh Datasets</h2>
-            <img class="research-section__image research-section__image--right-wide" src="img/snail_morphospace.png" alt="Snail morphospace parameter sweeps across shell traits">
-            <p>
-              One way to address this issue is by validating models on simulated raw data with
-              <a href="https://imageomics.github.io/TraitBlender/" target="_blank" rel="noopener">TraitBlender</a>, a Blender add-on I developed for generating synthetic museum-style image datasets from defined morphospaces and known evolutionary processes.
-            </p>
-          </section>
+            <section class="software-panel is-active" role="tabpanel" id="imageomics" aria-labelledby="tab-imageomics">
+              <div class="software-panel__layout">
+                <h2 class="software-panel__title">Imageomics</h2>
+                <figure class="software-panel__figure">
+                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
+                    <img class="software-panel__media software-panel__media--compact" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
+                  </button>
+                  <ul class="software-panel__links">
+                    <li><a href="https://imageomics.osu.edu/about" target="_blank" rel="noopener">Imageomics Institute</a></li>
+                  </ul>
+                </figure>
+                <div class="software-panel__copy">
+                  <p>
+                    Alongside my home lab, I work continuously with the Imageomics Institute, an NSF HDR institute focused on extracting biological information from images with knowledge-guided machine learning. My Imageomics work connects evolutionary morphology, comparative methods, and representation learning—building tools and theory that make image-based traits more useful for macroevolutionary questions.
+                  </p>
+                </div>
+              </div>
+            </section>
 
-          <section class="research-section">
-            <h2>Measurement and Meaning in Evolution and AI</h2>
-            <img class="research-section__image research-section__image--right" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
-            <p>
-              My work in this area is primarily theoretical, focused on connecting the regularization tools of representation learning, such as metric learning, domain adaptation, sparsity, and interpretability constraints, to principles from measurement theory in evolutionary biology. Rather than treating learned traits as automatically meaningful, I am interested in when these tools produce representations that are actually commensurable with macroevolutionary questions.
-            </p>
-          </section>
+            <section class="software-panel" role="tabpanel" id="deep-comparative-methods" aria-labelledby="tab-deep-comparative-methods" hidden>
+              <div class="software-panel__layout">
+                <h2 class="software-panel__title">Deep Comparative Methods</h2>
+                <figure class="software-panel__figure">
+                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
+                    <img class="software-panel__media" src="img/phylonn.png" alt="PhyloNN diagram">
+                  </button>
+                  <ul class="software-panel__links">
+                    <li><a href="https://arxiv.org/pdf/2306.03228.pdf" target="_blank" rel="noopener">PhyloNN paper</a></li>
+                  </ul>
+                </figure>
+                <div class="software-panel__copy">
+                  <p>
+                    While deep learning models can fit functions to any sort of data, they still always include inductive assumptions about how that data behaves / the processes that led to it being what it is. When dealing with images, convolutional neural networks allow us to incorporate biases about the spatial distribution of patterns. When dealing with time-series data, LSTMs allow us to incorporate biases about the order of elements in a sequence.
+                  </p>
+                  <p>
+                    When dealing with evolutionary data, we can incorporate similar biases, by using clever restructuring of autoencoders and multi-task learning algorithms to bias our models with information from phylogeny, ontogeny, or other biological processes. In this way, we can ground increasingly high-dimensional, or even raw, datasets in our understanding of reality, and possibily discover new processes that we far more difficult to uncover previously.
+                  </p>
+                </div>
+              </div>
+            </section>
 
-          <section class="research-section">
-            <h2>Ontologies and Computable Trait Descriptions</h2>
-            <img class="research-section__image research-section__image--left-wide" src="img/phenoscape.png" alt="Phenoscape ontology diagram">
-            <p>
-              Whenever we make models, we are attempting to codify statements about the world. For a model to be meaningful, however, the assumptions we put into it must be reflective of our assumptions about external reality. When we are dealing with traits that have complex, nonlinear dependencies on each other, doing this can be very difficult.
-            </p>
-            <p>
-              I've contributed to projects that address this problem by incorporating biological knowledge into models directly in the form of ontologies, which are knowledge graphs that specify the hierarchical relationships / dependencies between traits.
-            </p>
-            <p>
-              <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.14210" target="_blank" rel="noopener">The RPhenoscate Paper</a>
-              |
-              <a href="https://scate.phenoscape.org/" target="_blank" rel="noopener">The SCATE (Semantic Comparative Analysis of Trait Evolution) Project</a>
-            </p>
-          </section>
+            <section class="software-panel" role="tabpanel" id="synthetic-datasets" aria-labelledby="tab-synthetic-datasets" hidden>
+              <div class="software-panel__layout">
+                <h2 class="software-panel__title">Synthetic Evolutionary Image and 3D Mesh Datasets</h2>
+                <figure class="software-panel__figure">
+                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
+                    <img class="software-panel__media software-panel__media--on-white" src="img/snail_morphospace.png" alt="Snail morphospace parameter sweeps across shell traits">
+                  </button>
+                  <ul class="software-panel__links">
+                    <li><a href="https://imageomics.github.io/TraitBlender/" target="_blank" rel="noopener">TraitBlender</a></li>
+                  </ul>
+                </figure>
+                <div class="software-panel__copy">
+                  <p>
+                    One way to address this issue is by validating models on simulated raw data with TraitBlender, a Blender add-on I developed for generating synthetic museum-style image datasets from defined morphospaces and known evolutionary processes.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Measurement & Meaning section hidden for now
+            <section class="software-panel" role="tabpanel" id="measurement-meaning" aria-labelledby="tab-measurement-meaning" hidden>
+              <div class="software-panel__layout">
+                <h2 class="software-panel__title">Measurement and Meaning in Evolution and AI</h2>
+                <figure class="software-panel__figure">
+                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
+                    <img class="software-panel__media" src="img/imageomics.jpg" alt="Imageomics Institute Logo">
+                  </button>
+                </figure>
+                <div class="software-panel__copy">
+                  <p>
+                    My work in this area is primarily theoretical, focused on connecting the regularization tools of representation learning, such as metric learning, domain adaptation, sparsity, and interpretability constraints, to principles from measurement theory in evolutionary biology. Rather than treating learned traits as automatically meaningful, I am interested in when these tools produce representations that are actually commensurable with macroevolutionary questions.
+                  </p>
+                </div>
+              </div>
+            </section>
+            -->
+
+            <section class="software-panel" role="tabpanel" id="ontologies" aria-labelledby="tab-ontologies" hidden>
+              <div class="software-panel__layout">
+                <h2 class="software-panel__title">Ontologies and Computable Trait Descriptions</h2>
+                <figure class="software-panel__figure">
+                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
+                    <img class="software-panel__media" src="img/phenoscape.png" alt="Phenoscape ontology diagram">
+                  </button>
+                  <ul class="software-panel__links">
+                    <li><a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.14210" target="_blank" rel="noopener">RPhenoscate paper</a></li>
+                    <li><a href="https://scate.phenoscape.org/" target="_blank" rel="noopener">SCATE project</a></li>
+                  </ul>
+                </figure>
+                <div class="software-panel__copy">
+                  <p>
+                    Whenever we make models, we are attempting to codify statements about the world. For a model to be meaningful, however, the assumptions we put into it must be reflective of our assumptions about external reality. When we are dealing with traits that have complex, nonlinear dependencies on each other, doing this can be very difficult.
+                  </p>
+                  <p>
+                    I've contributed to projects that address this problem by incorporating biological knowledge into models directly in the form of ontologies, which are knowledge graphs that specify the hierarchical relationships / dependencies between traits.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </article>
     </main>
@@ -123,7 +181,16 @@
     </footer>
   </div>
 
+  <div class="software-lightbox" id="software-lightbox" hidden>
+    <button type="button" class="software-lightbox__backdrop" aria-label="Close image preview"></button>
+    <div class="software-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Image preview">
+      <button type="button" class="software-lightbox__close" aria-label="Close">&times;</button>
+      <img class="software-lightbox__image" src="" alt="">
+    </div>
+  </div>
+
   <script defer src="assets/js/scripts.min.js"></script>
+  <script defer src="assets/js/software-tabs.js"></script>
   <script>
     window.publiiThemeMenuConfig = {
       mobileMenuMode: "sidebar",

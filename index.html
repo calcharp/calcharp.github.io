@@ -17,36 +17,19 @@
   <div class="container">
     <header class="header">
       <div class="header__logo">
-        <a class="logo" href="index.html" aria-current="page"><svg class="logo__home" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg>Caleb Charpentier</a>
+        <span class="logo">Caleb Charpentier</span>
       </div>
       <nav class="navbar js-navbar">
         <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
           <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
         </button>
         <ul class="navbar__menu">
+          <li><a href="index.html" class="nav-home" aria-label="Home" aria-current="page"><svg class="nav-home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg></a></li>
           <li><a href="research.html" target="_self">Research</a></li>
-          <li class="has-submenu">
-            <a href="software.html" target="_self" aria-haspopup="true">Software</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="software.html#species-map-explorer" target="_self">Species Map Explorer</a></li>
-              <li><a href="software.html#traitblender" target="_self">TraitBlender</a></li>
-              <li><a href="software.html#phylonn" target="_self">PhyloNN</a></li>
-              <li><a href="software.html#rphenoscate" target="_self">RPhenoscate</a></li>
-              <li><a href="software.html#revticulate" target="_self">Revticulate</a></li>
-              <li><a href="software.html#sisrs" target="_self">SISRS</a></li>
-            </ul>
-          </li>
+          <li><a href="software.html" target="_self">Software</a></li>
           <li><a href="cv.html" target="_self">CV</a></li>
           <li><a href="publications.html" target="_self">Publications</a></li>
-          <li class="has-submenu">
-            <a href="talks.html" target="_self" aria-haspopup="true">Misc</a>
-            <ul class="navbar__submenu level-2" aria-hidden="true">
-              <li><a href="talks.html" target="_self">Talks</a></li>
-              <li><a href="blog.html" target="_self">Blog</a></li>
-              <li><a href="reading-group.html" target="_self">Reading Group</a></li>
-              <li><a href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_self">EcoEvoJobSearcher</a></li>
-            </ul>
-          </li>
+          <li><a href="talks.html" target="_self">Talks</a></li>
         </ul>
       </nav>
     </header>
@@ -70,17 +53,10 @@
             </div>
           </div>
 
-          <section class="hero-links-band" aria-label="Contact and profiles">
-            <div class="hero-links-band__line"></div>
-            <div class="hero-links">
-              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="hero-link--stacked"><span class="hero-link__line">Google</span><span class="hero-link__line">Scholar</span></a>
-              <a href="https://bsky.app/profile/calcharp.bsky.social" target="_blank" rel="noopener">Bluesky</a>
-              <a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Substack</a>
-              <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
-              <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
-            </div>
-            <div class="hero-links-band__line"></div>
-          </section>
+          <div class="home-rule-pair" aria-hidden="true">
+            <div class="home-rule-pair__line"></div>
+            <div class="home-rule-pair__line"></div>
+          </div>
 
           <p>
             I'm Caleb Charpentier, a Ph.D. Candidate in
@@ -100,10 +76,73 @@
             at the Florida Museum.
           </p>
 
-          <figure class="home-darwin">
-            <img loading="lazy" src="img/darwinbust.png" alt="Bust of Charles Darwin">
-            <figcaption class="home-darwin__caption">[robo-darwin is baffled]</figcaption>
-          </figure>
+          <div class="home-panel-shell">
+            <div class="home-panel-backdrop" hidden></div>
+            <aside class="home-panel" data-panel-tabs>
+            <figure class="home-panel__darwin">
+              <img loading="lazy" src="img/darwinbust.png" alt="Bust of Charles Darwin">
+              <figcaption class="home-panel__caption">[robo-darwin is baffled]</figcaption>
+            </figure>
+            <div class="home-panel__body">
+              <button class="home-panel__expand" type="button" aria-expanded="false" aria-label="Expand panel">
+                <svg class="home-panel__expand-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path class="home-panel__expand-path" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/>
+                </svg>
+              </button>
+              <div class="home-panel__tabs" role="tablist" aria-label="Home extras">
+                <button class="home-panel__tab" type="button" role="tab" id="tab-home-bluesky" aria-controls="home-bluesky" aria-selected="true">News</button>
+                <button class="home-panel__tab" type="button" role="tab" id="tab-home-blog" aria-controls="home-blog" aria-selected="false" tabindex="-1">Blog</button>
+                <button class="home-panel__tab" type="button" role="tab" id="tab-home-reading" aria-controls="home-reading" aria-selected="false" tabindex="-1">Reading&nbsp;Group</button>
+                <button class="home-panel__tab" type="button" role="tab" id="tab-home-jobs" aria-controls="home-jobs" aria-selected="false" tabindex="-1">Jobs</button>
+              </div>
+
+              <section class="home-panel__pane is-active" role="tabpanel" id="home-bluesky" aria-labelledby="tab-home-bluesky">
+                <div class="home-panel__scroll">
+                  <div class="bluesky-feed" data-handle="calcharp.bsky.social" data-limit="5">
+                    <p class="bluesky-feed__status">Loading posts…</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="home-panel__pane" role="tabpanel" id="home-blog" aria-labelledby="tab-home-blog" hidden>
+                <div class="home-panel__scroll">
+                  <div id="blog-feed" class="blog-feed blog-feed--compact" data-limit="4">
+                    <p class="blog-loading">Loading posts…</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="home-panel__pane" role="tabpanel" id="home-reading" aria-labelledby="tab-home-reading" hidden>
+                <div class="home-panel__scroll">
+                  <p class="home-panel__note">Evolutionary Biology + Deep Learning Reading Group</p>
+                  <div id="reading-group-content">
+                    <p class="reading-group-loading">Loading meetings…</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="home-panel__pane" role="tabpanel" id="home-jobs" aria-labelledby="tab-home-jobs" hidden>
+                <div class="home-panel__scroll home-panel__scroll--jobs">
+                  <p class="home-panel__note">EcoEvoJobSearcher</p>
+                  <p class="home-panel__copy">A small tool for browsing ecology and evolutionary biology job listings.</p>
+                  <a class="home-panel__cta" href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_blank" rel="noopener">Open EcoEvoJobSearcher →</a>
+                </div>
+              </section>
+            </div>
+          </aside>
+          </div>
+
+          <section class="hero-links-band" aria-label="Contact and profiles">
+            <div class="hero-links-band__line"></div>
+            <div class="hero-links">
+              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="hero-link--stacked"><span class="hero-link__line">Google</span><span class="hero-link__line">Scholar</span></a>
+              <a href="https://bsky.app/profile/calcharp.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+              <a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Substack</a>
+              <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
+              <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
+            </div>
+            <div class="hero-links-band__line"></div>
+          </section>
         </div>
       </article>
     </main>
@@ -118,6 +157,11 @@
   </div>
 
   <script defer src="assets/js/scripts.min.js"></script>
+  <script defer src="assets/js/software-tabs.js"></script>
+  <script defer src="assets/js/home-panel.js"></script>
+  <script defer src="assets/js/bluesky-feed.js"></script>
+  <script defer src="assets/js/blog.js"></script>
+  <script defer src="assets/js/reading-group.js"></script>
   <script>
     window.publiiThemeMenuConfig = {
       mobileMenuMode: "sidebar",
