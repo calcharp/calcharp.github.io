@@ -10,6 +10,9 @@
     limit = 3;
   }
 
+  var encoder = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
+  var decoder = typeof TextDecoder !== "undefined" ? new TextDecoder() : null;
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -40,12 +43,99 @@
     });
   }
 
-  function truncate(text, max) {
-    var cleaned = String(text || "").replace(/\s+/g, " ").trim();
-    if (cleaned.length <= max) {
-      return cleaned;
+  function bytesToText(bytes) {
+    if (decoder) {
+      return decoder.decode(bytes);
     }
-    return cleaned.slice(0, max - 1).trimEnd() + "…";
+    var out = "";
+    for (var i = 0; i < bytes.length; i += 1) {
+      out += String.fromCharCode(bytes[i]);
+    }
+    return out;
+  }
+
+  function featureLink(features) {
+    if (!Array.isArray(features)) {
+      return null;
+    }
+    for (var i = 0; i < features.length; i += 1) {
+      var feature = features[i] || {};
+      var type = String(feature.$type || "");
+      if (type.indexOf("app.bsky.richtext.facet#link") === 0 && feature.uri) {
+        return { href: feature.uri, kind: "link" };
+      }
+      if (type.indexOf("app.bsky.richtext.facet#mention") === 0 && feature.did) {
+        return {
+          href: "https://bsky.app/profile/" + encodeURIComponent(feature.did),
+          kind: "mention"
+        };
+      }
+      if (type.indexOf("app.bsky.richtext.facet#tag") === 0 && feature.tag) {
+        return {
+          href: "https://bsky.app/hashtag/" + encodeURIComponent(feature.tag),
+          kind: "tag"
+        };
+      }
+    }
+    return null;
+  }
+
+  function renderRichText(text, facets) {
+    var raw = String(text || "");
+    if (!raw) {
+      return "";
+    }
+    if (!encoder || !Array.isArray(facets) || !facets.length) {
+      return escapeHtml(raw);
+    }
+
+    var bytes = encoder.encode(raw);
+    var ranges = facets
+      .map(function (facet) {
+        var index = facet && facet.index ? facet.index : null;
+        var link = featureLink(facet && facet.features);
+        if (!index || !link) {
+          return null;
+        }
+        var start = Number(index.byteStart);
+        var end = Number(index.byteEnd);
+        if (!isFinite(start) || !isFinite(end) || end <= start || start < 0 || end > bytes.length) {
+          return null;
+        }
+        return { start: start, end: end, href: link.href, kind: link.kind };
+      })
+      .filter(Boolean)
+      .sort(function (a, b) {
+        return a.start - b.start;
+      });
+
+    var html = "";
+    var cursor = 0;
+
+    ranges.forEach(function (range) {
+      if (range.start < cursor) {
+        return;
+      }
+      if (range.start > cursor) {
+        html += escapeHtml(bytesToText(bytes.slice(cursor, range.start)));
+      }
+      var label = escapeHtml(bytesToText(bytes.slice(range.start, range.end)));
+      html +=
+        '<a class="bluesky-feed__inline-link bluesky-feed__inline-link--' +
+        escapeHtml(range.kind) +
+        '" href="' +
+        escapeHtml(range.href) +
+        '" target="_blank" rel="noopener">' +
+        label +
+        "</a>";
+      cursor = range.end;
+    });
+
+    if (cursor < bytes.length) {
+      html += escapeHtml(bytesToText(bytes.slice(cursor)));
+    }
+
+    return html;
   }
 
   function extractImages(embed) {
@@ -56,14 +146,38 @@
     if (type.indexOf("app.bsky.embed.images") === 0) {
       return (embed.images || [])
         .map(function (image) {
-          return image.thumb || image.fullsize || "";
+          return {
+            src: image.thumb || image.fullsize || "",
+            alt: image.alt || ""
+          };
         })
-        .filter(Boolean);
+        .filter(function (image) {
+          return Boolean(image.src);
+        });
     }
     if (type.indexOf("app.bsky.embed.recordWithMedia") === 0) {
       return extractImages(embed.media);
     }
     return [];
+  }
+
+  function extractExternal(embed) {
+    if (!embed || !embed.$type) {
+      return null;
+    }
+    var type = String(embed.$type);
+    if (type.indexOf("app.bsky.embed.external") === 0 && embed.external) {
+      return {
+        uri: embed.external.uri || "",
+        title: embed.external.title || embed.external.uri || "Link",
+        description: embed.external.description || "",
+        thumb: embed.external.thumb || ""
+      };
+    }
+    if (type.indexOf("app.bsky.embed.recordWithMedia") === 0) {
+      return extractExternal(embed.media);
+    }
+    return null;
   }
 
   function isOriginalPost(item) {
@@ -82,6 +196,57 @@
     return authorHandle === handle;
   }
 
+  function renderImages(images) {
+    if (!images.length) {
+      return "";
+    }
+    return (
+      '<div class="bluesky-feed__media' +
+      (images.length > 1 ? " bluesky-feed__media--multi" : "") +
+      '">' +
+      images
+        .map(function (image) {
+          return (
+            '<img class="bluesky-feed__image" src="' +
+            escapeHtml(image.src) +
+            '" alt="' +
+            escapeHtml(image.alt) +
+            '" loading="lazy">'
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function renderExternal(external) {
+    if (!external || !external.uri) {
+      return "";
+    }
+    return (
+      '<a class="bluesky-feed__embed" href="' +
+      escapeHtml(external.uri) +
+      '" target="_blank" rel="noopener">' +
+      (external.thumb
+        ? '<img class="bluesky-feed__embed-thumb" src="' +
+          escapeHtml(external.thumb) +
+          '" alt="" loading="lazy">'
+        : "") +
+      '<span class="bluesky-feed__embed-body">' +
+      '<span class="bluesky-feed__embed-title">' +
+      escapeHtml(external.title) +
+      "</span>" +
+      (external.description
+        ? '<span class="bluesky-feed__embed-desc">' + escapeHtml(external.description) + "</span>"
+        : "") +
+      '<span class="bluesky-feed__embed-url">' +
+      escapeHtml(external.uri.replace(/^https?:\/\//, "")) +
+      "</span>" +
+      "</span>" +
+      "</a>"
+    );
+  }
+
   function renderItems(items) {
     if (!items.length) {
       root.innerHTML =
@@ -95,32 +260,26 @@
     items.forEach(function (item) {
       var post = item.post;
       var record = post.record || {};
-      var text = truncate(record.text || "", 160);
+      var textHtml = renderRichText(record.text || "", record.facets || []);
       var when = formatDate(record.createdAt || post.indexedAt);
+      var permalink = postUrl(post);
       var images = extractImages(post.embed);
-      var imageHtml = "";
-
-      if (images.length) {
-        imageHtml =
-          '<span class="bluesky-feed__media">' +
-          '<img class="bluesky-feed__image" src="' +
-          escapeHtml(images[0]) +
-          '" alt="" loading="lazy" width="640" height="360">' +
-          (images.length > 1
-            ? '<span class="bluesky-feed__media-count">+' + (images.length - 1) + "</span>"
-            : "") +
-          "</span>";
-      }
+      var external = extractExternal(post.embed);
 
       html +=
         '<li class="bluesky-feed__item">' +
-        '<a class="bluesky-feed__link" href="' +
-        escapeHtml(postUrl(post)) +
-        '" target="_blank" rel="noopener">' +
-        imageHtml +
-        (text ? '<span class="bluesky-feed__text">' + escapeHtml(text) + "</span>" : "") +
-        (when ? '<span class="bluesky-feed__meta">' + escapeHtml(when) + "</span>" : "") +
-        "</a>" +
+        '<article class="bluesky-feed__card">' +
+        (textHtml ? '<p class="bluesky-feed__text">' + textHtml + "</p>" : "") +
+        renderImages(images) +
+        renderExternal(external) +
+        (when
+          ? '<a class="bluesky-feed__meta" href="' +
+            escapeHtml(permalink) +
+            '" target="_blank" rel="noopener">' +
+            escapeHtml(when) +
+            "</a>"
+          : "") +
+        "</article>" +
         "</li>";
     });
     html += "</ul>";

@@ -431,13 +431,6 @@ body.home-panel-open {
   width: 0;
 }
 
-.home-panel__scroll--jobs {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--baseline) * 3);
-  justify-content: center;
-}
-
 .home-panel__note {
   color: hsla(var(--color), var(--alpha, 0.7));
   font-size: 0.8rem;
@@ -527,71 +520,141 @@ body.home-panel-open {
 .bluesky-feed__list {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--baseline) * 4);
+  gap: calc(var(--baseline) * 5);
   list-style: none;
   margin: 0;
+  margin-left: 0;
   padding: 0;
+  padding-left: 0;
 }
 
 .content ul.bluesky-feed__list > li,
-.bluesky-feed__list > li {
+.bluesky-feed__list > li,
+.bluesky-feed__list > li.bluesky-feed__item {
+  list-style: none;
   margin: 0;
-  padding: 0;
-  position: static;
-}
-
-.content ul.bluesky-feed__list > li:not(:empty):before,
-.bluesky-feed__list > li:not(:empty):before {
-  content: none;
-}
-
-.bluesky-feed__link {
-  color: inherit;
-  display: grid;
-  gap: calc(var(--baseline) * 2);
-  text-decoration: none;
-}
-
-.bluesky-feed__link:hover .bluesky-feed__text {
-  color: hsla(var(--accent), var(--alpha, 1));
-}
-
-.bluesky-feed__media {
-  display: block;
-  line-height: 0;
-  overflow: hidden;
+  padding: 0 0 0 1rem;
   position: relative;
 }
 
-.bluesky-feed__image {
-  aspect-ratio: 16 / 10;
-  display: block;
-  height: auto;
-  object-fit: cover;
-  width: 100%;
+.content ul.bluesky-feed__list > li:not(:empty)::before,
+.content ul.bluesky-feed__list > li:not(:empty):before,
+.bluesky-feed__list > li:not(:empty)::before,
+.bluesky-feed__list > li:not(:empty):before,
+.bluesky-feed__list > li.bluesky-feed__item::before,
+.bluesky-feed__list > li.bluesky-feed__item:before {
+  border-bottom: 0.28em solid transparent;
+  border-left: 0.42em solid hsla(var(--accent), var(--alpha, 1));
+  border-top: 0.28em solid transparent;
+  content: "" !important;
+  display: block !important;
+  height: 0;
+  left: 0.1rem;
+  position: absolute;
+  top: 0.45em;
+  width: 0;
 }
 
-.bluesky-feed__media-count {
-  background: hsla(var(--background), var(--alpha, 0.82));
-  bottom: calc(var(--baseline) * 2);
-  color: hsla(var(--color), var(--alpha, 0.9));
-  font-size: 0.7rem;
-  padding: 0.15em 0.45em;
-  position: absolute;
-  right: calc(var(--baseline) * 2);
+.bluesky-feed__card {
+  display: grid;
+  gap: calc(var(--baseline) * 2);
 }
 
 .bluesky-feed__text {
   color: hsla(var(--color), var(--alpha, 0.88));
   display: block;
   font-size: 0.8rem;
-  line-height: 1.45;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bluesky-feed__inline-link {
+  color: hsla(var(--accent), var(--alpha, 1));
+  text-decoration: none;
+}
+
+.bluesky-feed__inline-link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 0.02em;
+  text-underline-offset: 0.15em;
+}
+
+.bluesky-feed__media {
+  display: grid;
+  gap: calc(var(--baseline) * 2);
+  line-height: 0;
+  overflow: hidden;
+}
+
+.bluesky-feed__media--multi {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bluesky-feed__image {
+  display: block;
+  height: auto;
+  max-height: 12rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.bluesky-feed__embed {
+  border: 1px solid hsla(var(--color), var(--alpha, 0.18));
+  color: inherit;
+  display: grid;
+  gap: calc(var(--baseline) * 2);
+  padding: calc(var(--baseline) * 3);
+  text-decoration: none;
+}
+
+.bluesky-feed__embed:hover {
+  border-color: hsla(var(--accent), var(--alpha, 0.7));
+}
+
+.bluesky-feed__embed-thumb {
+  display: block;
+  height: auto;
+  max-height: 8rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.bluesky-feed__embed-body {
+  display: grid;
+  gap: calc(var(--baseline) * 1);
+  min-width: 0;
+}
+
+.bluesky-feed__embed-title {
+  color: hsla(var(--color), var(--alpha, 0.92));
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bluesky-feed__embed-desc {
+  color: hsla(var(--color), var(--alpha, 0.55));
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.bluesky-feed__embed-url {
+  color: hsla(var(--accent), var(--alpha, 1));
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
 }
 
 .bluesky-feed__meta {
   color: hsla(var(--color), var(--alpha, 0.38));
-  display: block;
+  display: inline-block;
   font-size: 0.7rem;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.bluesky-feed__meta:hover {
+  color: hsla(var(--accent), var(--alpha, 1));
 }
 
 .cards {
