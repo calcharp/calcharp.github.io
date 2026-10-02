@@ -15,6 +15,7 @@
 
   var CELL = 6;
   var STEP_MS = 180;
+  var SEED_DENSITY = 0.14;
   var FILL = "hsla(136, 89%, 40%, 0.7)";
   var STORAGE_KEY = "calcharp-life-bg-v1";
   var cols = 0;
@@ -26,6 +27,14 @@
   var stagnant = 0;
   var running = true;
   var stepsSinceSave = 0;
+
+  function configureForViewport() {
+    var mobile = window.matchMedia("(max-width: 42.74em)").matches;
+    /* Larger, sparser cells on phones so margins stay readable instead of noisy */
+    CELL = mobile ? 12 : 6;
+    STEP_MS = mobile ? 240 : 180;
+    SEED_DENSITY = mobile ? 0.06 : 0.14;
+  }
 
   function saveState() {
     if (!grid || !cols || !rows) {
@@ -91,7 +100,7 @@
   function seed() {
     var i;
     for (i = 0; i < grid.length; i += 1) {
-      grid[i] = Math.random() < 0.14 ? 1 : 0;
+      grid[i] = Math.random() < SEED_DENSITY ? 1 : 0;
     }
     stagnant = 0;
   }
@@ -140,6 +149,8 @@
     var prevCols = cols;
     var prevRows = rows;
     var prevGrid = grid;
+    var prevCell = CELL;
+    configureForViewport();
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = window.innerWidth;
     var h = window.innerHeight;
@@ -155,7 +166,9 @@
     next = new Uint8Array(cols * rows);
 
     if (!loadState()) {
-      if (!copyOverlap(prevCols, prevRows, prevGrid)) {
+      if (prevCell === CELL && copyOverlap(prevCols, prevRows, prevGrid)) {
+        /* keep going */
+      } else {
         seed();
       }
       saveState();

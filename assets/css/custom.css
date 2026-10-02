@@ -37,6 +37,19 @@ html {
   z-index: 1;
 }
 
+/* Leave slim side gutters on phones so Life can show without covering content */
+@media all and (max-width: 42.74em) {
+  .container {
+    margin-left: 16px;
+    margin-right: 16px;
+    max-width: calc(100% - 32px);
+  }
+
+  .life-bg {
+    opacity: 0.5;
+  }
+}
+
 .logo {
   gap: 8px;
 }
@@ -924,7 +937,8 @@ img[loading] {
 .publication-list > li::marker,
 .publication-list > li::before,
 .content ul.publication-list > li:not(:empty)::before {
-  content: none;
+  content: none !important;
+  display: none !important;
 }
 
 .publication-list em {
