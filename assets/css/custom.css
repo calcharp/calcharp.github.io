@@ -198,8 +198,14 @@ html {
 }
 
 .header__logo .logo {
+  color: inherit;
   flex: 0 0 auto;
   max-width: 100%;
+  text-decoration: none;
+}
+
+.header__logo .logo:hover {
+  color: inherit;
   text-decoration: none;
 }
 
@@ -923,6 +929,62 @@ img[loading] {
 .cv-viewer {
   margin-top: calc(var(--baseline) * 4);
   width: 100%;
+}
+
+.cv-mobile-actions {
+  display: none;
+}
+
+/* Phones: PDF iframes are unreliable — offer open/download instead */
+@media all and (max-width: 42.74em) {
+  .cv-mobile-actions {
+    display: block;
+  }
+
+  .cv-embed-wrap {
+    display: none;
+  }
+
+  .cv-mobile-actions__note {
+    color: hsla(var(--accent), 0.85);
+    font-size: 0.9rem;
+    margin: 0 0 calc(var(--baseline) * 4);
+  }
+
+  .cv-mobile-actions__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--baseline) * 3);
+  }
+
+  .cv-mobile-actions__btn {
+    align-items: center;
+    background: hsla(var(--accent), 0.12);
+    border: 1px solid hsla(var(--accent), 0.55);
+    border-radius: 999px;
+    color: hsla(var(--accent), 1);
+    display: inline-flex;
+    font: inherit;
+    font-size: 0.9rem;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.55rem 1.15rem;
+    text-decoration: none;
+    transition: var(--transition);
+  }
+
+  .cv-mobile-actions__btn:hover,
+  .cv-mobile-actions__btn:focus-visible {
+    background: hsla(var(--accent), 0.22);
+    border-color: hsla(var(--accent), 0.9);
+    color: hsla(var(--color), 1);
+    outline: none;
+    text-decoration: none;
+  }
+
+  .cv-mobile-actions__btn--secondary {
+    background: transparent;
+  }
 }
 
 /* Chrome PDF viewer: menu + “CV.pdf”, then this toggle before page controls */
