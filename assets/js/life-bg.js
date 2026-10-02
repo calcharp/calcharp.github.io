@@ -335,8 +335,8 @@
     var i;
     clearGrid();
 
-    if (roll < 0.7) {
-      /* Familiar noise, sometimes with a few gliders mixed in (~2.5× prior weight) */
+    if (roll < 0.15) {
+      /* Occasional random soup (~15%); interesting presets otherwise */
       seed();
       if (Math.random() < 0.55) {
         seedFleet("glider", 2 + Math.floor(Math.random() * 4));
@@ -344,7 +344,7 @@
       return;
     }
 
-    if (roll < 0.78) {
+    if (roll < 0.37) {
       /* Glider / spaceship traffic in the gutters */
       seedFleet("glider", 4 + Math.floor(Math.random() * 6));
       if (Math.random() < 0.65) {
@@ -354,7 +354,7 @@
       return;
     }
 
-    if (roll < 0.86) {
+    if (roll < 0.59) {
       /* Oscillators + a traveler */
       n = 2 + Math.floor(Math.random() * 3);
       for (i = 0; i < n; i += 1) {
@@ -368,7 +368,7 @@
       return;
     }
 
-    if (roll < 0.93) {
+    if (roll < 0.79) {
       /* Methuselahs — long chaotic rebirths */
       n = 2 + Math.floor(Math.random() * 4);
       for (i = 0; i < n; i += 1) {
