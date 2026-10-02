@@ -1409,18 +1409,18 @@ img[loading] {
   align-items: stretch;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--baseline) * 6);
+  gap: calc(var(--baseline) * 5);
   margin: 0 auto;
   max-width: 42rem;
   width: 100%;
 }
 
 .software-tabs__list {
-  border-bottom: 1px solid hsla(var(--color), 0.18);
+  border-bottom: 1px solid hsla(var(--color), 0.14);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
-  justify-content: center;
+  justify-content: space-between;
   list-style: none;
   margin: 0;
   -webkit-overflow-scrolling: touch;
@@ -1439,28 +1439,31 @@ img[loading] {
   align-items: center;
   background: transparent;
   border: 0;
-  color: hsla(var(--color), var(--alpha, 0.42));
+  color: hsla(var(--color), var(--alpha, 0.4));
   cursor: pointer;
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: 1 1 0;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 400;
   gap: 0;
   justify-content: center;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-  padding: calc(var(--baseline) * 2) calc(var(--baseline) * 2.75) calc(var(--baseline) * 2.5);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  min-width: 0;
+  padding: calc(var(--baseline) * 1.25) calc(var(--baseline) * 0.75) calc(var(--baseline) * 1.75);
   position: relative;
   text-align: center;
   transition: color 0.16s ease;
   white-space: nowrap;
-  width: auto;
 }
 
 .software-tabs__label {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 100%;
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
 }
 
 .software-tabs__thumb {
@@ -1473,17 +1476,17 @@ img[loading] {
 
 .software-tabs__tab[aria-selected="true"] {
   color: hsla(var(--accent), var(--alpha, 1));
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .software-tabs__tab[aria-selected="true"]::after {
   background: hsla(var(--accent), var(--alpha, 1));
   bottom: -1px;
   content: "";
-  height: 2px;
-  left: calc(var(--baseline) * 1.5);
+  height: 1.5px;
+  left: 12%;
   position: absolute;
-  right: calc(var(--baseline) * 1.5);
+  right: 12%;
 }
 
 .software-tabs__tab:focus-visible {
@@ -1492,6 +1495,21 @@ img[loading] {
 }
 
 @media all and (max-width: 42.74em) {
+  .software-tabs__list {
+    justify-content: flex-start;
+  }
+
+  .software-tabs__tab {
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    padding: calc(var(--baseline) * 1.25) calc(var(--baseline) * 2) calc(var(--baseline) * 1.75);
+  }
+
+  .software-tabs__label {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
   .software-panel__zoom {
     height: 11rem;
   }
