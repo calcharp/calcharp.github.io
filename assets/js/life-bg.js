@@ -252,6 +252,85 @@
     }
   }
 
+  function inSideGutter(clientX) {
+    var el = document.querySelector(".container");
+    if (!el) {
+      return false;
+    }
+    var r = el.getBoundingClientRect();
+    return clientX < r.left || clientX > r.right;
+  }
+
+  function paintAt(clientX, clientY) {
+    if (!grid || !cols || !rows) {
+      return;
+    }
+    var col = Math.floor(clientX / CELL);
+    var row = Math.floor(clientY / CELL);
+    var mobile = window.matchMedia("(max-width: 42.74em)").matches;
+    var radius = mobile ? 1 : 0;
+    var dy;
+    var dx;
+    var nx;
+    var ny;
+    var painted = false;
+    for (dy = -radius; dy <= radius; dy += 1) {
+      for (dx = -radius; dx <= radius; dx += 1) {
+        nx = col + dx;
+        ny = row + dy;
+        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+          grid[ny * cols + nx] = 1;
+          painted = true;
+        }
+      }
+    }
+    if (painted) {
+      stagnant = 0;
+      draw();
+      saveState();
+    }
+  }
+
+  var drawing = false;
+
+  function onPointerDown(event) {
+    if (event.button != null && event.button !== 0) {
+      return;
+    }
+    if (!inSideGutter(event.clientX)) {
+      return;
+    }
+    drawing = true;
+    try {
+      event.target.setPointerCapture && event.target.setPointerCapture(event.pointerId);
+    } catch (err) {
+      /* ignore */
+    }
+    paintAt(event.clientX, event.clientY);
+    event.preventDefault();
+  }
+
+  function onPointerMove(event) {
+    if (inSideGutter(event.clientX)) {
+      document.documentElement.style.cursor = "crosshair";
+    } else if (!drawing) {
+      document.documentElement.style.cursor = "";
+    }
+    if (!drawing) {
+      return;
+    }
+    if (!inSideGutter(event.clientX)) {
+      return;
+    }
+    paintAt(event.clientX, event.clientY);
+    event.preventDefault();
+  }
+
+  function onPointerUp() {
+    drawing = false;
+    document.documentElement.style.cursor = "";
+  }
+
   function tick(ts) {
     if (!running) {
       return;
@@ -300,6 +379,12 @@
   });
 
   window.addEventListener("pagehide", saveState);
+
+  /* Paint in the side gutters only — content column stays fully clickable */
+  window.addEventListener("pointerdown", onPointerDown, { passive: false });
+  window.addEventListener("pointermove", onPointerMove, { passive: false });
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
 
   resize();
   start();
