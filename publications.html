@@ -11,9 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=29">
 </head>
 <body class="page-template">
+  <canvas class="life-bg" aria-hidden="true"></canvas>
   <div class="container">
     <header class="header">
       <div class="header__logo">
@@ -45,6 +46,17 @@
           </h1>
         </header>
         <div class="post__entry">
+          <section class="publication-year">
+            <h2>2026</h2>
+            <ul class="publication-list">
+              <li>
+                Charpentier, C., Porto, A., Karpatne, A. &amp; Uyeda, J. C.
+                <a href="https://doi.org/10.32942/X2MD6M" target="_blank" rel="noopener">On the Promise (and Practice) of Deep Comparative Methods: Expressivity, Limitations, and Design</a>.
+                <em>EcoEvoRxiv</em> preprint (2026).
+              </li>
+            </ul>
+          </section>
+
           <section class="publication-year">
             <h2>2025</h2>
             <ul class="publication-list">
@@ -96,7 +108,7 @@
         <div class="footer__copyright">
           <p>&copy; 2026 Caleb Charpentier</p>
           <div class="footer__links">
-            <a href="https://bsky.app/profile/calcharp.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+            <a href="reading-group.html">Reading Group</a>
             <a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Substack</a>
             <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
             <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
@@ -108,6 +120,7 @@
   </div>
 
   <script defer src="assets/js/scripts.min.js"></script>
+  <script defer src="assets/js/life-bg.js?v=3"></script>
   <script>
     window.publiiThemeMenuConfig = {
       mobileMenuMode: "sidebar",

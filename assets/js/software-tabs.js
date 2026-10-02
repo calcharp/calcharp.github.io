@@ -20,6 +20,9 @@
       tab.tabIndex = selected ? 0 : -1;
       if (selected) {
         matched = true;
+        if (typeof tab.scrollIntoView === "function") {
+          tab.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
+        }
       }
     });
 

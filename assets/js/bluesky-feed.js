@@ -10,6 +10,9 @@
     limit = 3;
   }
 
+  var mode = root.getAttribute("data-mode") || "full";
+  var compact = mode === "latest" || root.classList.contains("bluesky-feed--latest");
+
   var encoder = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
   var decoder = typeof TextDecoder !== "undefined" ? new TextDecoder() : null;
 
@@ -247,7 +250,47 @@
     );
   }
 
+  function truncatePlain(text, max) {
+    var cleaned = String(text || "").replace(/\s+/g, " ").trim();
+    if (cleaned.length <= max) {
+      return cleaned;
+    }
+    return cleaned.slice(0, max - 1).trimEnd() + "…";
+  }
+
+  function renderLatestItems(items) {
+    if (!items.length) {
+      root.innerHTML =
+        '<p class="bluesky-feed__status">No posts yet. <a href="https://bsky.app/profile/' +
+        encodeURIComponent(handle) +
+        '" target="_blank" rel="noopener">Open Bluesky</a></p>';
+      return;
+    }
+
+    var post = items[0].post;
+    var record = post.record || {};
+    var excerpt = truncatePlain(record.text || "", 160);
+    var when = formatDate(record.createdAt || post.indexedAt);
+    var permalink = postUrl(post);
+
+    root.innerHTML =
+      '<article class="bluesky-feed__latest">' +
+      (excerpt ? '<p class="bluesky-feed__latest-text">' + escapeHtml(excerpt) + "</p>" : "") +
+      '<p class="bluesky-feed__latest-meta">' +
+      (when ? "<span>" + escapeHtml(when) + "</span>" : "") +
+      '<a href="' +
+      escapeHtml(permalink) +
+      '" target="_blank" rel="noopener">View on Bluesky →</a>' +
+      "</p>" +
+      "</article>";
+  }
+
   function renderItems(items) {
+    if (compact) {
+      renderLatestItems(items);
+      return;
+    }
+
     if (!items.length) {
       root.innerHTML =
         '<p class="bluesky-feed__status">No original posts yet. <a href="https://bsky.app/profile/' +
