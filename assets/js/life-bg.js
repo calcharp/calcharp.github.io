@@ -16,6 +16,7 @@
   var CELL = 6;
   var STEP_MS = 180;
   var FILL = "hsla(136, 89%, 40%, 0.7)";
+  var STORAGE_KEY = "calcharp-life-bg-v1";
   var cols = 0;
   var rows = 0;
   var grid = null;
@@ -24,6 +25,68 @@
   var lastStep = 0;
   var stagnant = 0;
   var running = true;
+  var stepsSinceSave = 0;
+
+  function saveState() {
+    if (!grid || !cols || !rows) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          cell: CELL,
+          cols: cols,
+          rows: rows,
+          stagnant: stagnant,
+          grid: Array.from(grid),
+        })
+      );
+    } catch (err) {
+      /* ignore quota / private mode */
+    }
+  }
+
+  function loadState() {
+    try {
+      var raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return false;
+      }
+      var data = JSON.parse(raw);
+      if (
+        !data ||
+        data.cell !== CELL ||
+        data.cols !== cols ||
+        data.rows !== rows ||
+        !data.grid ||
+        data.grid.length !== cols * rows
+      ) {
+        return false;
+      }
+      grid.set(data.grid);
+      stagnant = data.stagnant || 0;
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function copyOverlap(prevCols, prevRows, prevGrid) {
+    if (!prevGrid || !prevCols || !prevRows) {
+      return false;
+    }
+    var copyCols = Math.min(cols, prevCols);
+    var copyRows = Math.min(rows, prevRows);
+    var y;
+    var x;
+    for (y = 0; y < copyRows; y += 1) {
+      for (x = 0; x < copyCols; x += 1) {
+        grid[y * cols + x] = prevGrid[y * prevCols + x];
+      }
+    }
+    return copyCols > 0 && copyRows > 0;
+  }
 
   function seed() {
     var i;
@@ -33,7 +96,50 @@
     stagnant = 0;
   }
 
+  function updateClip() {
+    var el = document.querySelector(".container");
+    if (!el) {
+      canvas.style.clipPath = "";
+      return;
+    }
+    var r = el.getBoundingClientRect();
+    var l = Math.max(0, Math.round(r.left));
+    var t = Math.max(0, Math.round(r.top));
+    var ri = Math.min(window.innerWidth, Math.round(r.right));
+    var b = Math.min(window.innerHeight, Math.round(r.bottom));
+    if (ri <= l || b <= t) {
+      canvas.style.clipPath = "";
+      return;
+    }
+    /* evenodd: full viewport minus content column (so PDF/YouTube can't hide the margins) */
+    canvas.style.clipPath =
+      "polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, " +
+      l +
+      "px " +
+      t +
+      "px, " +
+      l +
+      "px " +
+      b +
+      "px, " +
+      ri +
+      "px " +
+      b +
+      "px, " +
+      ri +
+      "px " +
+      t +
+      "px, " +
+      l +
+      "px " +
+      t +
+      "px)";
+  }
+
   function resize() {
+    var prevCols = cols;
+    var prevRows = rows;
+    var prevGrid = grid;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = window.innerWidth;
     var h = window.innerHeight;
@@ -47,7 +153,14 @@
     rows = Math.max(8, Math.ceil(h / CELL));
     grid = new Uint8Array(cols * rows);
     next = new Uint8Array(cols * rows);
-    seed();
+
+    if (!loadState()) {
+      if (!copyOverlap(prevCols, prevRows, prevGrid)) {
+        seed();
+      }
+      saveState();
+    }
+    updateClip();
     draw();
   }
 
@@ -101,6 +214,11 @@
     } else {
       stagnant = 0;
     }
+    stepsSinceSave += 1;
+    if (stepsSinceSave >= 8) {
+      saveState();
+      stepsSinceSave = 0;
+    }
   }
 
   function draw() {
@@ -148,6 +266,7 @@
       window.cancelAnimationFrame(raf);
       raf = 0;
     }
+    saveState();
   }
 
   var resizeTimer = 0;
@@ -156,13 +275,18 @@
     resizeTimer = window.setTimeout(resize, 150);
   });
 
+  window.addEventListener("scroll", updateClip, { passive: true });
+
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
       stop();
     } else {
+      updateClip();
       start();
     }
   });
+
+  window.addEventListener("pagehide", saveState);
 
   resize();
   start();

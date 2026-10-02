@@ -6,18 +6,20 @@
   --highlight-color: #0bbf3b;
 }
 
-/* Keep layout width stable when page height crosses the scrollbar threshold */
+/* Reserve scrollbar space on both edges so gutters stay equal */
 html {
-  scrollbar-gutter: stable;
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
 .life-bg {
   display: block;
   inset: 0;
-  opacity: 0.35;
+  opacity: 0.4;
   pointer-events: none;
   position: fixed;
-  z-index: 0;
+  /* Above page embeds (PDF/YouTube) but clipped to side margins only */
+  z-index: 5;
 }
 
 @media (prefers-reduced-motion: reduce) {
