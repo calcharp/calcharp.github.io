@@ -26,6 +26,7 @@
   var lastStep = 0;
   var stagnant = 0;
   var running = true;
+  var userPaused = false;
   var stepsSinceSave = 0;
 
   function configureForViewport() {
@@ -343,7 +344,15 @@
     raf = window.requestAnimationFrame(tick);
   }
 
-  function start() {
+  function pauseLoop() {
+    running = false;
+    if (raf) {
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  }
+
+  function startLoop() {
     if (raf) {
       return;
     }
@@ -352,13 +361,81 @@
     raf = window.requestAnimationFrame(tick);
   }
 
-  function stop() {
-    running = false;
-    if (raf) {
-      window.cancelAnimationFrame(raf);
-      raf = 0;
-    }
+  function userPlay() {
+    userPaused = false;
+    startLoop();
+    syncControls();
+  }
+
+  function userPause() {
+    userPaused = true;
+    pauseLoop();
     saveState();
+    syncControls();
+  }
+
+  function randomize() {
+    seed();
+    draw();
+    saveState();
+    syncControls();
+  }
+
+  var controlsRoot = null;
+
+  function syncControls() {
+    if (!controlsRoot) {
+      return;
+    }
+    var playBtn = controlsRoot.querySelector('[data-life-action="play"]');
+    var pauseBtn = controlsRoot.querySelector('[data-life-action="pause"]');
+    if (playBtn) {
+      playBtn.disabled = !userPaused;
+    }
+    if (pauseBtn) {
+      pauseBtn.disabled = userPaused;
+    }
+  }
+
+  function mountControls() {
+    controlsRoot = document.createElement("div");
+    controlsRoot.className = "life-controls";
+    controlsRoot.setAttribute("aria-label", "Game of Life controls");
+
+    controlsRoot.innerHTML =
+      '<div class="life-controls__tab" aria-hidden="true"></div>' +
+      '<div class="life-controls__panel" role="toolbar" aria-label="Life simulation">' +
+      '<button type="button" class="life-controls__btn" data-life-action="play" aria-label="Play">' +
+      '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M9 6v12l10-6L9 6z" fill="currentColor"/>' +
+      "</svg></button>" +
+      '<button type="button" class="life-controls__btn" data-life-action="pause" aria-label="Pause">' +
+      '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M7 5h3v14H7V5zm7 0h3v14h-3V5z" fill="currentColor"/>' +
+      "</svg></button>" +
+      '<button type="button" class="life-controls__btn life-controls__btn--randomize" data-life-action="randomize" aria-label="Randomize">' +
+      '<svg class="life-controls__icon life-controls__icon--spin" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/>' +
+      "</svg></button>" +
+      "</div>";
+
+    controlsRoot.addEventListener("click", function (event) {
+      var btn = event.target.closest("[data-life-action]");
+      if (!btn || !controlsRoot.contains(btn)) {
+        return;
+      }
+      var action = btn.getAttribute("data-life-action");
+      if (action === "play") {
+        userPlay();
+      } else if (action === "pause") {
+        userPause();
+      } else if (action === "randomize") {
+        randomize();
+      }
+    });
+
+    document.body.appendChild(controlsRoot);
+    syncControls();
   }
 
   var resizeTimer = 0;
@@ -371,10 +448,12 @@
 
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
-      stop();
+      pauseLoop();
     } else {
       updateClip();
-      start();
+      if (!userPaused) {
+        startLoop();
+      }
     }
   });
 
@@ -386,6 +465,7 @@
   window.addEventListener("pointerup", onPointerUp);
   window.addEventListener("pointercancel", onPointerUp);
 
+  mountControls();
   resize();
-  start();
+  startLoop();
 })();
