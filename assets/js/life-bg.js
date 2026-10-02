@@ -715,6 +715,10 @@
       '<svg class="life-controls__icon life-controls__icon--spin" viewBox="0 0 24 24" aria-hidden="true">' +
       '<path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/>' +
       "</svg></button>" +
+      '<a class="life-controls__btn" href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noopener" aria-label="About Conway’s Game of Life" title="About Conway’s Game of Life">' +
+      '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M12 17.4a1.15 1.15 0 1 1 0-2.3 1.15 1.15 0 0 1 0 2.3zm1.15-4.35c-.6.35-.95.7-.95 1.4v.25h-1.7V14c0-1.25.75-1.95 1.45-2.35.55-.3.85-.6.85-1.1 0-.6-.5-1.05-1.2-1.05-.75 0-1.25.45-1.35 1.15l-1.65-.2C8.5 9.55 9.75 8.3 11.6 8.3c1.85 0 3.05 1.1 3.05 2.6 0 .95-.5 1.6-1.5 2.15z" fill="currentColor"/>' +
+      "</svg></a>" +
       "</div>";
 
     controlsRoot.addEventListener("click", function (event) {

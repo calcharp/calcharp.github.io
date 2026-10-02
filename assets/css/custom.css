@@ -134,6 +134,11 @@ html {
   width: 1.15rem;
 }
 
+a.life-controls__btn .life-controls__icon {
+  height: 2.3rem;
+  width: 2.3rem;
+}
+
 .life-controls__btn[data-life-action="play"] .life-controls__icon {
   height: 1.05rem;
   margin-left: 2px;
@@ -169,6 +174,10 @@ html {
   border-color: hsla(var(--accent), 0.25);
   color: hsla(var(--accent), 0.4);
   cursor: default;
+}
+
+a.life-controls__btn {
+  text-decoration: none;
 }
 
 .container {
