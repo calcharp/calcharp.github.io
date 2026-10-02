@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/custom.css?v=35">
+  <link rel="stylesheet" href="assets/css/custom.css?v=45">
 </head>
 <body class="page-template">
   <canvas class="life-bg" aria-hidden="true"></canvas>
@@ -40,18 +40,42 @@
         <header>
           <h1 class="post__title">
             CV
-            <a href="pdfs/CV.pdf" class="cv-download-icon" download aria-label="Download CV (PDF)">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="0.85em" height="0.85em" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M12 7v7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-                <path d="M9 12l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
+            <span class="cv-title-actions">
+              <a href="pdfs/CV.pdf" class="cv-title-action" download aria-label="Download CV (PDF)" title="Download">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/>
+                  <path d="M12 7v7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                  <path d="M9 12l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </span>
           </h1>
         </header>
         <div class="post__entry">
-          <iframe class="cv-embed" src="pdfs/CV.pdf" title="Caleb Charpentier CV"></iframe>
+          <div class="cv-viewer">
+            <div class="cv-embed-wrap">
+              <iframe class="cv-embed" src="pdfs/CV.pdf" title="Caleb Charpentier CV"></iframe>
+              <button type="button" class="cv-pdf-fs-toggle" aria-label="View CV fullscreen" title="Fullscreen" aria-pressed="false">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
+
+          <section class="hero-links-band" aria-label="Contact and profiles">
+            <div class="hero-links">
+              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="hero-link--scholar" aria-label="Google Scholar">
+                <img class="hero-link__scholar-icon" src="img/google-scholar-logo.svg" alt="" width="22" height="22">
+                <span>Scholar</span>
+              </a>
+              <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
+              <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
+              <a href="reading-group.html">Reading Group</a>
+              <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
+            </div>
+          </section>
       </article>
     </main>
 
@@ -59,13 +83,6 @@
       <div class="footer__inner">
         <div class="footer__copyright">
           <p>&copy; 2026 Caleb Charpentier</p>
-          <div class="footer__links">
-            <a href="reading-group.html">Reading Group</a>
-            <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
-            <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
-            <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
-            <span class="footer__email">calebc22@vt.edu</span>
-          </div>
         </div>
       </div>
     </footer>
@@ -82,6 +99,43 @@
       mobileMenuExpandableSubmenus: true,
       relatedContainerForOverlayMenuSelector: ".top"
     };
+
+    (function () {
+      var wrap = document.querySelector(".cv-embed-wrap");
+      var btn = document.querySelector(".cv-pdf-fs-toggle");
+      var iconPath = btn && btn.querySelector("path");
+      var ICON_ENTER = "M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5";
+      var ICON_EXIT = "M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5";
+      if (!wrap || !btn || !iconPath || !wrap.requestFullscreen) {
+        if (btn) {
+          btn.hidden = true;
+        }
+        return;
+      }
+
+      function isFs() {
+        return document.fullscreenElement === wrap;
+      }
+
+      function sync() {
+        var active = isFs();
+        iconPath.setAttribute("d", active ? ICON_EXIT : ICON_ENTER);
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.setAttribute("aria-label", active ? "Exit fullscreen" : "View CV fullscreen");
+        btn.title = active ? "Exit fullscreen (Esc)" : "Fullscreen";
+      }
+
+      btn.addEventListener("click", function () {
+        if (isFs()) {
+          document.exitFullscreen();
+        } else {
+          wrap.requestFullscreen();
+        }
+      });
+
+      document.addEventListener("fullscreenchange", sync);
+      sync();
+    })();
   </script>
 </body>
 </html>
