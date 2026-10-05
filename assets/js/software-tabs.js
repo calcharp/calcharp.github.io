@@ -98,17 +98,18 @@
     document.body.classList.remove("software-lightbox-open");
   }
 
-  function openLightbox(src, alt) {
+  function openLightbox(src, alt, onWhite) {
     if (!lightbox || !lightboxImage) {
       return;
     }
     lightboxImage.src = src;
     lightboxImage.alt = alt || "";
+    lightboxImage.classList.toggle("software-lightbox__image--on-white", !!onWhite);
     lightbox.hidden = false;
     document.body.classList.add("software-lightbox-open");
-    var closeBtn = lightbox.querySelector(".software-lightbox__close");
-    if (closeBtn) {
-      closeBtn.focus();
+    var backdrop = lightbox.querySelector(".software-lightbox__backdrop");
+    if (backdrop) {
+      backdrop.focus();
     }
   }
 
@@ -121,13 +122,18 @@
     if (!img) {
       return;
     }
-    openLightbox(img.currentSrc || img.src, img.alt);
+    openLightbox(
+      img.currentSrc || img.src,
+      img.alt,
+      img.classList.contains("software-panel__media--on-white")
+    );
   });
 
   if (lightbox) {
-    lightbox.querySelectorAll(".software-lightbox__backdrop, .software-lightbox__close").forEach(function (el) {
-      el.addEventListener("click", closeLightbox);
-    });
+    var backdrop = lightbox.querySelector(".software-lightbox__backdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", closeLightbox);
+    }
   }
 
   document.addEventListener("keydown", function (event) {
