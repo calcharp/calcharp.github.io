@@ -611,7 +611,7 @@
 
   function onPointerMove(event) {
     if (inSideGutter(event.clientX)) {
-      document.documentElement.style.cursor = "crosshair";
+      document.documentElement.style.cursor = "var(--cursor-paint)";
     } else if (!drawing) {
       document.documentElement.style.cursor = "";
     }
