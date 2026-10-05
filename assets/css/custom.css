@@ -5,11 +5,11 @@
   --background: 0, 0%, 4%;
   --highlight-color: #0bbf3b;
   /*
-    80s phosphor CRT cursors — chunky classic arrow / pointing hand / paint cross
-    (green on near-black outline so they read on dark gutters and bright embeds)
+    80s phosphor CRT cursors — same arrow silhouette; links only brighten the fill
+    (inverting the outline reads larger on dark backgrounds). Paint cross in Life gutters.
   */
   --cursor-cell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%230bbf3b' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E") 2 2, auto;
-  --cursor-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M9 2h4v9h-4zm4 1h3v9h-3zm3 1h3v9h-3zm3 2h3v11h-1.5a6.5 6.5 0 0 1-6.5 6.5H11A7.5 7.5 0 0 1 3.5 22.5V15H8v2h3V11h2V9h3V6h3z'/%3E%3Cpath fill='%230bbf3b' d='M10 3.5h2.5v8H10zm2.5.5h2.5v8h-2.5zm2.5.5h2.5v8H15zm2.5 1.5h2.5v9.5H19a5.5 5.5 0 0 1-5.5 5.5h-2A6.5 6.5 0 0 1 5 21.5V16h2.5v1.5H10V11h2V9h2.5V6.5H17.5z'/%3E%3C/svg%3E") 10 3, pointer;
+  --cursor-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%2350ff78' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E") 2 2, pointer;
   --cursor-paint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M13 1h6v11h-6zm0 19h6v11h-6zM1 13h11v6H1zm19 0h11v6H20z'/%3E%3Cpath fill='%230bbf3b' d='M14.5 2.5h3v9h-3zm0 18h3v9h-3zM2.5 14.5h9v3h-9zm18 0h9v3h-9z'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%23040404' stroke='%230bbf3b' stroke-width='2'/%3E%3C/svg%3E") 16 16, crosshair;
 }
 
