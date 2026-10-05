@@ -56,8 +56,24 @@ select,
   z-index: 5;
 }
 
+/* Vertical CRT scanlines clipped to Life gutters */
+.life-scanlines {
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent 2px,
+    hsla(0, 0%, 0%, 0.28) 2px,
+    hsla(0, 0%, 0%, 0.28) 3px
+  );
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 6;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .life-bg {
+  .life-bg,
+  .life-scanlines {
     display: none;
   }
 
@@ -84,7 +100,7 @@ body:has(.life-controls) .header__logo {
   position: absolute;
   top: var(--navbar-height);
   width: auto;
-  z-index: 6;
+  z-index: 7;
 }
 
 .life-controls__tab {

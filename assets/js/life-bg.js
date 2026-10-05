@@ -13,6 +13,11 @@
     return;
   }
 
+  var scanlines = document.createElement("div");
+  scanlines.className = "life-scanlines";
+  scanlines.setAttribute("aria-hidden", "true");
+  canvas.insertAdjacentElement("afterend", scanlines);
+
   var CELL = 6;
   var STEP_MS = 180;
   var SEED_DENSITY = 0.14;
@@ -408,6 +413,7 @@
     var el = document.querySelector(".container");
     if (!el) {
       canvas.style.clipPath = "";
+      scanlines.style.clipPath = "";
       return;
     }
     var r = el.getBoundingClientRect();
@@ -417,10 +423,11 @@
     var b = Math.min(window.innerHeight, Math.round(r.bottom));
     if (ri <= l || b <= t) {
       canvas.style.clipPath = "";
+      scanlines.style.clipPath = "";
       return;
     }
     /* evenodd: full viewport minus content column (so PDF/YouTube can't hide the margins) */
-    canvas.style.clipPath =
+    var path =
       "polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, " +
       l +
       "px " +
@@ -442,6 +449,8 @@
       "px " +
       t +
       "px)";
+    canvas.style.clipPath = path;
+    scanlines.style.clipPath = path;
   }
 
   function resize() {
