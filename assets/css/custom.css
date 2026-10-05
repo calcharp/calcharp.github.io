@@ -66,53 +66,73 @@ select,
   }
 }
 
-/* Tiny top-left tab: hover to reveal Life controls in the gutter */
+/* Life controls hang under the name plate; hover reveals the toolbar */
+.header__logo {
+  position: relative;
+}
+
+body:has(.life-controls) .header__logo {
+  margin-bottom: calc(var(--baseline) * 9);
+}
+
 .life-controls {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  left: 8px;
-  padding: 0 10px 12px;
+  padding: 4px 0 0;
   pointer-events: none;
-  position: fixed;
-  top: 0;
+  position: absolute;
+  top: var(--navbar-height);
+  width: auto;
   z-index: 6;
 }
 
 .life-controls__tab {
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 9px solid hsla(var(--accent), 0.65);
-  height: 0;
+  align-items: center;
+  color: hsla(var(--accent), 0.85);
+  display: flex;
+  height: 1.15rem;
+  justify-content: center;
   margin: 0;
   pointer-events: auto;
   position: relative;
-  transition: border-top-color 0.15s ease;
-  width: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+  width: 1.15rem;
+}
+
+.life-controls__glider {
+  display: block;
+  fill: currentColor;
+  height: 100%;
+  width: 100%;
 }
 
 /* Invisible bridge so the cursor can travel tab → panel without closing */
 .life-controls__tab::after {
-  bottom: -14px;
+  bottom: -18px;
   content: "";
-  left: -18px;
+  left: -40px;
   position: absolute;
-  right: -18px;
-  top: -2px;
+  right: -40px;
+  top: -4px;
 }
 
 .life-controls__panel {
+  align-items: center;
   background: hsla(var(--background), 0.96);
   border: 1px solid hsla(var(--accent), 0.4);
   border-radius: 999px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
-  margin: 6px 0 0;
+  left: 0;
+  margin: 0;
   opacity: 0;
   padding: 8px;
   pointer-events: none;
-  transform: translate3d(0, -6px, 0);
+  position: absolute;
+  top: calc(100% + 4px);
+  transform: translate3d(0, -4px, 0);
   /* Delayed close = forgiving mouse travel (CSS-Tricks unhover intent) */
   transition:
     opacity 0.14s ease 0.18s,
@@ -138,7 +158,8 @@ select,
 
 .life-controls:hover .life-controls__tab,
 .life-controls:focus-within .life-controls__tab {
-  border-top-color: hsla(var(--accent), 0.95);
+  color: hsla(var(--accent), 1);
+  transform: translate3d(0, 1px, 0);
 }
 
 .life-controls__btn {
@@ -147,12 +168,15 @@ select,
   background: hsla(var(--background), 1);
   border: 1px solid hsla(var(--accent), 0.55);
   border-radius: 50%;
+  box-sizing: border-box;
   color: hsla(var(--accent), 0.95);
   cursor: var(--cursor-link);
   display: inline-flex;
   flex: 0 0 auto;
   height: 2.55rem;
   justify-content: center;
+  line-height: 1;
+  margin: 0;
   padding: 0;
   transition:
     color 0.15s ease,
@@ -164,19 +188,18 @@ select,
 
 .life-controls__icon {
   display: block;
+  flex: 0 0 auto;
   height: 1.15rem;
   width: 1.15rem;
 }
 
-a.life-controls__btn .life-controls__icon {
-  height: 2.3rem;
-  width: 2.3rem;
+.life-controls__icon--playpause {
+  height: 1.05rem;
+  width: 1.2rem;
 }
 
-.life-controls__btn[data-life-action="play"] .life-controls__icon {
-  height: 1.05rem;
-  margin-left: 2px;
-  width: 1.05rem;
+.life-controls__icon[hidden] {
+  display: none;
 }
 
 .life-controls__btn--randomize:hover:not(:disabled) .life-controls__icon--spin,
@@ -211,6 +234,7 @@ a.life-controls__btn .life-controls__icon {
 }
 
 a.life-controls__btn {
+  margin: 0;
   text-decoration: none;
 }
 

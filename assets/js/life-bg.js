@@ -607,6 +607,11 @@
     }
     paintAt(event.clientX, event.clientY);
     event.preventDefault();
+    /* Gutter painting shouldn't leave a stuck text selection */
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.rangeCount) {
+      sel.removeAllRanges();
+    }
   }
 
   function onPointerMove(event) {
@@ -685,14 +690,23 @@
     if (!controlsRoot) {
       return;
     }
-    var playBtn = controlsRoot.querySelector('[data-life-action="play"]');
-    var pauseBtn = controlsRoot.querySelector('[data-life-action="pause"]');
-    if (playBtn) {
-      playBtn.disabled = !userPaused;
+    var toggleBtn = controlsRoot.querySelector('[data-life-action="toggle"]');
+    if (!toggleBtn) {
+      return;
     }
-    if (pauseBtn) {
-      pauseBtn.disabled = userPaused;
+    toggleBtn.setAttribute("aria-label", userPaused ? "Play" : "Pause");
+    toggleBtn.setAttribute("aria-pressed", userPaused ? "false" : "true");
+  }
+
+  function placeControlsUnderLogo() {
+    var logo = document.querySelector(".header__logo .logo");
+    var headerLogo = document.querySelector(".header__logo");
+    if (!logo || !headerLogo || !controlsRoot) {
+      return;
     }
+    /* Pin to the left edge of the name plate */
+    controlsRoot.style.left = logo.offsetLeft + "px";
+    controlsRoot.style.width = "";
   }
 
   function mountControls() {
@@ -700,16 +714,21 @@
     controlsRoot.className = "life-controls";
     controlsRoot.setAttribute("aria-label", "Game of Life controls");
 
+    /* Classic Life glider — more recognizable than a bare disclosure triangle */
     controlsRoot.innerHTML =
-      '<div class="life-controls__tab" aria-hidden="true"></div>' +
+      '<div class="life-controls__tab" aria-hidden="true" title="Game of Life">' +
+      '<svg class="life-controls__glider" viewBox="0 0 11 11" aria-hidden="true">' +
+      '<rect x="0" y="0" width="3" height="3"/>' +
+      '<rect x="4" y="0" width="3" height="3"/>' +
+      '<rect x="8" y="0" width="3" height="3"/>' +
+      '<rect x="0" y="4" width="3" height="3"/>' +
+      '<rect x="4" y="8" width="3" height="3"/>' +
+      "</svg></div>" +
       '<div class="life-controls__panel" role="toolbar" aria-label="Life simulation">' +
-      '<button type="button" class="life-controls__btn" data-life-action="play" aria-label="Play">' +
-      '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M9 6v12l10-6L9 6z" fill="currentColor"/>' +
-      "</svg></button>" +
-      '<button type="button" class="life-controls__btn" data-life-action="pause" aria-label="Pause">' +
-      '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M7 5h3v14H7V5zm7 0h3v14h-3V5z" fill="currentColor"/>' +
+      '<button type="button" class="life-controls__btn" data-life-action="toggle" aria-label="Pause" aria-pressed="true">' +
+      '<svg class="life-controls__icon life-controls__icon--playpause" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M3 6h2.5v12H3V6zm4 0h2.5v12H7V6z" fill="currentColor"/>' +
+      '<path d="M12.5 6v12l9-6-9-6z" fill="currentColor"/>' +
       "</svg></button>" +
       '<button type="button" class="life-controls__btn life-controls__btn--randomize" data-life-action="randomize" aria-label="Randomize">' +
       '<svg class="life-controls__icon life-controls__icon--spin" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -717,7 +736,8 @@
       "</svg></button>" +
       '<a class="life-controls__btn" href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noopener" aria-label="About Conway’s Game of Life" title="About Conway’s Game of Life">' +
       '<svg class="life-controls__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M12 17.4a1.15 1.15 0 1 1 0-2.3 1.15 1.15 0 0 1 0 2.3zm1.15-4.35c-.6.35-.95.7-.95 1.4v.25h-1.7V14c0-1.25.75-1.95 1.45-2.35.55-.3.85-.6.85-1.1 0-.6-.5-1.05-1.2-1.05-.75 0-1.25.45-1.35 1.15l-1.65-.2C8.5 9.55 9.75 8.3 11.6 8.3c1.85 0 3.05 1.1 3.05 2.6 0 .95-.5 1.6-1.5 2.15z" fill="currentColor"/>' +
+      '<circle cx="12" cy="17.25" r="1.35" fill="currentColor"/>' +
+      '<path d="M12 6.2c-1.85 0-3.15 1.15-3.15 2.7 0 .45.1.85.3 1.15l1.45-.55c-.08-.2-.15-.4-.15-.65 0-.7.55-1.2 1.55-1.2s1.55.5 1.55 1.25c0 .75-.4 1.15-1.15 1.7-.85.6-1.4 1.25-1.4 2.25V14h1.7v-.55c0-.7.3-1.1 1.15-1.7.95-.65 1.55-1.4 1.55-2.55C14.9 7.4 13.7 6.2 12 6.2z" fill="currentColor"/>' +
       "</svg></a>" +
       "</div>";
 
@@ -727,16 +747,29 @@
         return;
       }
       var action = btn.getAttribute("data-life-action");
-      if (action === "play") {
-        userPlay();
-      } else if (action === "pause") {
-        userPause();
+      if (action === "toggle") {
+        if (userPaused) {
+          userPlay();
+        } else {
+          userPause();
+        }
       } else if (action === "randomize") {
         randomize();
       }
     });
 
-    document.body.appendChild(controlsRoot);
+    var logo = document.querySelector(".header__logo .logo");
+    var headerLogo = document.querySelector(".header__logo");
+    if (logo && headerLogo) {
+      headerLogo.insertBefore(controlsRoot, logo.nextSibling);
+      placeControlsUnderLogo();
+      window.addEventListener("resize", placeControlsUnderLogo);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(placeControlsUnderLogo);
+      }
+    } else {
+      document.body.appendChild(controlsRoot);
+    }
     syncControls();
   }
 
