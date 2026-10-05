@@ -56,10 +56,10 @@ select,
   z-index: 5;
 }
 
-/* Vertical CRT scanlines clipped to Life gutters */
+/* Horizontal CRT scanlines clipped to Life gutters */
 .life-scanlines {
   background: repeating-linear-gradient(
-    to right,
+    to bottom,
     transparent 0,
     transparent 2px,
     hsla(0, 0%, 0%, 0.28) 2px,
