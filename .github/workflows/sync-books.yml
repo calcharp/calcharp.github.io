@@ -1,0 +1,38 @@
+name: Sync Goodreads books
+
+on:
+  schedule:
+    # Daily ~8:00 AM US Eastern (12:00 UTC; 13:00 during EDT)
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-books:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync 4–5★ books from Goodreads
+        run: python scripts/sync_goodreads_books.py
+
+      - name: Commit bookshelf updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/books.json data/books-sync.json
+          if git diff --staged --quiet; then
+            echo "No bookshelf changes."
+          else
+            git commit -m "Add newly rated Goodreads books"
+            git push
+          fi

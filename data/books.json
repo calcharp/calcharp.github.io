@@ -1,0 +1,427 @@
+[
+  {
+    "id": "17349",
+    "title": "The Demon-Haunted World",
+    "author": "Carl Sagan",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1553691804l/17349._SX318_.jpg",
+    "url": "https://www.goodreads.com/book/show/17349",
+    "rating": 5,
+    "subtitle": "Science as a Candle in the Dark",
+    "spine": {
+      "bg": "#8c3e1d",
+      "edge": "#b55a34",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780345409461",
+    "spineImage": "assets/img/books/spines/17349.jpg",
+    "spineSource": "generated",
+    "dewey": "001.9",
+    "deweyLabel": "Science & skepticism"
+  },
+  {
+    "id": "222725518",
+    "title": "Empire of AI",
+    "author": "Karen Hao",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1734812256l/222725518._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/222725518",
+    "rating": 5,
+    "subtitle": "Dreams and Nightmares in Sam Altman's OpenAI",
+    "spine": {
+      "bg": "#8c604a",
+      "edge": "#b58268",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780593657515",
+    "spineImage": "assets/img/books/spines/222725518.jpg",
+    "spineSource": "generated",
+    "dewey": "006.3",
+    "deweyLabel": "Artificial intelligence"
+  },
+  {
+    "id": "122776185",
+    "title": "Dive into Deep Learning",
+    "author": "Aston Zhang",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1681805605l/122776185._SX318_.jpg",
+    "url": "https://www.goodreads.com/book/show/122776185",
+    "rating": 5,
+    "spine": {
+      "bg": "#1e5675",
+      "edge": "#34799e",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9781009389433",
+    "spineImage": "assets/img/books/spines/122776185.jpg",
+    "spineSource": "generated",
+    "dewey": "006.31",
+    "deweyLabel": "Machine learning"
+  },
+  {
+    "id": "54218",
+    "title": "The Mismeasure of Man",
+    "author": "Stephen Jay Gould",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1386924672l/54218.jpg",
+    "url": "https://www.goodreads.com/book/show/54218",
+    "rating": 5,
+    "spine": {
+      "bg": "#3b292c",
+      "edge": "#64494d",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780393314250",
+    "spineImage": "assets/img/books/spines/54218.jpg",
+    "spineSource": "generated",
+    "dewey": "153.9",
+    "deweyLabel": "Intelligence testing"
+  },
+  {
+    "id": "62119780",
+    "title": "Animal Liberation Now",
+    "author": "Peter Singer",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1675641573l/62119780.jpg",
+    "url": "https://www.goodreads.com/book/show/62119780",
+    "rating": 5,
+    "subtitle": "The Definitive Classic Renewed",
+    "spine": {
+      "bg": "#8c836d",
+      "edge": "#b5aa91",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780063226708",
+    "spineImage": "assets/img/books/spines/62119780.jpg",
+    "spineSource": "generated",
+    "dewey": "179.3",
+    "deweyLabel": "Animal rights / ethics"
+  },
+  {
+    "id": "53121662",
+    "title": "Jesus and John Wayne",
+    "author": "Kristin Kobes Du Mez",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1611376522l/53121662._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/53121662",
+    "rating": 5,
+    "subtitle": "How White Evangelicals Corrupted a Faith and Fractured a Nation",
+    "spine": {
+      "bg": "#110e46",
+      "edge": "#231f6f",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9781631495731",
+    "spineImage": "assets/img/books/spines/53121662.jpg",
+    "spineSource": "generated",
+    "dewey": "277.3",
+    "deweyLabel": "Christianity \u2014 North America"
+  },
+  {
+    "id": "222376640",
+    "title": "Enshittification",
+    "author": "Cory Doctorow",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1745430964l/222376640._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/222376640",
+    "rating": 5,
+    "subtitle": "Why Everything Suddenly Got Worse and What to Do About It",
+    "spine": {
+      "bg": "#5a3115",
+      "edge": "#834d29",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780374619329",
+    "spineImage": "assets/img/books/spines/222376640.jpg",
+    "spineSource": "generated",
+    "dewey": "303.483",
+    "deweyLabel": "Technology & society"
+  },
+  {
+    "id": "61539",
+    "title": "The Structure of Scientific Revolutions",
+    "author": "Thomas S. Kuhn",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1396422530l/61539.jpg",
+    "url": "https://www.goodreads.com/book/show/61539",
+    "rating": 5,
+    "spine": {
+      "bg": "#0b314a",
+      "edge": "#1b5073",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780226458083",
+    "spineImage": "assets/img/books/spines/61539.jpg",
+    "spineSource": "generated",
+    "dewey": "501",
+    "deweyLabel": "Philosophy of science"
+  },
+  {
+    "id": "31931",
+    "title": "Theory and Reality",
+    "author": "Peter Godfrey-Smith",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1389387973l/31931.jpg",
+    "url": "https://www.goodreads.com/book/show/31931",
+    "rating": 4,
+    "subtitle": "An Introduction to the Philosophy of Science",
+    "spine": {
+      "bg": "#8c5e57",
+      "edge": "#b58077",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780226300634",
+    "spineImage": "assets/img/books/spines/31931.jpg",
+    "spineSource": "generated",
+    "dewey": "501.01",
+    "deweyLabel": "Philosophy of science \u2014 intro"
+  },
+  {
+    "id": "29952685",
+    "title": "Measurement: A Very Short Introduction",
+    "author": "David J. Hand",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1465583146l/29952685.jpg",
+    "url": "https://www.goodreads.com/book/show/29952685",
+    "rating": 4,
+    "spine": {
+      "bg": "#49100a",
+      "edge": "#71211a",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780198779568",
+    "spineImage": "assets/img/books/spines/29952685.jpg",
+    "spineSource": "generated",
+    "dewey": "530.8",
+    "deweyLabel": "Measurement"
+  },
+  {
+    "id": "36475",
+    "title": "Wonderful Life",
+    "author": "Stephen Jay Gould",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1480836482l/36475.jpg",
+    "url": "https://www.goodreads.com/book/show/36475",
+    "rating": 5,
+    "subtitle": "The Burgess Shale and the Nature of History",
+    "spine": {
+      "bg": "#0e4c42",
+      "edge": "#1f7566",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780393307009",
+    "spineImage": "assets/img/books/spines/36475.jpg",
+    "spineSource": "generated",
+    "dewey": "560",
+    "deweyLabel": "Paleontology"
+  },
+  {
+    "id": "54209",
+    "title": "Ever Since Darwin",
+    "author": "Stephen Jay Gould",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1431172846l/54209.jpg",
+    "url": "https://www.goodreads.com/book/show/54209",
+    "rating": 5,
+    "subtitle": "Reflections in Natural History",
+    "spine": {
+      "bg": "#733d1a",
+      "edge": "#9c5a30",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780393308181",
+    "spineImage": "assets/img/books/spines/54209.jpg",
+    "spineSource": "generated",
+    "dewey": "576.8",
+    "deweyLabel": "Evolution \u2014 essays"
+  },
+  {
+    "id": "3357127",
+    "title": "The Geometry of Evolution",
+    "author": "George R. McGhee",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1349018515l/3357127.jpg",
+    "url": "https://www.goodreads.com/book/show/3357127",
+    "rating": 5,
+    "subtitle": "Adaptive Landscapes and Theoretical Morphospaces",
+    "spine": {
+      "bg": "#8c7c61",
+      "edge": "#b5a283",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780521849425",
+    "spineImage": "assets/img/books/spines/3357127.jpg",
+    "spineSource": "generated",
+    "dewey": "576.81",
+    "deweyLabel": "Evolutionary morphology"
+  },
+  {
+    "id": "22463",
+    "title": "The Origin of Species",
+    "author": "Charles Darwin",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1298417570l/22463.jpg",
+    "url": "https://www.goodreads.com/book/show/22463",
+    "rating": 5,
+    "spine": {
+      "bg": "#8c6b3e",
+      "edge": "#b58f5a",
+      "ink": "#1e1812"
+    },
+    "spineImage": "assets/img/books/spines/22463.jpg",
+    "spineSource": "generated",
+    "dewey": "576.82",
+    "deweyLabel": "Evolution \u2014 Origin of Species"
+  },
+  {
+    "id": "33933",
+    "title": "The Panda's Thumb",
+    "author": "Stephen Jay Gould",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1388285250l/33933.jpg",
+    "url": "https://www.goodreads.com/book/show/33933",
+    "rating": 5,
+    "subtitle": "More Reflections in Natural History",
+    "spine": {
+      "bg": "#6d8c7a",
+      "edge": "#91b59f",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9780393308198",
+    "spineImage": "assets/img/books/spines/33933.jpg",
+    "spineSource": "generated",
+    "dewey": "576.83",
+    "deweyLabel": "Evolution \u2014 essays"
+  },
+  {
+    "id": "17465709",
+    "title": "Braiding Sweetgrass",
+    "author": "Robin Wall Kimmerer",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1366775928l/17465709.jpg",
+    "url": "https://www.goodreads.com/book/show/17465709",
+    "rating": 5,
+    "subtitle": "Indigenous Wisdom, Scientific Knowledge, and the Teachings of Plants",
+    "spine": {
+      "bg": "#725a3a",
+      "edge": "#9b7e56",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9781571313355",
+    "spineImage": "assets/img/books/spines/17465709.jpg",
+    "spineSource": "generated",
+    "dewey": "581.63",
+    "deweyLabel": "Ethnobotany"
+  },
+  {
+    "id": "6493208",
+    "title": "The Immortal Life of Henrietta Lacks",
+    "author": "Rebecca Skloot",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1327878144l/6493208._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/6493208",
+    "rating": 5,
+    "spine": {
+      "bg": "#8c2615",
+      "edge": "#b53e2a",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9781400052172",
+    "spineImage": "assets/img/books/spines/6493208.jpg",
+    "spineSource": "generated",
+    "dewey": "616.027",
+    "deweyLabel": "Medical / cell biology history"
+  },
+  {
+    "id": "39874447",
+    "title": "How to Write a Lot",
+    "author": "Paul J. Silvia",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1536841946l/39874447.jpg",
+    "url": "https://www.goodreads.com/book/show/39874447",
+    "rating": 5,
+    "subtitle": "A Practical Guide to Productive Academic Writing",
+    "spine": {
+      "bg": "#15588c",
+      "edge": "#2a79b5",
+      "ink": "#1e1812"
+    },
+    "isbn13": "9781433829734",
+    "spineImage": "assets/img/books/spines/39874447.jpg",
+    "spineSource": "generated",
+    "dewey": "808.02",
+    "deweyLabel": "Academic writing"
+  },
+  {
+    "id": "10569",
+    "title": "On Writing",
+    "author": "Stephen King",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1436735207l/10569._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/10569",
+    "rating": 5,
+    "subtitle": "A Memoir of the Craft",
+    "spine": {
+      "bg": "#283530",
+      "edge": "#495e56",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780743455961",
+    "spineImage": "assets/img/books/spines/10569.jpg",
+    "spineSource": "generated",
+    "dewey": "808.02",
+    "deweyLabel": "Writing craft"
+  },
+  {
+    "id": "5056556",
+    "title": "The Grapes of Wrath",
+    "author": "John Steinbeck",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1387708805l/5056556.jpg",
+    "url": "https://www.goodreads.com/book/show/5056556",
+    "rating": 5,
+    "spine": {
+      "bg": "#6e6212",
+      "edge": "#978726",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780756971007",
+    "spineImage": "assets/img/books/spines/5056556.jpg",
+    "spineSource": "photo",
+    "dewey": "813.52",
+    "deweyLabel": "American fiction"
+  },
+  {
+    "id": "415459",
+    "title": "I Have No Mouth & I Must Scream",
+    "author": "Harlan Ellison",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1423672898l/415459.jpg",
+    "url": "https://www.goodreads.com/book/show/415459",
+    "rating": 5,
+    "spine": {
+      "bg": "#244377",
+      "edge": "#3c61a0",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780441363957",
+    "spineImage": "assets/img/books/spines/415459.jpg",
+    "spineSource": "generated",
+    "dewey": "813.54",
+    "deweyLabel": "American SF"
+  },
+  {
+    "id": "26150738",
+    "title": "Paradise Lost",
+    "author": "John Milton",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1445791419l/26150738.jpg",
+    "url": "https://www.goodreads.com/book/show/26150738",
+    "rating": 5,
+    "spine": {
+      "bg": "#69281c",
+      "edge": "#924032",
+      "ink": "#f5ecdc"
+    },
+    "isbn13": "9780241240618",
+    "spineImage": "assets/img/books/spines/26150738.jpg",
+    "spineSource": "generated",
+    "dewey": "821.4",
+    "deweyLabel": "English poetry \u2014 Milton"
+  },
+  {
+    "id": "54870256",
+    "title": "There Is No Antimemetics Division",
+    "author": "qntm",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1597056415l/54870256._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/54870256",
+    "rating": 5,
+    "spine": {
+      "bg": "#261d2d",
+      "edge": "#4a3b56",
+      "ink": "#f5ecdc"
+    },
+    "spineImage": "assets/img/books/spines/54870256.jpg",
+    "spineSource": "generated",
+    "dewey": "823.92",
+    "deweyLabel": "English SF"
+  }
+]

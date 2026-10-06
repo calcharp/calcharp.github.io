@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Books I Like | Caleb Charpentier</title>
+  <meta name="description" content="A private shelf of books I like.">
+  <link rel="icon" href="img/darwinbust.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=136">
+</head>
+<body class="page-template page-books">
+  <canvas class="life-bg" aria-hidden="true"></canvas>
+  <div class="container">
+    <header class="header">
+      <div class="header__logo">
+        <a href="index.html" class="logo" aria-label="Caleb Charpentier home">Caleb Charpentier</a>
+      </div>
+      <nav class="navbar js-navbar">
+        <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
+          <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
+        </button>
+        <ul class="navbar__menu">
+          <li><a href="index.html" class="nav-home" aria-label="Home"><svg class="nav-home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg></a></li>
+          <li><a href="research.html" target="_self">Research</a></li>
+          <li><a href="software.html" target="_self">Software</a></li>
+          <li><a href="cv.html" target="_self">CV</a></li>
+          <li><a href="publications.html" target="_self">Publications</a></li>
+          <li class="has-submenu">
+            <a href="#" aria-haspopup="true" onclick="return false;">Other <span class="nav-more-mark" aria-hidden="true"></span></a>
+            <ul class="navbar__submenu">
+              <li><a href="reading-group.html">Reading Group</a></li>
+              <li><a href="teaching-resources.html">Teaching Resources</a></li>
+              <li><a href="blog.html">Blog</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="content page">
+      <article class="post">
+        <h1 class="u-hidden">Books I Like</h1>
+        <div class="post__entry" data-books data-books-mode="covers">
+          <p class="books-status" data-books-status>Loading…</p>
+          <ul class="books-grid" data-books-grid></ul>
+        </div>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__copyright">
+          <p>&copy; 2026 Caleb Charpentier</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script defer src="assets/js/scripts.min.js"></script>
+  <script defer src="assets/js/life-bg.js?v=26"></script>
+  <script defer src="assets/js/books.js?v=33"></script>
+  <script>
+    window.publiiThemeMenuConfig = {
+      mobileMenuMode: "sidebar",
+      animationSpeed: 300,
+      submenuWidth: "auto",
+      doubleClickTime: 500,
+      mobileMenuExpandableSubmenus: true,
+      relatedContainerForOverlayMenuSelector: ".top"
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "goodreads_user_id": "194048917",
+  "shelf": "read",
+  "min_rating": 4,
+  "since": "2026-10-06",
+  "note": "Only auto-add books rated >= min_rating with read/added date on or after since. Older high-rated books already missing from books.json are intentionally ignored.",
+  "last_run": "2026-10-06T16:19:04Z",
+  "last_added": [],
+  "last_added_count": 0
+}
