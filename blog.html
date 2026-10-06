@@ -49,7 +49,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/custom.css?v=88">
+  <link rel="stylesheet" href="assets/css/custom.css?v=98">
 </head>
 <body class="page-template">
   <canvas class="life-bg" aria-hidden="true"></canvas>
@@ -98,13 +98,21 @@
 
           <section class="hero-links-band" aria-label="Contact and profiles">
             <div class="hero-links">
-              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener" class="hero-link--scholar" aria-label="Google Scholar">
-                <img class="hero-link__scholar-icon" src="img/google-scholar-logo.svg" alt="" width="22" height="22">
-                <span>Scholar</span>
-              </a>
-              <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
+              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+              <a href="https://www.researchgate.net/profile/Caleb-Charpentier-2" target="_blank" rel="noopener">ResearchGate</a>
+              <span class="hero-link-with-copy">
+                <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
+                <button type="button" class="hero-copy" data-copy="0000-0002-9787-7081" aria-label="Copy ORCID iD" title="Copy ORCID iD">
+                  <svg class="hero-copy__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3zm0 2H5v11h10v-2H8V9zm4-4v11h7V5h-7z"/></svg>
+                </button>
+              </span>
               <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
-              <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
+              <span class="hero-link-with-copy">
+                <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
+                <button type="button" class="hero-copy" data-copy="calebc22@vt.edu" aria-label="Copy email address" title="Copy email">
+                  <svg class="hero-copy__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3zm0 2H5v11h10v-2H8V9zm4-4v11h7V5h-7z"/></svg>
+                </button>
+              </span>
             </div>
           </section>
       </article>
@@ -121,6 +129,7 @@
 
   <script defer src="assets/js/scripts.min.js"></script>
   <script defer src="assets/js/life-bg.js?v=24"></script>
+  <script defer src="assets/js/copy-affordance.js?v=1"></script>
   <script defer src="assets/js/blog.js"></script>
   <script>
     window.publiiThemeMenuConfig = {

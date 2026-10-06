@@ -36,6 +36,7 @@ label[for],
 .life-controls__btn,
 .galton__btn,
 .hero-links a,
+.hero-copy,
 .footer__links a {
   cursor: var(--cursor-link);
 }
@@ -611,6 +612,49 @@ img[loading] {
   gap: calc(var(--baseline) * 3) calc(var(--baseline) * 5);
   justify-content: center;
   padding: calc(var(--baseline) * 2) 0 calc(var(--baseline) * 1);
+}
+
+.hero-link-with-copy {
+  align-items: flex-start;
+  display: inline-flex;
+  gap: 0.06rem;
+  min-height: 2rem;
+}
+
+.hero-link-with-copy > a {
+  padding-right: 0;
+}
+
+.hero-copy {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: hsla(var(--accent), 0.55);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: auto;
+  justify-content: center;
+  line-height: 1;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  width: auto;
+}
+
+.hero-copy:hover,
+.hero-copy:focus-visible,
+.hero-copy.is-copied {
+  color: hsla(var(--accent), 1);
+  outline: none;
+}
+
+.hero-link-with-copy:hover .hero-copy {
+  color: hsla(var(--accent), 0.85);
+}
+
+.hero-copy__icon {
+  display: block;
+  height: 0.65em;
+  width: 0.65em;
 }
 
 .hero-links a {
