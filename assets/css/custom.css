@@ -2409,3 +2409,63 @@ a.galton__btn {
   width: 100%;
 }
 
+@media all and (max-width: 42.74em) {
+  .page-galton .post__entry {
+    margin-top: calc(var(--baseline) * 2);
+  }
+
+  .galton__panel {
+    gap: calc(var(--baseline) * 3);
+    margin-bottom: calc(var(--baseline) * 3);
+    padding: calc(var(--baseline) * 3) calc(var(--baseline) * 3);
+  }
+
+  .galton__top {
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title title"
+      "transport count";
+  }
+
+  .galton__title {
+    font-size: 1.05rem;
+    grid-area: title;
+    text-align: left;
+  }
+
+  .galton__transport {
+    gap: 0.5rem;
+    grid-area: transport;
+    justify-self: start;
+  }
+
+  .galton__top .galton__count {
+    align-self: center;
+    grid-area: count;
+    justify-self: end;
+  }
+
+  .galton__btn--icon {
+    height: 2.1rem;
+    width: 2.1rem;
+  }
+
+  .galton__fields {
+    gap: 0.7rem 0.85rem;
+  }
+
+  .galton__field input[type="number"] {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .galton__field--bias {
+    grid-column: 1 / -1;
+  }
+
+  .galton__bias-val {
+    flex-basis: 2.25rem;
+  }
+}
+
