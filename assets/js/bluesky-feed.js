@@ -183,11 +183,15 @@
     return null;
   }
 
-  function isOriginalPost(item) {
-    if (!item || !item.post) {
+  function isRepost(item) {
+    if (!item || !item.reason) {
       return false;
     }
-    if (item.reason) {
+    return String(item.reason.$type || "").indexOf("reasonRepost") !== -1;
+  }
+
+  function isFeedPost(item) {
+    if (!item || !item.post) {
       return false;
     }
     var post = item.post;
@@ -195,8 +199,19 @@
     if (record.reply) {
       return false;
     }
+    if (isRepost(item)) {
+      return true;
+    }
     var authorHandle = post.author && post.author.handle;
     return authorHandle === handle;
+  }
+
+  function repostLabel(item) {
+    if (!isRepost(item)) {
+      return "";
+    }
+    var from = item.post && item.post.author && item.post.author.handle;
+    return from ? "Reposted from @" + from : "Reposted";
   }
 
   function renderImages(images) {
@@ -267,14 +282,19 @@
       return;
     }
 
-    var post = items[0].post;
+    var item = items[0];
+    var post = item.post;
     var record = post.record || {};
     var excerpt = truncatePlain(record.text || "", 160);
-    var when = formatDate(record.createdAt || post.indexedAt);
+    var when = formatDate(
+      (item.reason && item.reason.indexedAt) || record.createdAt || post.indexedAt
+    );
     var permalink = postUrl(post);
+    var label = repostLabel(item);
 
     root.innerHTML =
       '<article class="bluesky-feed__latest">' +
+      (label ? '<p class="bluesky-feed__repost">' + escapeHtml(label) + "</p>" : "") +
       (excerpt ? '<p class="bluesky-feed__latest-text">' + escapeHtml(excerpt) + "</p>" : "") +
       '<p class="bluesky-feed__latest-meta">' +
       (when ? "<span>" + escapeHtml(when) + "</span>" : "") +
@@ -293,7 +313,7 @@
 
     if (!items.length) {
       root.innerHTML =
-        '<p class="bluesky-feed__status">No original posts yet. <a href="https://bsky.app/profile/' +
+        '<p class="bluesky-feed__status">No posts yet. <a href="https://bsky.app/profile/' +
         encodeURIComponent(handle) +
         '" target="_blank" rel="noopener">Open Bluesky</a></p>';
       return;
@@ -304,14 +324,18 @@
       var post = item.post;
       var record = post.record || {};
       var textHtml = renderRichText(record.text || "", record.facets || []);
-      var when = formatDate(record.createdAt || post.indexedAt);
+      var when = formatDate(
+        (item.reason && item.reason.indexedAt) || record.createdAt || post.indexedAt
+      );
       var permalink = postUrl(post);
       var images = extractImages(post.embed);
       var external = extractExternal(post.embed);
+      var label = repostLabel(item);
 
       html +=
         '<li class="bluesky-feed__item">' +
         '<article class="bluesky-feed__card">' +
+        (label ? '<p class="bluesky-feed__repost">' + escapeHtml(label) + "</p>" : "") +
         (textHtml ? '<p class="bluesky-feed__text">' + textHtml + "</p>" : "") +
         renderImages(images) +
         renderExternal(external) +
@@ -347,11 +371,11 @@
     });
   }
 
-  function collectOriginals(cursor, collected, pagesLeft) {
+  function collectFeedItems(cursor, collected, pagesLeft) {
     return fetchPage(cursor).then(function (data) {
       var feed = Array.isArray(data.feed) ? data.feed : [];
       feed.forEach(function (item) {
-        if (collected.length < limit && isOriginalPost(item)) {
+        if (collected.length < limit && isFeedPost(item)) {
           collected.push(item);
         }
       });
@@ -359,11 +383,11 @@
       if (collected.length >= limit || !data.cursor || pagesLeft <= 1 || !feed.length) {
         return collected;
       }
-      return collectOriginals(data.cursor, collected, pagesLeft - 1);
+      return collectFeedItems(data.cursor, collected, pagesLeft - 1);
     });
   }
 
-  collectOriginals(null, [], 4)
+  collectFeedItems(null, [], 4)
     .then(function (items) {
       renderItems(items.slice(0, limit));
     })

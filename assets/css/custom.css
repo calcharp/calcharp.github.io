@@ -872,6 +872,13 @@ img[loading] {
   gap: calc(var(--baseline) * 2);
 }
 
+.bluesky-feed__repost {
+  color: hsla(var(--accent), 0.7);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
 .bluesky-feed__text {
   color: hsla(var(--color), var(--alpha, 0.88));
   display: block;
