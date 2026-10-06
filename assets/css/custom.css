@@ -531,6 +531,27 @@ img[loading] {
   color: hsla(var(--accent), 1);
 }
 
+/* Mobile: CV opens the PDF; desktop keeps the CV page */
+.navbar a.nav-cv-pdf,
+.navbar_mobile_sidebar a.nav-cv-pdf,
+.navbar_mobile_overlay a.nav-cv-pdf {
+  display: none !important;
+}
+
+@media all and (max-width: 42.74em) {
+  .navbar a.nav-cv-page,
+  .navbar_mobile_sidebar a.nav-cv-page,
+  .navbar_mobile_overlay a.nav-cv-page {
+    display: none !important;
+  }
+
+  .navbar a.nav-cv-pdf,
+  .navbar_mobile_sidebar a.nav-cv-pdf,
+  .navbar_mobile_overlay a.nav-cv-pdf {
+    display: block !important;
+  }
+}
+
 .content.page .post {
   margin-top: calc(var(--baseline) * 2.5);
   padding-top: calc(var(--baseline) * 2.5);
