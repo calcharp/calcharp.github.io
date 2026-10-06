@@ -125,14 +125,14 @@ body:has(.life-controls) .header__logo {
   width: 100%;
 }
 
-/* Invisible bridge so the cursor can travel tab → panel without closing */
+/* Thin bridge so the cursor can travel tab → panel without closing */
 .life-controls__tab::after {
-  bottom: -18px;
+  bottom: -10px;
   content: "";
-  left: -40px;
+  left: -2px;
   position: absolute;
-  right: -40px;
-  top: -4px;
+  right: -2px;
+  top: -2px;
 }
 
 .life-controls__panel {
@@ -463,12 +463,17 @@ img[loading] {
 }
 
 .nav-more-mark {
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   color: hsla(var(--accent), 0.75);
   display: inline-block;
-  font-size: 0.95em;
-  font-variation-settings: "wght" 700;
-  line-height: 1;
+  flex-shrink: 0;
+  height: 0.34em;
+  margin: 0;
+  position: relative;
   text-decoration: none !important;
+  top: 0.06em;
+  width: 0.55em;
 }
 
 .navbar .has-submenu:hover > a .nav-more-mark,
@@ -477,15 +482,13 @@ img[loading] {
   color: hsla(var(--accent), 1);
 }
 
-.navbar .has-submenu:hover > a .nav-more-mark::before,
-.navbar .has-submenu:focus-within > a .nav-more-mark::before {
-  content: "▲";
+.navbar .has-submenu:hover > a .nav-more-mark,
+.navbar .has-submenu:focus-within > a .nav-more-mark {
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
 }
 
 .nav-more-mark::before {
-  content: "▼";
-  font-size: 0.72em;
-  vertical-align: 0.05em;
+  content: none;
 }
 
 .navbar .navbar__submenu {
