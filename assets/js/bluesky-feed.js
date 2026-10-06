@@ -164,6 +164,15 @@
     return [];
   }
 
+  function hostFromUri(uri) {
+    var raw = String(uri || "");
+    try {
+      return new URL(raw).hostname.replace(/^www\./, "");
+    } catch (err) {
+      return raw.replace(/^https?:\/\//, "").split("/")[0];
+    }
+  }
+
   function extractExternal(embed) {
     if (!embed || !embed.$type) {
       return null;
@@ -174,7 +183,8 @@
         uri: embed.external.uri || "",
         title: embed.external.title || embed.external.uri || "Link",
         description: embed.external.description || "",
-        thumb: embed.external.thumb || ""
+        thumb: embed.external.thumb || "",
+        host: hostFromUri(embed.external.uri || "")
       };
     }
     if (type.indexOf("app.bsky.embed.recordWithMedia") === 0) {
@@ -210,8 +220,7 @@
     if (!isRepost(item)) {
       return "";
     }
-    var from = item.post && item.post.author && item.post.author.handle;
-    return from ? "Reposted from @" + from : "Reposted";
+    return "Reposted";
   }
 
   function renderImages(images) {
@@ -258,19 +267,84 @@
         ? '<span class="bluesky-feed__embed-desc">' + escapeHtml(external.description) + "</span>"
         : "") +
       '<span class="bluesky-feed__embed-url">' +
-      escapeHtml(external.uri.replace(/^https?:\/\//, "")) +
+      escapeHtml(external.host || hostFromUri(external.uri)) +
       "</span>" +
       "</span>" +
       "</a>"
     );
   }
 
-  function truncatePlain(text, max) {
-    var cleaned = String(text || "").replace(/\s+/g, " ").trim();
-    if (cleaned.length <= max) {
-      return cleaned;
-    }
-    return cleaned.slice(0, max - 1).trimEnd() + "…";
+  function renderAuthor(post, when, permalink) {
+    var author = post.author || {};
+    var name = author.displayName || author.handle || "Bluesky";
+    var authorHandle = author.handle || "";
+    var avatar = author.avatar || "";
+    var profileUrl = authorHandle
+      ? "https://bsky.app/profile/" + encodeURIComponent(authorHandle)
+      : permalink;
+
+    return (
+      '<header class="bluesky-feed__author">' +
+      '<a class="bluesky-feed__avatar-link" href="' +
+      escapeHtml(profileUrl) +
+      '" target="_blank" rel="noopener" aria-label="' +
+      escapeHtml(name) +
+      '">' +
+      (avatar
+        ? '<img class="bluesky-feed__avatar" src="' +
+          escapeHtml(avatar) +
+          '" alt="" width="40" height="40" loading="lazy">'
+        : '<span class="bluesky-feed__avatar bluesky-feed__avatar--fallback" aria-hidden="true"></span>') +
+      "</a>" +
+      '<div class="bluesky-feed__author-meta">' +
+      '<div class="bluesky-feed__author-line">' +
+      '<a class="bluesky-feed__name" href="' +
+      escapeHtml(profileUrl) +
+      '" target="_blank" rel="noopener">' +
+      escapeHtml(name) +
+      "</a>" +
+      (authorHandle
+        ? '<span class="bluesky-feed__handle">@' + escapeHtml(authorHandle) + "</span>"
+        : "") +
+      "</div>" +
+      (when
+        ? '<a class="bluesky-feed__when" href="' +
+          escapeHtml(permalink) +
+          '" target="_blank" rel="noopener">' +
+          escapeHtml(when) +
+          "</a>"
+        : "") +
+      "</div>" +
+      "</header>"
+    );
+  }
+
+  function renderPostCard(item) {
+    var post = item.post;
+    var record = post.record || {};
+    var textHtml = renderRichText(record.text || "", record.facets || []);
+    var when = formatDate(
+      (item.reason && item.reason.indexedAt) || record.createdAt || post.indexedAt
+    );
+    var permalink = postUrl(post);
+    var images = extractImages(post.embed);
+    var external = extractExternal(post.embed);
+    var label = repostLabel(item);
+
+    return (
+      '<article class="bluesky-feed__card">' +
+      (label ? '<p class="bluesky-feed__repost">' + escapeHtml(label) + "</p>" : "") +
+      renderAuthor(post, when, permalink) +
+      (textHtml ? '<p class="bluesky-feed__text">' + textHtml + "</p>" : "") +
+      renderImages(images) +
+      renderExternal(external) +
+      '<p class="bluesky-feed__footer">' +
+      '<a href="' +
+      escapeHtml(permalink) +
+      '" target="_blank" rel="noopener">View on Bluesky →</a>' +
+      "</p>" +
+      "</article>"
+    );
   }
 
   function renderLatestItems(items) {
@@ -282,27 +356,8 @@
       return;
     }
 
-    var item = items[0];
-    var post = item.post;
-    var record = post.record || {};
-    var excerpt = truncatePlain(record.text || "", 160);
-    var when = formatDate(
-      (item.reason && item.reason.indexedAt) || record.createdAt || post.indexedAt
-    );
-    var permalink = postUrl(post);
-    var label = repostLabel(item);
-
     root.innerHTML =
-      '<article class="bluesky-feed__latest">' +
-      (label ? '<p class="bluesky-feed__repost">' + escapeHtml(label) + "</p>" : "") +
-      (excerpt ? '<p class="bluesky-feed__latest-text">' + escapeHtml(excerpt) + "</p>" : "") +
-      '<p class="bluesky-feed__latest-meta">' +
-      (when ? "<span>" + escapeHtml(when) + "</span>" : "") +
-      '<a href="' +
-      escapeHtml(permalink) +
-      '" target="_blank" rel="noopener">View on Bluesky →</a>' +
-      "</p>" +
-      "</article>";
+      '<div class="bluesky-feed__latest">' + renderPostCard(items[0]) + "</div>";
   }
 
   function renderItems(items) {
@@ -321,33 +376,7 @@
 
     var html = '<ul class="bluesky-feed__list">';
     items.forEach(function (item) {
-      var post = item.post;
-      var record = post.record || {};
-      var textHtml = renderRichText(record.text || "", record.facets || []);
-      var when = formatDate(
-        (item.reason && item.reason.indexedAt) || record.createdAt || post.indexedAt
-      );
-      var permalink = postUrl(post);
-      var images = extractImages(post.embed);
-      var external = extractExternal(post.embed);
-      var label = repostLabel(item);
-
-      html +=
-        '<li class="bluesky-feed__item">' +
-        '<article class="bluesky-feed__card">' +
-        (label ? '<p class="bluesky-feed__repost">' + escapeHtml(label) + "</p>" : "") +
-        (textHtml ? '<p class="bluesky-feed__text">' + textHtml + "</p>" : "") +
-        renderImages(images) +
-        renderExternal(external) +
-        (when
-          ? '<a class="bluesky-feed__meta" href="' +
-            escapeHtml(permalink) +
-            '" target="_blank" rel="noopener">' +
-            escapeHtml(when) +
-            "</a>"
-          : "") +
-        "</article>" +
-        "</li>";
+      html += '<li class="bluesky-feed__item">' + renderPostCard(item) + "</li>";
     });
     html += "</ul>";
     root.innerHTML = html;
