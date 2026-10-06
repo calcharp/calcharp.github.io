@@ -7,10 +7,14 @@
   /*
     80s phosphor CRT cursors — same arrow silhouette; links only brighten the fill
     (inverting the outline reads larger on dark backgrounds). Paint cross in Life gutters.
+    Duplicate the custom URL as its own fallback so browsers don't flash the OS cursor on click.
   */
-  --cursor-cell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%230bbf3b' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E") 2 2, auto;
-  --cursor-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%2350ff78' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E") 2 2, pointer;
-  --cursor-paint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M13 1h6v11h-6zm0 19h6v11h-6zM1 13h11v6H1zm19 0h11v6H20z'/%3E%3Cpath fill='%230bbf3b' d='M14.5 2.5h3v9h-3zm0 18h3v9h-3zM2.5 14.5h9v3h-9zm18 0h9v3h-9z'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%23040404' stroke='%230bbf3b' stroke-width='2'/%3E%3C/svg%3E") 16 16, crosshair;
+  --cursor-cell-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%230bbf3b' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E");
+  --cursor-link-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M2 1 L2 24 L8 18 L12 28 L17 26 L13 16 L22 16 Z'/%3E%3Cpath fill='%2350ff78' d='M4 4 L4 20 L8.5 15.5 L12 24.5 L14.5 23.5 L11 14.5 L18 14.5 Z'/%3E%3C/svg%3E");
+  --cursor-paint-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23020f06' d='M13 1h6v11h-6zm0 19h6v11h-6zM1 13h11v6H1zm19 0h11v6H20z'/%3E%3Cpath fill='%230bbf3b' d='M14.5 2.5h3v9h-3zm0 18h3v9h-3zM2.5 14.5h9v3h-9zm18 0h9v3h-9z'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%23040404' stroke='%230bbf3b' stroke-width='2'/%3E%3C/svg%3E");
+  --cursor-cell: var(--cursor-cell-image) 2 2, var(--cursor-cell-image) 2 2, default;
+  --cursor-link: var(--cursor-link-image) 2 2, var(--cursor-link-image) 2 2, default;
+  --cursor-paint: var(--cursor-paint-image) 16 16, var(--cursor-paint-image) 16 16, crosshair;
 }
 
 /* Reserve scrollbar space on both edges so gutters stay equal */
@@ -38,8 +42,40 @@ label[for],
 .galton__btn,
 .hero-links a,
 .hero-copy,
-.footer__links a {
-  cursor: var(--cursor-link);
+.footer__links a,
+a:hover,
+a:active,
+a:focus,
+a:focus-visible,
+button:hover,
+button:active,
+button:focus,
+button:focus-visible,
+summary:hover,
+summary:active,
+[role="button"]:hover,
+[role="button"]:active,
+[role="tab"]:hover,
+[role="tab"]:active,
+.software-tabs__tab:hover,
+.software-tabs__tab:active,
+.software-tabs__arrow:hover,
+.software-tabs__arrow:active,
+.cv-pdf-fs-toggle:hover,
+.cv-pdf-fs-toggle:active,
+.cv-title-action:hover,
+.cv-title-action:active,
+.life-controls__btn:hover,
+.life-controls__btn:active,
+.galton__btn:hover,
+.galton__btn:active,
+.hero-links a:hover,
+.hero-links a:active,
+.hero-copy:hover,
+.hero-copy:active,
+.footer__links a:hover,
+.footer__links a:active {
+  cursor: var(--cursor-link) !important;
 }
 
 input,
