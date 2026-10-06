@@ -751,7 +751,7 @@
       "</div>";
 
     controlsRoot.addEventListener("click", function (event) {
-      var btn = event.target.closest("[data-life-action]");
+      var btn = event.target.closest(".life-controls__btn");
       if (!btn || !controlsRoot.contains(btn)) {
         return;
       }
@@ -764,6 +764,10 @@
         }
       } else if (action === "randomize") {
         randomize();
+      }
+      /* Pointer clicks leave :focus-within stuck open; blur so hover can dismiss */
+      if (event.detail > 0 && typeof btn.blur === "function") {
+        btn.blur();
       }
     });
 
