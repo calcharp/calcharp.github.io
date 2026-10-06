@@ -49,7 +49,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/custom.css?v=80">
+  <link rel="stylesheet" href="assets/css/custom.css?v=88">
 </head>
 <body class="page-template">
   <canvas class="life-bg" aria-hidden="true"></canvas>
@@ -68,7 +68,14 @@
           <li><a href="software.html" target="_self">Software</a></li>
           <li><a href="cv.html" target="_self" aria-current="page">CV</a></li>
           <li><a href="publications.html" target="_self">Publications</a></li>
-          <li><a href="blog.html" target="_self">Blog</a></li>
+          <li class="has-submenu">
+            <a href="#" aria-haspopup="true" onclick="return false;">Other <span class="nav-more-mark" aria-hidden="true"></span></a>
+            <ul class="navbar__submenu">
+              <li><a href="reading-group.html">Reading Group</a></li>
+              <li><a href="galton.html">Galton Board</a></li>
+              <li><a href="blog.html">Blog</a></li>
+            </ul>
+          </li>
         </ul>
       </nav>
     </header>
@@ -117,7 +124,6 @@
               </a>
               <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
               <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
-              <a href="reading-group.html">Reading Group</a>
               <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
             </div>
           </section>
