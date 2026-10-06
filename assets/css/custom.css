@@ -31,6 +31,7 @@ label[for],
 [role="button"],
 [role="tab"],
 .software-tabs__tab,
+.software-tabs__arrow,
 .cv-pdf-fs-toggle,
 .cv-title-action,
 .life-controls__btn,
@@ -1922,12 +1923,17 @@ img[loading] {
   width: 100%;
 }
 
+/* Software has more tabs — give the row a bit more width */
+.software-tabs:has(.software-tabs__tab:nth-child(5)) {
+  max-width: 54rem;
+}
+
 .software-tabs__list {
   border-bottom: 1px solid hsla(var(--color), 0.14);
   display: flex;
   flex-wrap: nowrap;
-  gap: 0;
-  justify-content: space-between;
+  gap: 1.35rem;
+  justify-content: center;
   list-style: none;
   margin: 0;
   -webkit-overflow-scrolling: touch;
@@ -1935,6 +1941,12 @@ img[loading] {
   padding: 0;
   scrollbar-width: none;
   width: 100%;
+}
+
+/* Even leftover space between many tabs (Software) */
+.software-tabs__list:has(.software-tabs__tab:nth-child(5)) {
+  gap: 0.85rem;
+  justify-content: space-between;
 }
 
 .software-tabs__list::-webkit-scrollbar {
@@ -1949,7 +1961,7 @@ img[loading] {
   color: hsla(var(--color), var(--alpha, 0.4));
   cursor: var(--cursor-link);
   display: inline-flex;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   font: inherit;
   font-size: 0.72rem;
   font-weight: 400;
@@ -1958,11 +1970,17 @@ img[loading] {
   letter-spacing: -0.02em;
   line-height: 1.2;
   min-width: 0;
-  padding: calc(var(--baseline) * 1.25) calc(var(--baseline) * 0.75) calc(var(--baseline) * 1.75);
+  padding: calc(var(--baseline) * 1.25) 0.15rem calc(var(--baseline) * 1.75);
   position: relative;
   text-align: center;
   transition: color 0.16s ease;
   white-space: nowrap;
+}
+
+.software-tabs__list:has(.software-tabs__tab:nth-child(5)) .software-tabs__tab {
+  font-size: 0.68rem;
+  padding-left: 0.1rem;
+  padding-right: 0.1rem;
 }
 
 .software-tabs__label {
@@ -1991,9 +2009,9 @@ img[loading] {
   bottom: -1px;
   content: "";
   height: 1.5px;
-  left: 12%;
+  left: 0;
   position: absolute;
-  right: 12%;
+  right: 0;
 }
 
 .software-tabs__tab:focus-visible {
@@ -2001,15 +2019,89 @@ img[loading] {
   outline-offset: 2px;
 }
 
+.software-tabs__stage {
+  align-items: start;
+  display: grid;
+  gap: 0.35rem 0.55rem;
+  grid-template-columns: 2.4rem minmax(0, 1fr) 2.4rem;
+  width: 100%;
+}
+
+.software-tabs__panels {
+  min-width: 0;
+  width: 100%;
+}
+
+.software-tabs__arrow {
+  align-items: center;
+  align-self: start;
+  background: transparent;
+  border: 0;
+  color: hsla(var(--accent), 0.42);
+  cursor: var(--cursor-link);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2.75rem;
+  justify-content: center;
+  margin: 4.6rem 0 0;
+  opacity: 1;
+  padding: 0;
+  transition: color 0.16s ease, opacity 0.16s ease, transform 0.16s ease;
+  width: 2.4rem;
+}
+
+.software-tabs__chevron {
+  display: block;
+  height: 1.55rem;
+  width: 1.55rem;
+}
+
+.software-tabs__arrow:hover,
+.software-tabs__arrow:focus-visible {
+  color: hsla(var(--accent), 0.95);
+  outline: none;
+}
+
+.software-tabs__arrow:focus-visible {
+  outline: 1px solid hsla(var(--accent), 0.7);
+  outline-offset: 2px;
+}
+
+.software-tabs__arrow:active {
+  transform: scale(0.96);
+}
+
+@media all and (min-width: 42.75em) {
+  .software-tabs__stage {
+    gap: 0.5rem 0.85rem;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+    margin-inline: -2.1rem;
+    width: calc(100% + 4.2rem);
+  }
+
+  .software-tabs__arrow {
+    color: hsla(var(--accent), 0.38);
+    height: 3.25rem;
+    margin-top: 5.1rem;
+    width: 2.75rem;
+  }
+
+  .software-tabs__chevron {
+    height: 1.85rem;
+    width: 1.85rem;
+  }
+}
+
 @media all and (max-width: 42.74em) {
   .software-tabs__list {
+    gap: 1.1rem;
     justify-content: flex-start;
+    padding: 0 0.1rem;
   }
 
   .software-tabs__tab {
-    flex: 0 0 auto;
     font-size: 0.7rem;
-    padding: calc(var(--baseline) * 1.25) calc(var(--baseline) * 2) calc(var(--baseline) * 1.75);
+    padding: calc(var(--baseline) * 1.25) 0.1rem calc(var(--baseline) * 1.75);
   }
 
   .software-tabs__label {

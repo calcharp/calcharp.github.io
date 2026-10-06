@@ -6,9 +6,21 @@
 
   var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
   var panels = Array.prototype.slice.call(root.querySelectorAll('[role="tabpanel"]'));
+  var prevBtn = null;
+  var nextBtn = null;
 
   function panelIdFromTab(tab) {
     return tab.getAttribute("aria-controls");
+  }
+
+  function selectedIndex() {
+    var i;
+    for (i = 0; i < tabs.length; i += 1) {
+      if (tabs[i].getAttribute("aria-selected") === "true") {
+        return i;
+      }
+    }
+    return 0;
   }
 
   function activate(id, updateHash) {
@@ -46,9 +58,74 @@
     }
   }
 
+  function step(delta) {
+    if (!tabs.length) {
+      return;
+    }
+    var index = selectedIndex();
+    var next = (index + delta + tabs.length) % tabs.length;
+    activate(panelIdFromTab(tabs[next]), true);
+  }
+
   function idFromHash() {
     var hash = (location.hash || "").replace(/^#/, "");
     return hash || null;
+  }
+
+  function chevronSvg(dir) {
+    var points =
+      dir === "prev" ? "15.5 4.5 8.5 12 15.5 19.5" : "8.5 4.5 15.5 12 8.5 19.5";
+    return (
+      '<svg class="software-tabs__chevron" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<polyline points="' +
+      points +
+      '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>"
+    );
+  }
+
+  function mountArrows() {
+    if (tabs.length < 2) {
+      return;
+    }
+
+    var list = root.querySelector(".software-tabs__list");
+    if (!list) {
+      return;
+    }
+
+    var stage = document.createElement("div");
+    stage.className = "software-tabs__stage";
+
+    prevBtn = document.createElement("button");
+    prevBtn.type = "button";
+    prevBtn.className = "software-tabs__arrow software-tabs__arrow--prev";
+    prevBtn.setAttribute("aria-label", "Previous item");
+    prevBtn.innerHTML = chevronSvg("prev");
+
+    nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "software-tabs__arrow software-tabs__arrow--next";
+    nextBtn.setAttribute("aria-label", "Next item");
+    nextBtn.innerHTML = chevronSvg("next");
+
+    var panelsWrap = document.createElement("div");
+    panelsWrap.className = "software-tabs__panels";
+    panels.forEach(function (panel) {
+      panelsWrap.appendChild(panel);
+    });
+
+    stage.appendChild(prevBtn);
+    stage.appendChild(panelsWrap);
+    stage.appendChild(nextBtn);
+    list.insertAdjacentElement("afterend", stage);
+
+    prevBtn.addEventListener("click", function () {
+      step(-1);
+    });
+    nextBtn.addEventListener("click", function () {
+      step(1);
+    });
   }
 
   tabs.forEach(function (tab) {
@@ -85,6 +162,7 @@
     }
   });
 
+  mountArrows();
   activate(idFromHash() || panelIdFromTab(tabs[0]), false);
 
   var lightbox = document.getElementById("software-lightbox");
