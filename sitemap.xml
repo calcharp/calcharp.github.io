@@ -37,15 +37,9 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://calebcharpentier.com/reading-group.html</loc>
-    <lastmod>2026-10-02</lastmod>
+    <loc>https://calebcharpentier.com/just-stuff.html</loc>
+    <lastmod>2026-10-07</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://calebcharpentier.com/teaching-resources.html</loc>
-    <lastmod>2026-10-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
 </urlset>

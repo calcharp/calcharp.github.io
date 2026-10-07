@@ -5,20 +5,20 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Software | Caleb Charpentier</title>
-  <meta name="description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, SISRS, Species Map Explorer, and EcoEvoJobSearcher.">
+  <meta name="description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, and SISRS.">
   <!-- seo -->
   <link rel="canonical" href="https://calebcharpentier.com/software.html">
   <meta name="author" content="Caleb Charpentier">
   <meta property="og:site_name" content="Caleb Charpentier">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Software | Caleb Charpentier">
-  <meta property="og:description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, SISRS, Species Map Explorer, and EcoEvoJobSearcher.">
+  <meta property="og:description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, and SISRS.">
   <meta property="og:url" content="https://calebcharpentier.com/software.html">
   <meta property="og:image" content="https://calebcharpentier.com/img/main_photo.png">
   <meta property="og:image:alt" content="Portrait of Caleb Charpentier">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Software | Caleb Charpentier">
-  <meta name="twitter:description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, SISRS, Species Map Explorer, and EcoEvoJobSearcher.">
+  <meta name="twitter:description" content="Software for evolutionary biology and AI: TraitBlender, PhyloNN, RPhenoscate, Revticulate, and SISRS.">
   <meta name="twitter:image" content="https://calebcharpentier.com/img/main_photo.png">
   <script type="application/ld+json">
 {
@@ -49,7 +49,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/custom.css?v=144">
+  <link rel="stylesheet" href="assets/css/custom.css?v=145">
 </head>
 <body class="page-template">
   <canvas class="life-bg" aria-hidden="true"></canvas>
@@ -71,10 +71,10 @@
           <li class="has-submenu">
             <a href="#" aria-haspopup="true" onclick="return false;">Other <span class="nav-more-mark" aria-hidden="true"></span></a>
             <ul class="navbar__submenu">
-              <li><a href="reading-group.html">Reading Group</a></li>
+              <li><a href="https://github.com/calcharp/Evolution-Deep-Learning-Reading-Group" target="_blank" rel="noopener">Reading Group</a></li>
               <li><a href="books.html">Books I Like</a></li>
+              <li><a href="just-stuff.html">Just Stuff</a></li>
               <li><a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Blog</a></li>
-              <li><a href="teaching-resources.html">Teaching Resources</a></li>
             </ul>
           </li>
         </ul>
@@ -108,14 +108,6 @@
               <button class="software-tabs__tab" type="button" role="tab" id="tab-sisrs" aria-controls="sisrs" aria-selected="false" tabindex="-1">
                 <img class="software-tabs__thumb software-tabs__thumb--logo" src="img/SISRS.png" alt="" width="36" height="36">
                 <span class="software-tabs__label">SISRS</span>
-              </button>
-              <button class="software-tabs__tab" type="button" role="tab" id="tab-species-map-explorer" aria-controls="species-map-explorer" aria-selected="false" tabindex="-1">
-                <img class="software-tabs__thumb" src="img/species-map-explorer.png" alt="" width="36" height="36">
-                <span class="software-tabs__label">Species Map</span>
-              </button>
-              <button class="software-tabs__tab" type="button" role="tab" id="tab-ecoevojobsearcher" aria-controls="ecoevojobsearcher" aria-selected="false" tabindex="-1">
-                <img class="software-tabs__thumb software-tabs__thumb--logo" src="img/ecoevo-jobs-icon.png" alt="" width="36" height="36">
-                <span class="software-tabs__label">EcoEvoJobSearcher</span>
               </button>
             </div>
 
@@ -214,46 +206,6 @@
                 <div class="software-panel__copy">
                   <p>
                     SISRS (Site Identification from Short Read Sequences) is a phylogenomic pipeline for identifying informative sites and inferring orthologous sequences from short-read genomic data.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section class="software-panel" role="tabpanel" id="species-map-explorer" aria-labelledby="tab-species-map-explorer" hidden>
-              <div class="software-panel__layout">
-                <figure class="software-panel__figure">
-                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
-                    <img class="software-panel__media" src="img/species-map-explorer.png" alt="Species Map Explorer showing American pika and black-tailed prairie dog occurrences on a North America map">
-                  </button>
-                </figure>
-                  <ul class="software-panel__links">
-                    <li><a href="https://imageomics.github.io/hdr-species-map-explorer/" target="_blank" rel="noopener">Live demo</a></li>
-                    <li><a href="https://github.com/Imageomics/hdr-species-map-explorer" target="_blank" rel="noopener">GitHub</a></li>
-                  </ul>
-                <div class="software-panel__copy">
-                  <p>
-                    Species Map Explorer is a classroom web app for exploring where species have been observed and how those patterns relate to geography and climate. Students can map GBIF occurrences, overlay climate and biogeographic layers, and browse related open biodiversity context in the browser.
-                  </p>
-                  <p>
-                    I built it with the Imageomics Institute for the July 2026 HDR workshop on education in the age of AI, to help teachers introduce comparative biology and species distributions.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section class="software-panel" role="tabpanel" id="ecoevojobsearcher" aria-labelledby="tab-ecoevojobsearcher" hidden>
-              <div class="software-panel__layout">
-                <figure class="software-panel__figure">
-                  <button type="button" class="software-panel__zoom" aria-label="View larger image">
-                    <img class="software-panel__media" src="img/ecoevo-jobs.jpg" alt="EcoEvoJobSearcher dashboard with search filters, results list, and a world map of job listings">
-                  </button>
-                </figure>
-                  <ul class="software-panel__links">
-                    <li><a href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_blank" rel="noopener">Live app</a></li>
-                  </ul>
-                <div class="software-panel__copy">
-                  <p>
-                    EcoEvoJobSearcher is a browser tool for searching ecology and evolutionary biology positions across EcoEvoJobs, EvolDir, and Science Careers. It aggregates listings into one dashboard with filters for source, open applications, deadlines, and posting date, plus a map of where jobs are concentrated and CSV export for offline tracking.
                   </p>
                 </div>
               </div>

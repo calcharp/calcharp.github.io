@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Just Stuff | Caleb Charpentier</title>
+  <meta name="description" content="A small shelf of odd and interesting things.">
+  <link rel="canonical" href="https://calebcharpentier.com/just-stuff.html">
+  <meta name="author" content="Caleb Charpentier">
+  <meta property="og:site_name" content="Caleb Charpentier">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Just Stuff | Caleb Charpentier">
+  <meta property="og:description" content="A small shelf of odd and interesting things.">
+  <meta property="og:url" content="https://calebcharpentier.com/just-stuff.html">
+  <meta property="og:image" content="https://calebcharpentier.com/img/main_photo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Just Stuff | Caleb Charpentier">
+  <meta name="twitter:description" content="A small shelf of odd and interesting things.">
+  <meta name="twitter:image" content="https://calebcharpentier.com/img/main_photo.png">
+  <link rel="icon" href="img/darwinbust.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=156">
+</head>
+<body class="page-template page-just-stuff">
+  <canvas class="life-bg" aria-hidden="true"></canvas>
+  <div class="container">
+    <header class="header">
+      <div class="header__logo">
+        <a href="index.html" class="logo" aria-label="Caleb Charpentier home">Caleb Charpentier</a>
+      </div>
+      <nav class="navbar js-navbar">
+        <button class="navbar__toggle js-toggle" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
+          <span class="navbar__toggle-box"><span class="navbar__toggle-inner">Menu</span></span>
+        </button>
+        <ul class="navbar__menu">
+          <li><a href="index.html" class="nav-home" aria-label="Home"><svg class="nav-home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 11h3v10h12V11h3L12 3z"/></svg></a></li>
+          <li><a href="research.html" target="_self">Research</a></li>
+          <li><a href="software.html" target="_self">Software</a></li>
+          <li><a class="nav-cv-page" href="cv.html" target="_self">CV</a><a class="nav-cv-pdf" href="pdfs/CV.pdf" target="_blank" rel="noopener">CV</a></li>
+          <li><a href="publications.html" target="_self">Publications</a></li>
+          <li class="has-submenu">
+            <a href="#" aria-haspopup="true" aria-current="page" onclick="return false;">Other <span class="nav-more-mark" aria-hidden="true"></span></a>
+            <ul class="navbar__submenu">
+              <li><a href="https://github.com/calcharp/Evolution-Deep-Learning-Reading-Group" target="_blank" rel="noopener">Reading Group</a></li>
+              <li><a href="books.html">Books I Like</a></li>
+              <li><a href="just-stuff.html" aria-current="page">Just Stuff</a></li>
+              <li><a href="https://calebcharpentier.substack.com/" target="_blank" rel="noopener">Blog</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="content page">
+      <article class="post">
+        <header>
+          <h1 class="post__title u-hidden">Just Stuff</h1>
+        </header>
+
+        <div class="post__entry stuff-shelf">
+          <div class="stuff-grid">
+            <section class="stuff-panel stuff-panel--odds" aria-labelledby="stuff-odds">
+              <h2 id="stuff-odds">Odds &amp; Ends</h2>
+              <ul class="stuff-list">
+                <li><a href="https://guzey.com/how-life-sciences-actually-work/" target="_blank" rel="noopener">How Life Sciences Actually Work</a></li>
+                <li><a href="https://matigekunstintelligentie.com/the-museum-of-all-shells/" target="_blank" rel="noopener">Museum of All Shells</a></li>
+                <li><a href="https://www.thisiscolossal.com/2012/10/circuit-board-fossils-paintings-and-other-found-object-sculptures-by-peter-mcfarlane/" target="_blank" rel="noopener">Circuit Board Fossils</a></li>
+                <li><a href="https://libraryofbabel.info/" target="_blank" rel="noopener">Library of Babel</a></li>
+                <li><a href="https://www.luerig.net/posts/" target="_blank" rel="noopener">Moritz Luerig's posts</a></li>
+                <li><a href="https://calebcharpentier.com/EcoEvoJobSearcher" target="_blank" rel="noopener">EcoEvoJobSearcher</a></li>
+              </ul>
+            </section>
+
+            <section class="stuff-panel stuff-panel--tools" aria-labelledby="stuff-tools">
+              <h2 id="stuff-tools">AI &amp; ML Tools for Biologists</h2>
+              <ul class="stuff-tiles">
+                <li><a href="https://imageomics.github.io/bioclip/" target="_blank" rel="noopener">BioCLIP</a></li>
+                <li><a href="https://imageomics.github.io/bioclip-2/" target="_blank" rel="noopener">BioCLIP 2</a></li>
+                <li><a href="https://imageomics.github.io/biocap/" target="_blank" rel="noopener">BioCAP</a></li>
+                <li><a href="https://github.com/agporto/BioEncoder" target="_blank" rel="noopener">BioEncoder</a></li>
+                <li><a href="https://github.com/imageomics/finer-cam" target="_blank" rel="noopener">Finer-CAM</a></li>
+                <li><a href="https://github.com/Imageomics/SST" target="_blank" rel="noopener">SST</a></li>
+                <li><a href="https://github.com/agporto/ml-morph" target="_blank" rel="noopener">ML-morph</a></li>
+                <li><a href="https://github.com/SlicerMorph/Tutorials/tree/main/ALPACA" target="_blank" rel="noopener">ALPACA</a></li>
+                <li><a href="https://www.phenopype.org/" target="_blank" rel="noopener">phenopype</a></li>
+                <li><a href="https://phyddle.org/" target="_blank" rel="noopener">phyddle</a></li>
+              </ul>
+            </section>
+
+            <section class="stuff-panel stuff-panel--papers" aria-labelledby="stuff-papers">
+              <h2 id="stuff-papers">Papers I Like</h2>
+              <ul class="stuff-list">
+                <li><a href="https://www.bio.fsu.edu/~dhoule/Publications/Houle@@11Measurement.pdf" target="_blank" rel="noopener">Measurement and Meaning in Biology</a></li>
+                <li><a href="https://arxiv.org/abs/1811.12359" target="_blank" rel="noopener">Latent Variable Identifiability</a></li>
+                <li><a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012887" target="_blank" rel="noopener">Bird Bills via Generative AI</a></li>
+                <li><a href="https://www.science.org/doi/10.1126/sciadv.aaw4967" target="_blank" rel="noopener">Butterfly Phenotypes &amp; Mimicry</a></li>
+                <li><a href="https://academic.oup.com/pnasnexus/article/3/1/pgad419/7510842" target="_blank" rel="noopener">Extinct Pollen Placement</a></li>
+                <li><a href="https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70250" target="_blank" rel="noopener">Podocarpus Pollen &amp; Climate</a></li>
+                <li><a href="https://spj.science.org/doi/10.34133/2020/5801869" target="_blank" rel="noopener">Latent Space Phenotyping</a></li>
+                <li><a href="https://acsess.onlinelibrary.wiley.com/doi/10.1002/ppj2.20023" target="_blank" rel="noopener">Images Carried Before the Fire</a></li>
+                <li><a href="https://www.pnas.org/doi/10.1073/pnas.2527222122" target="_blank" rel="noopener">Dinosaur Footprints β-VAE</a></li>
+                <li><a href="https://www.nature.com/articles/s41540-023-00293-6" target="_blank" rel="noopener">Morpho-VAE Mandibles</a></li>
+                <li><a href="https://resjournals.onlinelibrary.wiley.com/doi/10.1111/syen.70005" target="_blank" rel="noopener">Descriptron: automating taxonomic species descriptions</a></li>
+              </ul>
+            </section>
+          </div>
+
+          <section class="stuff-panel stuff-panel--teaching" aria-labelledby="stuff-teaching">
+            <h2 id="stuff-teaching">Teaching Resources</h2>
+            <ul class="stuff-list">
+              <li><a href="https://imageomics.github.io/hdr-species-map-explorer/" target="_blank" rel="noopener">Species Map Explorer</a></li>
+              <li><a href="galton.html">Galton Board</a></li>
+            </ul>
+          </section>
+        </div>
+
+          <section class="hero-links-band" aria-label="Contact and profiles">
+            <div class="hero-links">
+              <a href="https://scholar.google.com/citations?user=LyaJ880AAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+              <a href="https://www.researchgate.net/profile/Caleb-Charpentier-2" target="_blank" rel="noopener">ResearchGate</a>
+              <span class="hero-link-with-copy">
+                <a href="https://orcid.org/0000-0002-9787-7081" target="_blank" rel="noopener">ORCID</a>
+                <button type="button" class="hero-copy" data-copy="0000-0002-9787-7081" aria-label="Copy ORCID iD" title="Copy ORCID iD">
+                  <svg class="hero-copy__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3zm0 2H5v11h10v-2H8V9zm4-4v11h7V5h-7z"/></svg>
+                </button>
+              </span>
+              <a href="https://github.com/calcharp" target="_blank" rel="noopener">GitHub</a>
+              <span class="hero-link-with-copy">
+                <a href="mailto:calebc22@vt.edu">calebc22@vt.edu</a>
+                <button type="button" class="hero-copy" data-copy="calebc22@vt.edu" aria-label="Copy email address" title="Copy email">
+                  <svg class="hero-copy__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3zm0 2H5v11h10v-2H8V9zm4-4v11h7V5h-7z"/></svg>
+                </button>
+              </span>
+            </div>
+          </section>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__copyright">
+          <p>&copy; 2026 Caleb Charpentier</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script defer src="assets/js/scripts.min.js"></script>
+  <script defer src="assets/js/life-bg.js?v=26"></script>
+  <script defer src="assets/js/copy-affordance.js?v=1"></script>
+  <script>
+    window.publiiThemeMenuConfig = {
+      mobileMenuMode: "sidebar",
+      animationSpeed: 300,
+      submenuWidth: "auto",
+      doubleClickTime: 500,
+      mobileMenuExpandableSubmenus: true,
+      relatedContainerForOverlayMenuSelector: ".top"
+    };
+  </script>
+</body>
+</html>
