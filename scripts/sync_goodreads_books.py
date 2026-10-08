@@ -106,6 +106,42 @@ def prefer_cover(url: str | None) -> str:
     return re.sub(r"\._S[XY]\d+_\.", "._SY475_.", cover)
 
 
+def fetch_json(url: str) -> dict | list | None:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError):
+        return None
+
+
+def dewey_from_open_library(isbn13: str | None) -> tuple[str | None, str | None]:
+    """Return (dewey, short label) from Open Library when available."""
+    if not isbn13:
+        return None, None
+    data = fetch_json(
+        "https://openlibrary.org/api/books"
+        f"?bibkeys=ISBN:{urllib.parse.quote(isbn13)}&format=json&jscmd=data"
+    )
+    if not isinstance(data, dict):
+        return None, None
+    entry = data.get(f"ISBN:{isbn13}") or {}
+    classes = entry.get("classifications") or {}
+    deweys = classes.get("dewey_decimal_class") or []
+    if not deweys:
+        return None, None
+    dewey = re.sub(r"[^0-9.]", "", str(deweys[0]).split()[0])
+    if not dewey:
+        return None, None
+    subjects = entry.get("subjects") or []
+    label = None
+    if subjects and isinstance(subjects[0], dict):
+        label = (subjects[0].get("name") or "").strip() or None
+    if label and len(label) > 48:
+        label = label[:45].rstrip() + "…"
+    return dewey, label
+
+
 def fetch_rss(user_id: str, shelf: str, page: int) -> bytes:
     url = (
         f"https://www.goodreads.com/review/list_rss/{user_id}"
@@ -171,11 +207,24 @@ def item_to_book(item: ET.Element) -> dict:
         book["subtitle"] = subtitle
     if isbn13:
         book["isbn13"] = isbn13
+    dewey, dewey_label = dewey_from_open_library(isbn13)
+    if dewey:
+        book["dewey"] = dewey
+        if dewey_label:
+            book["deweyLabel"] = dewey_label
     return book
 
 
 def dewey_sort_key(book: dict) -> tuple:
-    return (book.get("dewey") or "999", book.get("title") or "")
+    # Numeric-aware: 519.5 before 530.8 before 999
+    raw = str(book.get("dewey") or "999")
+    parts: list[int] = []
+    for chunk in raw.split("."):
+        digits = re.sub(r"\D", "", chunk)
+        parts.append(int(digits) if digits else 0)
+    while len(parts) < 3:
+        parts.append(0)
+    return (tuple(parts), book.get("title") or "")
 
 
 def sync() -> int:

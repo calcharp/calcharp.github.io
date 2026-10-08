@@ -19,6 +19,49 @@
     return 8;
   }
 
+  /**
+   * Pack into rows of maxCols. If the last row has 1 book, fold it into the
+   * previous row (that row shrinks covers to fit one more). If it has 2, fold
+   * one into each of the previous two rows. At 3+, leave rows at normal size.
+   */
+  function packRowSizes(n, maxCols) {
+    if (n <= 0) {
+      return [];
+    }
+    if (n <= maxCols) {
+      return [n];
+    }
+
+    var sizes = [];
+    var remaining = n;
+    while (remaining > 0) {
+      var take = Math.min(maxCols, remaining);
+      sizes.push(take);
+      remaining -= take;
+    }
+
+    var last = sizes[sizes.length - 1];
+    if (last >= 3 || sizes.length === 1) {
+      return sizes;
+    }
+
+    var orphans = sizes.pop();
+    var r = sizes.length - 1;
+    while (orphans > 0 && r >= 0) {
+      sizes[r] += 1;
+      orphans -= 1;
+      r -= 1;
+    }
+    if (orphans > 0) {
+      if (sizes.length) {
+        sizes[sizes.length - 1] += orphans;
+      } else {
+        sizes.push(orphans);
+      }
+    }
+    return sizes;
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -60,10 +103,13 @@
 
   function renderShelves(books) {
     var cols = colsForViewport();
+    var sizes = packRowSizes(books.length, cols);
     var html = '<li class="books-case"><div class="books-case__inner">';
-    var i;
-    for (i = 0; i < books.length; i += cols) {
-      var slice = books.slice(i, i + cols);
+    var offset = 0;
+    var s;
+    for (s = 0; s < sizes.length; s += 1) {
+      var slice = books.slice(offset, offset + sizes[s]);
+      offset += sizes[s];
       html += '<section class="books-shelf">';
       html += '<ul class="books-cover-row">';
       slice.forEach(function (book) {
@@ -102,13 +148,29 @@
         return;
       }
       books.sort(function (a, b) {
-        var da = a.dewey || "999";
-        var db = b.dewey || "999";
-        if (da < db) {
-          return -1;
+        function deweyParts(raw) {
+          var parts = String(raw || "999").split(".");
+          var out = [];
+          var i;
+          for (i = 0; i < parts.length; i += 1) {
+            var digits = String(parts[i]).replace(/\D/g, "");
+            out.push(digits ? parseInt(digits, 10) : 0);
+          }
+          while (out.length < 3) {
+            out.push(0);
+          }
+          return out;
         }
-        if (da > db) {
-          return 1;
+        var pa = deweyParts(a.dewey);
+        var pb = deweyParts(b.dewey);
+        var i;
+        for (i = 0; i < pa.length; i += 1) {
+          if (pa[i] < pb[i]) {
+            return -1;
+          }
+          if (pa[i] > pb[i]) {
+            return 1;
+          }
         }
         var ta = a.title || "";
         var tb = b.title || "";
