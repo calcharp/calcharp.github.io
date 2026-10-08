@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,7 +34,17 @@ jobs:
           git add data/books.json data/books-sync.json
           if git diff --staged --quiet; then
             echo "No bookshelf changes."
-          else
-            git commit -m "Add newly rated Goodreads books"
-            git push
+            exit 0
           fi
+          git commit -m "Add newly rated Goodreads books"
+          # Rebase onto latest main in case another push landed during the run
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD; then
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); retrying…"
+            sleep 5
+          done
+          echo "Failed to push after retries."
+          exit 1
