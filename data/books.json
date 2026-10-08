@@ -423,5 +423,37 @@
     "spineSource": "generated",
     "dewey": "823.92",
     "deweyLabel": "English SF"
+  },
+  {
+    "id": "2447051",
+    "title": "Measurement Theory and Practice",
+    "author": "David J. Hand",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1266830963l/2447051.jpg",
+    "url": "https://www.goodreads.com/book/show/2447051",
+    "rating": 5,
+    "spine": {
+      "bg": "#6d414b",
+      "edge": "#a76d7b",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "subtitle": "The World through Quantification (Kendall's Library of Statistics, 10)",
+    "isbn13": "9780340677834"
+  },
+  {
+    "id": "49811855",
+    "title": "Statistical Rethinking",
+    "author": "Richard McElreath",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1577251186l/49811855.jpg",
+    "url": "https://www.goodreads.com/book/show/49811855",
+    "rating": 5,
+    "spine": {
+      "bg": "#938e45",
+      "edge": "#dad373",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "subtitle": "A Bayesian Course with Examples in R and STAN (Chapman & Hall/CRC Texts in Statistical Science)",
+    "isbn13": "9780367139919"
   }
 ]
