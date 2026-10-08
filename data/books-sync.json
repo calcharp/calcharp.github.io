@@ -4,10 +4,10 @@
   "min_rating": 4,
   "since": "2026-10-06",
   "note": "Only auto-add books rated >= min_rating with read/added date on or after since. Older high-rated books already missing from books.json are intentionally ignored.",
-  "last_run": "2026-10-08T02:19:24Z",
+  "last_run": "2026-10-08T14:05:04Z",
   "last_added": [
-    "2447051",
-    "49811855"
+    "27778619",
+    "54120408"
   ],
   "last_added_count": 2
 }

@@ -408,6 +408,23 @@
     "deweyLabel": "American fiction"
   },
   {
+    "id": "27778619",
+    "title": "Do Androids Dream of Electric Sheep? Omnibus",
+    "author": "Philip K. Dick",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1447604654l/27778619.jpg",
+    "url": "https://www.goodreads.com/book/show/27778619",
+    "rating": 5,
+    "spine": {
+      "bg": "#44936f",
+      "edge": "#71daaa",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9781608867844",
+    "dewey": "813.54",
+    "deweyLabel": "American SF"
+  },
+  {
     "id": "415459",
     "title": "I Have No Mouth & I Must Scream",
     "author": "Harlan Ellison",
@@ -442,6 +459,23 @@
     "spineSource": "generated",
     "dewey": "821.4",
     "deweyLabel": "English poetry \u2014 Milton"
+  },
+  {
+    "id": "54120408",
+    "title": "Klara and the Sun",
+    "author": "Kazuo Ishiguro",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1603206535l/54120408._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/54120408",
+    "rating": 5,
+    "spine": {
+      "bg": "#3c5941",
+      "edge": "#678d6d",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9780593318171",
+    "dewey": "823.92",
+    "deweyLabel": "English fiction"
   },
   {
     "id": "54870256",
