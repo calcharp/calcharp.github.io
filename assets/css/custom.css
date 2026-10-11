@@ -589,16 +589,31 @@ img[loading] {
   }
 
   /*
-    Flatten “Other” on mobile: hide the parent label and show its links
-    inline. Theme defaults keep .navbar__submenu at visibility:hidden.
+    Flatten “Other” on mobile: hide the parent label and force the
+    wrapped submenu open. Publii uses .navbar__submenu_wrapper with
+    height:0 / opacity:0 until expanded.
   */
   .navbar_mobile_overlay .has-submenu > a[aria-haspopup="true"],
   .navbar_mobile_sidebar .has-submenu > a[aria-haspopup="true"] {
     display: none !important;
   }
 
-  .navbar_mobile_overlay .has-submenu > .navbar__submenu,
-  .navbar_mobile_sidebar .has-submenu > .navbar__submenu {
+  .navbar_mobile_overlay .has-submenu .navbar__submenu_wrapper,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu_wrapper {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    visibility: visible !important;
+  }
+
+  .navbar_mobile_overlay .has-submenu .navbar__submenu,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu,
+  .navbar_mobile_overlay .has-submenu .navbar__submenu li,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu li,
+  .navbar_mobile_overlay .has-submenu .navbar__submenu a,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu a {
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
@@ -607,7 +622,8 @@ img[loading] {
     margin: 0 !important;
     min-width: 0 !important;
     opacity: 1 !important;
-    padding: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     position: static !important;
     transform: none !important;
     visibility: visible !important;
@@ -618,14 +634,7 @@ img[loading] {
   .navbar_mobile_overlay .has-submenu .navbar__submenu > li,
   .navbar_mobile_sidebar .has-submenu .navbar__submenu > li {
     list-style: none;
-    margin: 0;
-    padding: 0;
     text-align: center;
-  }
-
-  .navbar_mobile_overlay .has-submenu .navbar__submenu > li > a,
-  .navbar_mobile_sidebar .has-submenu .navbar__submenu > li > a {
-    white-space: normal;
   }
 }
 
