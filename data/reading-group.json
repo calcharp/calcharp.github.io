@@ -1,0 +1,91 @@
+{
+  "title": "Biodiversity Science + Deep Learning Reading Group",
+  "zoom": "https://virginiatech.zoom.us/j/86992753213",
+  "presentSheet": "https://docs.google.com/spreadsheets/d/1uqp2_1peLV_NcHBIz04vkFiuoQcicO3cGsC2C95oI6k/edit?gid=969815788#gid=969815788",
+  "emailGroup": "https://groups.google.com/g/biodiversity-science--deep-learning-reading-group?pli=1",
+  "contact": [
+    {
+      "name": "Caleb Charpentier",
+      "email": "calebcharpentier00@gmail.com",
+      "url": "https://calebcharpentier.com/"
+    },
+    {
+      "name": "Sean McHugh",
+      "email": "m.seanwmchugh@wustl.edu",
+      "url": null
+    }
+  ],
+  "events": [],
+  "meetings": [
+    {
+      "date": "2026-04-22",
+      "presenter": "Caleb Charpentier",
+      "title": "Disentangling genotype and environment specific latent features for improved trait prediction using a compositional autoencoder",
+      "url": "https://arxiv.org/abs/2410.19922",
+      "recording": null
+    },
+    {
+      "date": "2026-04-01",
+      "presenter": "Arthur Porto",
+      "title": "MorphoWeave Demo",
+      "url": "https://github.com/agporto/SlicerMorphoWeave",
+      "recording": null
+    },
+    {
+      "date": "2026-03-11",
+      "presenter": "Caleb Charpentier",
+      "title": "A deep learning approach for morphological feature extraction based on variational auto-encoder: an application to mandible shape",
+      "url": "https://www.nature.com/articles/s41540-023-00293-6",
+      "recording": null
+    },
+    {
+      "date": "2026-02-25",
+      "presenter": "Caleb Charpentier",
+      "title": "Identifying variation in dinosaur footprints and classifying problematic specimens via unbiased unsupervised machine learning",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.2527222122",
+      "recording": null
+    },
+    {
+      "date": "2025-11-12",
+      "presenter": "Caleb Charpentier",
+      "title": "Descriptron: Artificial intelligence for automating taxonomic species descriptions with a user-friendly software package",
+      "url": "https://www.biorxiv.org/content/10.1101/2025.01.07.631758",
+      "recording": "https://virginiatech.zoom.us/rec/share/aRgxZDgXhqdJjeHHGNk129cS4MlQyzkFnJMRmDIXfl7C3AjRcTO00Jacg5R0O7ib.A5UodKgmsMhaSoO2"
+    },
+    {
+      "date": "2025-10-15",
+      "presenter": "Roberta Hunt",
+      "title": "Evolving Interpretable Visual Classifiers with Large Language Models",
+      "url": "https://llm-mutate.cs.columbia.edu/",
+      "recording": "https://virginiatech.zoom.us/rec/share/jHMOtbAwc2gFEPPAHByUUF5_8cAxK8C72pMc7JY7obMixWK6ju55A7qsQVkOqy2P.6lyoS_iwn_ymeOPM"
+    },
+    {
+      "date": "2025-10-01",
+      "presenter": "Caleb Charpentier",
+      "title": "BIOCLIP 2: Emergent Properties from Scaling Hierarchical Contrastive Learning",
+      "url": "https://imageomics.github.io/bioclip-2/",
+      "recording": null
+    },
+    {
+      "date": "2025-09-03",
+      "presenter": "Mridul Khurana",
+      "title": "Hierarchical Conditioning of Diffusion Models Using Tree-of-Life for Studying Species Evolution",
+      "url": "https://imageomics.github.io/phylo-diffusion/",
+      "recording": null
+    },
+    {
+      "date": "2025-08-22",
+      "presenter": "Moritz Lürig",
+      "title": "Deep learning reveals the complex genetic architecture of male guppy colouration",
+      "url": "https://www.nature.com/articles/s41559-025-02781-w",
+      "recording": null
+    },
+    {
+      "date": "2025-08-01",
+      "presenter": "Caleb Charpentier",
+      "title": "BioEncoder: A metric learning toolkit for comparative organismal biology",
+      "url": "https://portal.research.lu.se/en/publications/bioencoder-a-metric-learning-toolkit-for-comparative-organismal-b/",
+      "recording": null
+    }
+  ]
+}
