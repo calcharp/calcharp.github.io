@@ -56,6 +56,24 @@
     "deweyLabel": "Machine learning"
   },
   {
+    "id": "1093532",
+    "title": "Philosophy of Mind",
+    "author": "John Heil",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1324417505l/1093532.jpg",
+    "url": "https://www.goodreads.com/book/show/1093532",
+    "rating": 5,
+    "spine": {
+      "bg": "#231f54",
+      "edge": "#464086",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "subtitle": "A Contemporary Introduction",
+    "isbn13": "9780415283564",
+    "dewey": "128.2",
+    "deweyLabel": "Philosophy of mind"
+  },
+  {
     "id": "54218",
     "title": "The Mismeasure of Man",
     "author": "Stephen Jay Gould",
@@ -388,6 +406,23 @@
     "spineSource": "generated",
     "dewey": "808.02",
     "deweyLabel": "Writing craft"
+  },
+  {
+    "id": "17934530",
+    "title": "Annihilation",
+    "author": "Jeff Vandermeer",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1403941587l/17934530.jpg",
+    "url": "https://www.goodreads.com/book/show/17934530",
+    "rating": 4,
+    "spine": {
+      "bg": "#593893",
+      "edge": "#8d61da",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9780374104092",
+    "dewey": "813.6",
+    "deweyLabel": "American fiction"
   },
   {
     "id": "5056556",
