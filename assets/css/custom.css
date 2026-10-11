@@ -588,37 +588,43 @@ img[loading] {
     display: block !important;
   }
 
-  /* Flatten “Other” into the main mobile menu list */
-  .navbar .navbar__menu > .has-submenu,
-  .navbar_mobile_sidebar .navbar__menu > .has-submenu,
-  .navbar_mobile_overlay .navbar__menu > .has-submenu {
-    display: contents;
-  }
-
-  .navbar .has-submenu > a[aria-haspopup="true"],
-  .navbar_mobile_sidebar .has-submenu > a[aria-haspopup="true"],
-  .navbar_mobile_overlay .has-submenu > a[aria-haspopup="true"] {
+  /*
+    Flatten “Other” on mobile: hide the parent label and show its links
+    inline. Theme defaults keep .navbar__submenu at visibility:hidden.
+  */
+  .navbar_mobile_overlay .has-submenu > a[aria-haspopup="true"],
+  .navbar_mobile_sidebar .has-submenu > a[aria-haspopup="true"] {
     display: none !important;
   }
 
-  .navbar .has-submenu > .navbar__submenu,
-  .navbar_mobile_sidebar .has-submenu > .navbar__submenu,
-  .navbar_mobile_overlay .has-submenu > .navbar__submenu {
-    background: transparent;
-    border: 0;
+  .navbar_mobile_overlay .has-submenu > .navbar__submenu,
+  .navbar_mobile_sidebar .has-submenu > .navbar__submenu {
+    background: transparent !important;
+    border: 0 !important;
     box-shadow: none !important;
-    display: contents;
-    margin: 0;
-    min-width: 0;
-    padding: 0;
-    position: static;
+    display: block !important;
+    left: auto !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    opacity: 1 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+    visibility: visible !important;
+    white-space: normal !important;
+    width: 100%;
   }
 
-  .navbar .has-submenu .navbar__submenu > li > a,
-  .navbar_mobile_sidebar .has-submenu .navbar__submenu > li > a,
-  .navbar_mobile_overlay .has-submenu .navbar__submenu > li > a {
-    padding-left: 0;
-    padding-right: 0;
+  .navbar_mobile_overlay .has-submenu .navbar__submenu > li,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu > li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  .navbar_mobile_overlay .has-submenu .navbar__submenu > li > a,
+  .navbar_mobile_sidebar .has-submenu .navbar__submenu > li > a {
     white-space: normal;
   }
 }
