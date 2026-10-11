@@ -503,8 +503,9 @@ html[data-theme="light"] .rg-theme__knob {
 }
 
 @media (max-width: 40em) {
+  /* Clear the fixed theme toggle so the title doesn’t sit under it */
   .rg-main {
-    padding: var(--s4) var(--s2) var(--s5);
+    padding: calc(var(--s4) + 2.75rem) var(--s2) var(--s5);
   }
 
   .rg-duo {
