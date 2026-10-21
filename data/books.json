@@ -528,5 +528,21 @@
     "spineSource": "generated",
     "dewey": "823.92",
     "deweyLabel": "English SF"
+  },
+  {
+    "id": "244382759",
+    "title": "The Nerd Reich",
+    "author": "Gil Duran",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1764053152l/244382759._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/244382759",
+    "rating": 5,
+    "spine": {
+      "bg": "#5e4523",
+      "edge": "#947346",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "subtitle": "Silicon Valley Fascism and the War on Democracy",
+    "isbn13": "9781668221426"
   }
 ]
