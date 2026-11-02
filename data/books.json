@@ -19,23 +19,6 @@
     "deweyLabel": "Science & skepticism"
   },
   {
-    "id": "73516731",
-    "title": "Advanced R, Second Edition",
-    "author": "Hadley Wickham",
-    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1677898237l/73516731.jpg",
-    "url": "https://www.goodreads.com/book/show/73516731",
-    "rating": 5,
-    "spine": {
-      "bg": "#1f4b7a",
-      "edge": "#3d74ad",
-      "ink": "#f5ecdc"
-    },
-    "spineSource": "pending",
-    "isbn13": "9780815384571",
-    "dewey": "005.133",
-    "deweyLabel": "R programming"
-  },
-  {
     "id": "222725518",
     "title": "Empire of AI",
     "author": "Karen Hao",
@@ -255,6 +238,23 @@
     "isbn13": "9780340677834",
     "dewey": "519.5",
     "deweyLabel": "Mathematical statistics"
+  },
+  {
+    "id": "73516731",
+    "title": "Advanced R, Second Edition",
+    "author": "Hadley Wickham",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1677898237l/73516731.jpg",
+    "url": "https://www.goodreads.com/book/show/73516731",
+    "rating": 5,
+    "spine": {
+      "bg": "#1f4b7a",
+      "edge": "#3d74ad",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9780815384571",
+    "dewey": "519.50285",
+    "deweyLabel": "Statistical computing"
   },
   {
     "id": "49811855",
