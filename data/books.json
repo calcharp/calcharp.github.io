@@ -19,6 +19,23 @@
     "deweyLabel": "Science & skepticism"
   },
   {
+    "id": "73516731",
+    "title": "Advanced R, Second Edition",
+    "author": "Hadley Wickham",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1677898237l/73516731.jpg",
+    "url": "https://www.goodreads.com/book/show/73516731",
+    "rating": 5,
+    "spine": {
+      "bg": "#1f4b7a",
+      "edge": "#3d74ad",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9780815384571",
+    "dewey": "005.133",
+    "deweyLabel": "R programming"
+  },
+  {
     "id": "222725518",
     "title": "Empire of AI",
     "author": "Karen Hao",
@@ -127,7 +144,7 @@
     "spineImage": "assets/img/books/spines/53121662.jpg",
     "spineSource": "generated",
     "dewey": "277.3",
-    "deweyLabel": "Christianity \u2014 North America"
+    "deweyLabel": "Christianity — North America"
   },
   {
     "id": "222376640",
@@ -145,6 +162,24 @@
     "isbn13": "9780374619329",
     "spineImage": "assets/img/books/spines/222376640.jpg",
     "spineSource": "generated",
+    "dewey": "303.483",
+    "deweyLabel": "Technology & society"
+  },
+  {
+    "id": "244382759",
+    "title": "The Nerd Reich",
+    "author": "Gil Durán",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1764053152l/244382759._SY475_.jpg",
+    "url": "https://www.goodreads.com/book/show/244382759",
+    "rating": 5,
+    "spine": {
+      "bg": "#5e4523",
+      "edge": "#947346",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "subtitle": "Silicon Valley Fascism and the War on Democracy",
+    "isbn13": "9781668221426",
     "dewey": "303.483",
     "deweyLabel": "Technology & society"
   },
@@ -201,7 +236,7 @@
     "spineImage": "assets/img/books/spines/31931.jpg",
     "spineSource": "generated",
     "dewey": "501.01",
-    "deweyLabel": "Philosophy of science \u2014 intro"
+    "deweyLabel": "Philosophy of science — intro"
   },
   {
     "id": "2447051",
@@ -293,7 +328,7 @@
     "spineImage": "assets/img/books/spines/54209.jpg",
     "spineSource": "generated",
     "dewey": "576.8",
-    "deweyLabel": "Evolution \u2014 essays"
+    "deweyLabel": "Evolution — essays"
   },
   {
     "id": "3357127",
@@ -329,7 +364,7 @@
     "spineImage": "assets/img/books/spines/22463.jpg",
     "spineSource": "generated",
     "dewey": "576.82",
-    "deweyLabel": "Evolution \u2014 Origin of Species"
+    "deweyLabel": "Evolution — Origin of Species"
   },
   {
     "id": "33933",
@@ -348,7 +383,7 @@
     "spineImage": "assets/img/books/spines/33933.jpg",
     "spineSource": "generated",
     "dewey": "576.83",
-    "deweyLabel": "Evolution \u2014 essays"
+    "deweyLabel": "Evolution — essays"
   },
   {
     "id": "17465709",
@@ -512,7 +547,7 @@
     "spineImage": "assets/img/books/spines/26150738.jpg",
     "spineSource": "generated",
     "dewey": "821.4",
-    "deweyLabel": "English poetry \u2014 Milton"
+    "deweyLabel": "English poetry — Milton"
   },
   {
     "id": "54120408",
@@ -547,21 +582,5 @@
     "spineSource": "generated",
     "dewey": "823.92",
     "deweyLabel": "English SF"
-  },
-  {
-    "id": "244382759",
-    "title": "The Nerd Reich",
-    "author": "Gil Duran",
-    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1764053152l/244382759._SY475_.jpg",
-    "url": "https://www.goodreads.com/book/show/244382759",
-    "rating": 5,
-    "spine": {
-      "bg": "#5e4523",
-      "edge": "#947346",
-      "ink": "#f5ecdc"
-    },
-    "spineSource": "pending",
-    "subtitle": "Silicon Valley Fascism and the War on Democracy",
-    "isbn13": "9781668221426"
   }
 ]
