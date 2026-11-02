@@ -479,19 +479,20 @@
     "deweyLabel": "American SF"
   },
   {
-    "id": "17934530",
+    "id": "56268878",
     "title": "Annihilation",
     "author": "Jeff Vandermeer",
-    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1403941587l/17934530.jpg",
-    "url": "https://www.goodreads.com/book/show/17934530",
+    "cover": "https://mpd-biblio-covers.imgix.net/9781250824042.jpg",
+    "url": "https://www.goodreads.com/book/show/56268878-annihilation",
     "rating": 4,
+    "subtitle": "Tenth Anniversary Edition",
     "spine": {
       "bg": "#593893",
       "edge": "#8d61da",
       "ink": "#f5ecdc"
     },
     "spineSource": "pending",
-    "isbn13": "9780374104092",
+    "isbn13": "9781250824042",
     "dewey": "813.6",
     "deweyLabel": "American fiction"
   },
