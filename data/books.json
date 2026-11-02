@@ -149,6 +149,24 @@
     "deweyLabel": "Technology & society"
   },
   {
+    "id": "44153387",
+    "title": "The Feather Thief",
+    "author": "Kirk Wallace Johnson",
+    "cover": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1551792197i/44153387.jpg",
+    "url": "https://www.goodreads.com/book/show/44153387-the-feather-thief",
+    "rating": 5,
+    "subtitle": "Beauty, Obsession, and the Natural History Heist of the Century",
+    "spine": {
+      "bg": "#7a3746",
+      "edge": "#b96074",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9781101981610",
+    "dewey": "364.1628",
+    "deweyLabel": "Theft from museums"
+  },
+  {
     "id": "61539",
     "title": "The Structure of Scientific Revolutions",
     "author": "Thomas S. Kuhn",
@@ -408,23 +426,6 @@
     "deweyLabel": "Writing craft"
   },
   {
-    "id": "17934530",
-    "title": "Annihilation",
-    "author": "Jeff Vandermeer",
-    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1403941587l/17934530.jpg",
-    "url": "https://www.goodreads.com/book/show/17934530",
-    "rating": 4,
-    "spine": {
-      "bg": "#593893",
-      "edge": "#8d61da",
-      "ink": "#f5ecdc"
-    },
-    "spineSource": "pending",
-    "isbn13": "9780374104092",
-    "dewey": "813.6",
-    "deweyLabel": "American fiction"
-  },
-  {
     "id": "5056556",
     "title": "The Grapes of Wrath",
     "author": "John Steinbeck",
@@ -476,6 +477,23 @@
     "spineSource": "generated",
     "dewey": "813.54",
     "deweyLabel": "American SF"
+  },
+  {
+    "id": "17934530",
+    "title": "Annihilation",
+    "author": "Jeff Vandermeer",
+    "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1403941587l/17934530.jpg",
+    "url": "https://www.goodreads.com/book/show/17934530",
+    "rating": 4,
+    "spine": {
+      "bg": "#593893",
+      "edge": "#8d61da",
+      "ink": "#f5ecdc"
+    },
+    "spineSource": "pending",
+    "isbn13": "9780374104092",
+    "dewey": "813.6",
+    "deweyLabel": "American fiction"
   },
   {
     "id": "26150738",

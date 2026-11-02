@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
-"""Pull newly rated Goodreads books into data/books.json (no historical backfill)."""
+"""Pull newly rated Goodreads books into data/books.json (no historical backfill).
+
+Goodreads discontinued RSS in October 2026. Sync now reads a library CSV export:
+  My Books → Import and export → Export Library
+Save/overwrite as: data/goodreads_library_export.csv
+Then run: python scripts/sync_goodreads_books.py
+"""
 from __future__ import annotations
 
 import colorsys
+import csv
 import json
 import re
 import urllib.error
 import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
-from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BOOKS_PATH = ROOT / "data" / "books.json"
 SYNC_PATH = ROOT / "data" / "books-sync.json"
+CSV_PATH = ROOT / "data" / "goodreads_library_export.csv"
 
 USER_AGENT = "calcharp-books-sync/1.0 (+https://calcharp.github.io)"
-RSS_PAGES = 3  # Goodreads caps ~100/page; a few pages covers growth
 
 
 def load_json(path: Path, default):
@@ -31,14 +36,23 @@ def save_json(path: Path, data) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def parse_gr_date(value: str | None) -> date | None:
+def parse_csv_date(value: str | None) -> date | None:
     text = (value or "").strip()
     if not text:
         return None
-    try:
-        return parsedate_to_datetime(text).date()
-    except (TypeError, ValueError, IndexError):
-        return None
+    for fmt in ("%Y/%m/%d", "%Y-%m-%d", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def clean_isbn_field(value: str | None) -> str:
+    """Goodreads wraps ISBNs as =\"978...\" spreadsheet text."""
+    raw = (value or "").strip()
+    raw = re.sub(r'^="?|"?$', "", raw)
+    return raw.strip()
 
 
 def isbn10_to_13(isbn10: str) -> str | None:
@@ -52,7 +66,7 @@ def isbn10_to_13(isbn10: str) -> str | None:
 
 
 def normalize_isbn13(isbn: str | None) -> str | None:
-    raw = re.sub(r"[^0-9Xx]", "", isbn or "")
+    raw = re.sub(r"[^0-9Xx]", "", clean_isbn_field(isbn) or "")
     if len(raw) == 13 and raw.isdigit():
         return raw
     if len(raw) == 10:
@@ -115,6 +129,12 @@ def fetch_json(url: str) -> dict | list | None:
         return None
 
 
+def fetch_text(url: str) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
 def dewey_from_open_library(isbn13: str | None) -> tuple[str | None, str | None]:
     """Return (dewey, short label) from Open Library when available."""
     if not isbn13:
@@ -142,57 +162,47 @@ def dewey_from_open_library(isbn13: str | None) -> tuple[str | None, str | None]
     return dewey, label
 
 
-def fetch_rss(user_id: str, shelf: str, page: int) -> bytes:
-    url = (
-        f"https://www.goodreads.com/review/list_rss/{user_id}"
-        f"?shelf={urllib.parse.quote(shelf)}&page={page}"
-    )
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+def cover_for(book_id: str, isbn13: str | None) -> str:
+    if isbn13:
+        ol = fetch_json(
+            "https://openlibrary.org/api/books"
+            f"?bibkeys=ISBN:{urllib.parse.quote(isbn13)}&format=json&jscmd=data"
+        )
+        if isinstance(ol, dict):
+            entry = ol.get(f"ISBN:{isbn13}") or {}
+            cover = entry.get("cover") or {}
+            for key in ("large", "medium", "small"):
+                if cover.get(key):
+                    return prefer_cover(cover[key])
+    try:
+        html = fetch_text(f"https://www.goodreads.com/book/show/{book_id}")
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+        return ""
+    m = re.search(r'property="og:image"\s+content="([^"]+)"', html)
+    return prefer_cover(m.group(1) if m else "")
 
 
-def iter_rss_items(user_id: str, shelf: str):
-    seen_ids: set[str] = set()
-    for page in range(1, RSS_PAGES + 1):
-        try:
-            raw = fetch_rss(user_id, shelf, page)
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404 and page > 1:
-                break
-            raise
-        root = ET.fromstring(raw)
-        items = root.findall("./channel/item")
-        if not items:
-            break
-        for item in items:
-            book_id = (item.findtext("book_id") or "").strip()
-            if not book_id or book_id in seen_ids:
-                continue
-            seen_ids.add(book_id)
-            yield item
-        if len(items) < 20:
-            break
+def dewey_sort_key(book: dict) -> tuple:
+    # True Dewey order: 813.52 before 813.6 (float class, not int segments)
+    raw = re.sub(r"[^\d.]", "", str(book.get("dewey") or "999"))
+    try:
+        value = float(raw) if raw else 999.0
+    except ValueError:
+        value = 999.0
+    return (value, book.get("title") or "")
 
 
-def event_date(item: ET.Element) -> date | None:
-    return parse_gr_date(item.findtext("user_read_at")) or parse_gr_date(
-        item.findtext("user_date_added")
-    )
-
-
-def item_to_book(item: ET.Element) -> dict:
-    book_id = (item.findtext("book_id") or "").strip()
-    raw_title = (item.findtext("title") or "").strip()
+def row_to_book(row: dict) -> dict:
+    book_id = str(row.get("Book Id") or "").strip()
+    raw_title = (row.get("Title") or "").strip()
     title, subtitle = split_title(raw_title)
-    author = re.sub(r"\s+", " ", (item.findtext("author_name") or "").strip())
-    rating = int(float(item.findtext("user_rating") or 0))
-    cover = prefer_cover(
-        item.findtext("book_large_image_url")
-        or item.findtext("book_medium_image_url")
-        or item.findtext("book_image_url")
-    )
-    isbn13 = normalize_isbn13(item.findtext("isbn"))
+    author = re.sub(r"\s+", " ", (row.get("Author") or "").strip())
+    try:
+        rating = int(float(row.get("My Rating") or 0))
+    except ValueError:
+        rating = 0
+    isbn13 = normalize_isbn13(row.get("ISBN13")) or normalize_isbn13(row.get("ISBN"))
+    cover = cover_for(book_id, isbn13)
     book = {
         "id": book_id,
         "title": title or raw_title or "Untitled",
@@ -215,16 +225,11 @@ def item_to_book(item: ET.Element) -> dict:
     return book
 
 
-def dewey_sort_key(book: dict) -> tuple:
-    # Numeric-aware: 519.5 before 530.8 before 999
-    raw = str(book.get("dewey") or "999")
-    parts: list[int] = []
-    for chunk in raw.split("."):
-        digits = re.sub(r"\D", "", chunk)
-        parts.append(int(digits) if digits else 0)
-    while len(parts) < 3:
-        parts.append(0)
-    return (tuple(parts), book.get("title") or "")
+def iter_csv_rows(path: Path):
+    with path.open(newline="", encoding="utf-8-sig") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            yield row
 
 
 def sync() -> int:
@@ -235,12 +240,25 @@ def sync() -> int:
             "shelf": "read",
             "min_rating": 4,
             "since": date.today().isoformat(),
+            "csv_path": "data/goodreads_library_export.csv",
         },
     )
-    user_id = str(cfg.get("goodreads_user_id") or "194048917")
     shelf = str(cfg.get("shelf") or "read")
     min_rating = int(cfg.get("min_rating") or 4)
     since = date.fromisoformat(str(cfg.get("since") or date.today().isoformat()))
+    csv_path = ROOT / str(cfg.get("csv_path") or "data/goodreads_library_export.csv")
+    if not csv_path.is_absolute():
+        # allow either repo-relative or already-rooted
+        candidate = Path(cfg.get("csv_path") or CSV_PATH)
+        csv_path = candidate if candidate.is_absolute() else ROOT / candidate
+
+    if not csv_path.exists():
+        raise SystemExit(
+            "Goodreads RSS was discontinued in October 2026.\n"
+            f"Missing CSV export: {csv_path.relative_to(ROOT)}\n"
+            "Export from Goodreads: My Books → Import and export → Export Library\n"
+            f"Save/overwrite that file as {csv_path.relative_to(ROOT)} and re-run."
+        )
 
     books = load_json(BOOKS_PATH, [])
     if not isinstance(books, list):
@@ -249,32 +267,41 @@ def sync() -> int:
     existing = {str(b.get("id")) for b in books if isinstance(b, dict) and b.get("id")}
     added: list[dict] = []
 
-    for item in iter_rss_items(user_id, shelf):
-        book_id = (item.findtext("book_id") or "").strip()
+    for row in iter_csv_rows(csv_path):
+        book_id = str(row.get("Book Id") or "").strip()
         if not book_id or book_id in existing:
             continue
+        exclusive = (row.get("Exclusive Shelf") or "").strip().lower()
+        if exclusive and exclusive != shelf.lower():
+            continue
         try:
-            rating = int(float(item.findtext("user_rating") or 0))
+            rating = int(float(row.get("My Rating") or 0))
         except ValueError:
             continue
         if rating < min_rating:
             continue
-        when = event_date(item)
+        when = parse_csv_date(row.get("Date Read")) or parse_csv_date(row.get("Date Added"))
         if when is None or when < since:
             continue
-        book = item_to_book(item)
+        book = row_to_book(row)
         books.append(book)
         existing.add(book_id)
         added.append(book)
         print(f"add {rating}* [{when.isoformat()}] {book['title']} — {book['author']}")
 
-    if added:
-        books.sort(key=dewey_sort_key)
-        save_json(BOOKS_PATH, books)
+    books.sort(key=dewey_sort_key)
+    save_json(BOOKS_PATH, books)
 
     cfg["last_run"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     cfg["last_added"] = [b["id"] for b in added]
     cfg["last_added_count"] = len(added)
+    cfg["source"] = "csv"
+    cfg["csv_path"] = str(Path(cfg.get("csv_path") or "data/goodreads_library_export.csv"))
+    cfg["note"] = (
+        "Goodreads RSS ended Oct 2026. Place an Export Library CSV at csv_path. "
+        "Only auto-add books on Exclusive Shelf matching shelf, rated >= min_rating, "
+        "with Date Read/Added on or after since."
+    )
     save_json(SYNC_PATH, cfg)
 
     print(f"done: added {len(added)} book(s); shelf now {len(books)}")

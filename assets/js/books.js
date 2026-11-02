@@ -148,29 +148,19 @@
         return;
       }
       books.sort(function (a, b) {
-        function deweyParts(raw) {
-          var parts = String(raw || "999").split(".");
-          var out = [];
-          var i;
-          for (i = 0; i < parts.length; i += 1) {
-            var digits = String(parts[i]).replace(/\D/g, "");
-            out.push(digits ? parseInt(digits, 10) : 0);
-          }
-          while (out.length < 3) {
-            out.push(0);
-          }
-          return out;
+        // True Dewey order: 813.52 before 813.6 (numeric class, not int segments)
+        function deweyValue(raw) {
+          var text = String(raw || "999").replace(/[^\d.]/g, "");
+          var n = parseFloat(text);
+          return isNaN(n) ? 999 : n;
         }
-        var pa = deweyParts(a.dewey);
-        var pb = deweyParts(b.dewey);
-        var i;
-        for (i = 0; i < pa.length; i += 1) {
-          if (pa[i] < pb[i]) {
-            return -1;
-          }
-          if (pa[i] > pb[i]) {
-            return 1;
-          }
+        var da = deweyValue(a.dewey);
+        var db = deweyValue(b.dewey);
+        if (da < db) {
+          return -1;
+        }
+        if (da > db) {
+          return 1;
         }
         var ta = a.title || "";
         var tb = b.title || "";

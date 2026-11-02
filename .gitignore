@@ -1,0 +1,4 @@
+.playwright-mcp/
+scripts/__pycache__/
+data/goodreads_library_export.csv
+*.pyc

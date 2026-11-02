@@ -24,8 +24,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Sync 4–5★ books from Goodreads
-        run: python scripts/sync_goodreads_books.py
+      - name: Sync 4–5★ books from Goodreads CSV
+        run: |
+          if [ ! -f data/goodreads_library_export.csv ]; then
+            echo "Goodreads RSS was discontinued in October 2026."
+            echo "No data/goodreads_library_export.csv in the repo (file is gitignored)."
+            echo "Export locally: My Books → Import and export → Export Library"
+            echo "Save as data/goodreads_library_export.csv, then run:"
+            echo "  python scripts/sync_goodreads_books.py"
+            echo "and commit data/books.json."
+            exit 0
+          fi
+          python scripts/sync_goodreads_books.py
 
       - name: Commit bookshelf updates
         run: |
@@ -37,7 +47,6 @@ jobs:
             exit 0
           fi
           git commit -m "Add newly rated Goodreads books"
-          # Rebase onto latest main in case another push landed during the run
           for attempt in 1 2 3; do
             git pull --rebase origin main
             if git push origin HEAD; then
