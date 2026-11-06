@@ -387,17 +387,51 @@ class AnimalStore {
   }
 }
 class AnimalMap {
-  constructor(stage,store,helpers){this.stage=stage;this.store=store;this.helpers=helpers;this.revision=0;this.signature='';this.viewport={zoom:factor=>this.map?.setZoom(this.map.getZoom()+(factor>1?1:-1))};}
-  setup(){if(this.map)return;this.stage.innerHTML='<div class="earth-canvas"></div><div class="animal-map-legend" aria-label="Animals on the map"></div>';
-    this.map=L.map(this.stage.querySelector('.earth-canvas'),{zoomControl:false,minZoom:2,maxZoom:16,worldCopyJump:true}).setView([18,0],2);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri — Sources: Esri, USGS, NOAA & contributors'}).addTo(this.map);this.layers=L.layerGroup().addTo(this.map);
+  constructor(stage,store,helpers){
+    this.stage=stage;this.store=store;this.helpers=helpers;this.revision=0;this.signature='';
+    this.viewport={zoom:f=>this.map?.setZoom(this.map.getZoom()+(f>1?1:-1)),fit:()=>this.syncSize(true)};
+    this._onViewportResize=()=>this.syncSize();
   }
-  reset(){if(!this.map)return;const short=(this.stage.clientHeight||800)<760;this.map.setView(short?[6,0]:[16,0],2);}
-  async render(selected,reset=false){this.setup();this.map.invalidateSize();if(reset)this.reset();
-    const signature=[...selected].join('|');if(signature===this.signature&&this.loaded)return;this.signature=signature;this.loaded=false;const revision=++this.revision;
+  setup(){
+    if(this.map)return;
+    this.stage.innerHTML='<div class="earth-canvas"></div><div class="animal-map-legend" aria-label="Animals on the map"></div>';
+    const canvas=this.stage.querySelector('.earth-canvas');
+    this.map=L.map(canvas,{zoomControl:false,minZoom:2,maxZoom:16,worldCopyJump:true}).setView([18,0],2);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri — Sources: Esri, USGS, NOAA & contributors'}).addTo(this.map);
+    this.layers=L.layerGroup().addTo(this.map);
+    // iPad/Safari often opens the map while the tab is still settling to full width.
+    this._sizeObserver=new ResizeObserver(()=>this.syncSize());
+    this._sizeObserver.observe(this.stage);
+    this._sizeObserver.observe(canvas);
+    window.addEventListener('orientationchange',this._onViewportResize);
+    window.visualViewport?.addEventListener('resize',this._onViewportResize);
+    this.syncSize(true);
+  }
+  syncSize(force=false){
+    if(!this.map||this.stage.hidden||this.stage.offsetParent===null)return;
+    const canvas=this.stage.querySelector('.earth-canvas');
+    const w=this.stage.clientWidth,h=this.stage.clientHeight;
+    if(w<2||h<2){requestAnimationFrame(()=>this.syncSize(true));return;}
+    if(canvas){canvas.style.width=w+'px';canvas.style.height=h+'px';}
+    const run=()=>{
+      if(!this.map)return;
+      this.map.invalidateSize({pan:false,animate:false});
+      // Leaflet sometimes keeps a stale tile grid on iOS until a second pass.
+      if(force) this.map.invalidateSize({pan:false,animate:false});
+    };
+    run();
+    requestAnimationFrame(()=>requestAnimationFrame(run));
+    clearTimeout(this._sizeTimer);
+    this._sizeTimer=setTimeout(run,120);
+  }
+  reset(){if(!this.map)return;this.syncSize(true);const short=(this.stage.clientHeight||800)<760;this.map.setView(short?[6,0]:[16,0],2);}
+  async render(selected,reset=false){
+    this.setup();this.syncSize(true);if(reset)this.reset();
+    const signature=[...selected].join('|');if(signature===this.signature&&this.loaded){this.syncSize(true);return;}
+    this.signature=signature;this.loaded=false;const revision=++this.revision;
     this.layers.clearLayers();const legend=this.stage.querySelector('.animal-map-legend');legend.replaceChildren();
     const animals=[...selected].map(name=>[...this.store.items.values()].find(a=>a.name===name)).filter(Boolean);
-    if(!animals.length){this.loaded=true;return;}
+    if(!animals.length){this.loaded=true;this.syncSize(true);return;}
     const colors=['#7b2c91','#007d9c','#ce661a','#32752d','#c43b67','#425cc2','#8b6414','#357e7e','#8c4c4c','#583bba'];
     await Promise.all(animals.map(async(animal,i)=>{const color=colors[i%colors.length];
       const card=document.createElement('button');card.className='animal-map-card';card.style.setProperty('--animal-color',color);card.innerHTML=`${this.helpers.sprite(animal)}<b>${this.helpers.escape(animal.display)}</b><small>Loading…</small>`;card.onclick=()=>this.helpers.onMeet(animal.id);legend.append(card);
@@ -410,6 +444,6 @@ class AnimalMap {
         }
       }catch(error){if(revision!==this.revision)return;card.querySelector('small').textContent='Map unavailable';card.title=error.message;}
     }));
-    if(revision!==this.revision)return;this.loaded=true;
+    if(revision!==this.revision)return;this.loaded=true;this.syncSize(true);
   }
 }

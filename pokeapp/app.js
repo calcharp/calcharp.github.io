@@ -153,7 +153,11 @@ function closePicker() {$('picker').close();if(speciesMode==='animals')refreshAn
 function setView(view) {
   closePreviews();activeView=view;
   for(const name of ['tree','map']) {$(name+'Panel').hidden=name!==view;$(name+'Tab').setAttribute('aria-selected',name===view);$(name+'Tab').tabIndex=name===view?0:-1;}
-  requestAnimationFrame(()=>renderActive());
+  // Two frames so Safari/iPad finish laying out a newly shown map panel before Leaflet measures it.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    renderActive();
+    if(activeView==='map'&&speciesMode==='animals') earth.syncSize(true);
+  }));
 }
 function detailOpen(){return !$('pokemonDetail').hidden;}
 function showDetail(){
