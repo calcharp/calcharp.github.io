@@ -264,8 +264,12 @@ async function dateAnimalTree(request,tree){
   if(!tree.dated) $('treeHint').textContent='Looking up published ages from DateLife…';
   const dated=await animalStore.dateTree(tree);
   if(request!==animalTreeRequest||speciesMode!=='animals') return;
-  if(!dated||!animalStore.applyDates(tree,dated)){
-    if(!tree.dated) $('treeHint').textContent='Tap a photo to meet an animal. Tap a dot to color its branch.';
+  if(!dated){
+    if(!tree.dated) $('treeHint').textContent='Tap a photo to meet an animal. Tap a dot to color its branch. Published ages need the local DateLife server.';
+    return;
+  }
+  if(!animalStore.applyDates(tree,dated)){
+    if(!tree.dated) $('treeHint').textContent='DateLife returned ages, but they could not be matched to this tree. Showing synthetic time.';
     return;
   }
   treeView.setData(data);renderActive(false);

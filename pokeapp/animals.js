@@ -300,23 +300,49 @@ class AnimalStore {
   }
   applyDates(tree,dated){
     if(!tree||!dated?.root) return false;
-    const dateName=node=>String(node.ottName||node.name||node.label||'').toLowerCase().replace(/_/g,' ');
+    const norm=name=>String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
+    const binomial=name=>{const parts=norm(name).split(' ').filter(Boolean);return parts.length>=2?parts[0]+' '+parts[1]:norm(name);};
+    const dateName=node=>norm(node.ottName||node.name||node.label||'');
     const tipNames=node=>node.children?node.children.flatMap(tipNames):[dateName(node)];
     const present=new Set();
-    const gather=node=>{if(!node.children){const name=String(node.label||node.name||'').toLowerCase();if(name)present.add(name);}else node.children.forEach(gather);};
+    const gather=node=>{if(!node.children){const name=norm(node.label||node.name||'');if(name)present.add(name);}else node.children.forEach(gather);};
     gather(dated.root);
+    // DateLife often drops subspecies or spelling variants; map OTT tips onto chronogram tips.
+    const resolve=tip=>{
+      const name=norm(tip); if(!name) return null;
+      if(present.has(name)) return name;
+      const bin=binomial(name); if(present.has(bin)) return bin;
+      for(const item of present){
+        if(name.startsWith(item+' ')||item.startsWith(name+' ')||binomial(item)===bin) return item;
+      }
+      return null;
+    };
     const mrcaAge=wanted=>{
+      const need=[...new Set(wanted.map(resolve).filter(Boolean))];
+      if(!need.length) return null;
+      if(need.length===1){
+        // Age of that tip is 0; use its parent branch age when available via crown of the singleton clade.
+        let singleton=null;
+        const find=node=>{
+          if(!node.children) return [norm(node.label||node.name||'')];
+          const names=node.children.flatMap(find);
+          if(!singleton&&need.every(n=>names.includes(n))&&names.every(n=>need.includes(n))) singleton=node;
+          return names;
+        };
+        find(dated.root);
+        return singleton?singleton.age:0;
+      }
       let best=null;
       const walk=node=>{
-        if(!node.children) return [String(node.label||node.name||'').toLowerCase()];
+        if(!node.children) return [norm(node.label||node.name||'')];
         const names=[];
         let nested=false;
         for(const child of node.children){
           const found=walk(child);
           names.push(...found);
-          if(!nested&&wanted.every(name=>found.includes(name))) nested=true;
+          if(!nested&&need.every(name=>found.includes(name))) nested=true;
         }
-        if(!nested&&wanted.every(name=>names.includes(name))) best=node;
+        if(!nested&&need.every(name=>names.includes(name))) best=node;
         return names;
       };
       walk(dated.root);
@@ -326,16 +352,23 @@ class AnimalStore {
     const collect=node=>{nodes.push(node);if(node.children)node.children.forEach(collect);};
     collect(tree);
     const tips=[...new Set(tipNames(tree).filter(Boolean))];
-    if(tips.length<2||tips.some(name=>!present.has(name))) return false;
+    if(tips.length<2) return false;
+    const resolved=tips.map(resolve);
+    if(resolved.some(name=>!name)) return false;
     for(const node of nodes){
       const names=[...new Set(tipNames(node).filter(Boolean))];
-      const age=names.length<=1?0:mrcaAge(names);
+      const uniq=[...new Set(names.map(resolve).filter(Boolean))];
+      const age=uniq.length<=1?0:mrcaAge(names);
       if(!(age>=0)) return false;
       node.age=age;node.keepAge=true;node.dated=true;
     }
-    const stub=Math.min(0.45,(tree.age||1)*0.08);
+    const stub=Math.min(0.45,Math.max(0.05,(tree.age||1)*0.08));
     for(const node of nodes){
-      if(node.children&&node.children.length>1&&node.age===0&&node.children.every(child=>!child.children)){node.age=stub;node.layoutAge=true;}
+      if(node.children&&node.children.length>1&&node.age===0){
+        const childAges=node.children.map(child=>child.age||0);
+        // Unresolved cluster inside one dated tip, or a same-age split DateLife could not separate.
+        if(node.children.every(child=>!child.children)||childAges.every(age=>age===0)){node.age=stub;node.layoutAge=true;}
+      }
     }
     tree.dated=true;
     return tree.age>0;
@@ -357,6 +390,7 @@ class AnimalStore {
       }catch{return null;}
     })();
     this.dateCache.set(key,promise);
+    promise.then(result=>{if(!result) this.dateCache.delete(key);});
     return promise;
   }
   taxonPage(id,page,perPage){const params=new URLSearchParams({taxon_id:String(id),rank:'species',is_active:'true',per_page:String(perPage),page:String(page),order_by:'observations_count',order:'desc',locale:'en'});return this.json('https://api.inaturalist.org/v1/taxa?'+params);}
