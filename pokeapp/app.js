@@ -361,6 +361,37 @@ async function randomAnimals(){
     if(request===animalPickRequest){$('randomizeTop').disabled=false;$('surprise').disabled=false;}
   }
 }
+function bindPhotoSwipe(el, {onSwipe, onTap}={}){
+  if(!el||el.dataset.swipeBound) return;
+  el.dataset.swipeBound='1';
+  let startX=0, startY=0, startT=0, tracking=false, swiped=false;
+  const threshold=46;
+  el.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse'&&e.button!==0) return;
+    if(e.target.closest('button,a')) return;
+    tracking=true; swiped=false;
+    startX=e.clientX; startY=e.clientY; startT=performance.now();
+    try{el.setPointerCapture(e.pointerId);}catch{}
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!tracking) return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(!swiped&&Math.abs(dx)>threshold&&Math.abs(dx)>Math.abs(dy)*1.2){
+      swiped=true;
+      onSwipe?.(dx<0?1:-1);
+    }
+  });
+  const end=e=>{
+    if(!tracking) return;
+    tracking=false;
+    try{el.releasePointerCapture(e.pointerId);}catch{}
+    if(swiped){e.preventDefault();e.stopPropagation();return;}
+    const dx=e.clientX-startX, dy=e.clientY-startY, dt=performance.now()-startT;
+    if(onTap&&dt<450&&Math.hypot(dx,dy)<12) onTap(e);
+  };
+  el.addEventListener('pointerup',end);
+  el.addEventListener('pointercancel',()=>{tracking=false;swiped=false;});
+}
 function largerPhotoURL(url){
   return String(url||'').replace(/\/(square|small|medium|thumb)\./i,'/large.');
 }
@@ -381,7 +412,9 @@ function ensurePhotoLightbox(){
   box.querySelector('.photo-lightbox-close').onclick=close;
   box.addEventListener('click',e=>{if(e.target===box)close();});
   box.querySelectorAll('[data-lightbox-dir]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();shiftPhotoLightbox(+btn.dataset.lightboxDir);});
-  box.querySelector('img').onclick=e=>e.stopPropagation();
+  const frame=box.querySelector('.photo-lightbox-frame');
+  bindPhotoSwipe(frame,{onSwipe:delta=>shiftPhotoLightbox(delta)});
+  bindPhotoSwipe(box.querySelector('img'),{onSwipe:delta=>shiftPhotoLightbox(delta)});
   return box;
 }
 function paintPhotoLightbox(){
@@ -438,7 +471,7 @@ function mountAnimalGallery(animal,photos){
     if(img){
       img.src=shot.url;img.alt=animal.display;
       img.classList.add('photo-zoomable');
-      img.title='View full screen';
+      img.title='Swipe for more · tap for full screen';
       img.setAttribute('role','button');
       img.tabIndex=0;
     }
@@ -453,10 +486,15 @@ function mountAnimalGallery(animal,photos){
   }
   stage.querySelector('[data-photo-dir="-1"]')?.addEventListener('click',()=>show(index-1));
   stage.querySelector('[data-photo-dir="1"]')?.addEventListener('click',()=>show(index+1));
+  delete stage.dataset.swipeBound;
   const img=stage.querySelector('.animal-photo');
+  if(img) delete img.dataset.swipeBound;
+  const open=()=>openPhotoLightbox(photos.map(p=>({...p,alt:animal.display})), index, animal.display);
+  bindPhotoSwipe(stage,{
+    onSwipe:delta=>{if(photos.length>1) show(index+delta);},
+    onTap:e=>{if(e.target.closest('.animal-photo')) open();}
+  });
   if(img){
-    const open=()=>openPhotoLightbox(photos.map(p=>({...p,alt:animal.display})), index, animal.display);
-    img.onclick=e=>{e.stopPropagation();open();};
     img.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};
   }
   show(0);

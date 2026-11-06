@@ -119,3 +119,5 @@ body.lightbox-open{overflow:hidden}
   .photo-lightbox-nav.prev{grid-row:3;justify-self:start}
   .photo-lightbox-nav.next{grid-row:3;justify-self:end;grid-column:1}
 }
+.photo-carousel,.photo-lightbox-frame,.photo-lightbox-frame img{touch-action:pan-y}
+.photo-carousel{cursor:grab}
