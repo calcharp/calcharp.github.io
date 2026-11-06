@@ -299,7 +299,7 @@ class AnimalStore {
     return '('+node.children.map(child=>this.newickOf(child)).join(',')+')';
   }
   chronogramAges(newick){
-    const dated=collapseUnary(parseNewick(newick));
+    const dated=collapseUnary(typeof newick==='string'?parseNewick(newick):newick);
     if(!dated) return null;
     const height=node=>{
       if(!node.children){node.age=0;return 0;}
@@ -307,17 +307,163 @@ class AnimalStore {
       node.age=Math.max(...node.children.map(child=>(Number.isFinite(child.length)?child.length:0)+child.age));
       return node.age;
     };
-    const tipNames=node=>node.children?node.children.flatMap(tipNames):[String(node.label||node.name||'').toLowerCase()];
     height(dated);
     if(!(dated.age>0)) return null;
-    const heights=new Map();
-    const walk=node=>{
-      const names=tipNames(node).filter(Boolean).sort();
-      if(names.length) heights.set(names.join('|'), node.age||0);
-      if(node.children) node.children.forEach(walk);
+    return {crown:dated.age,root:dated};
+  }
+  // Keep only tips we need so TT6 (25k tips) stays fast on iPads.
+  pruneChronogram(root,wanted){
+    const need=wanted instanceof Set?wanted:new Set(wanted||[]);
+    if(!root||need.size<2) return null;
+    const norm=name=>String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
+    const hit=name=>{
+      const full=norm(name); if(!full) return false;
+      if(need.has(full)) return true;
+      const bin=full.split(' ').slice(0,2).join(' ');
+      return bin!==full&&need.has(bin);
     };
-    walk(dated);
-    return {crown:dated.age,heights,root:dated};
+    const walk=node=>{
+      if(!node?.children) return hit(node.label||node.name)?{name:node.name,label:node.label||node.name,length:node.length}:null;
+      const kids=node.children.map(walk).filter(Boolean);
+      if(!kids.length) return null;
+      if(kids.length===1){
+        const child=kids[0];
+        if(Number.isFinite(node.length)) child.length=(Number.isFinite(child.length)?child.length:0)+node.length;
+        return child;
+      }
+      return {name:node.name,label:node.label,length:node.length,children:kids};
+    };
+    return walk(root);
+  }
+  chronogramTipSet(newick){
+    const set=new Set();
+    const text=String(newick||'');
+    // Quoted labels first, then bare tip tokens before branch lengths.
+    for(const match of text.matchAll(/'([^']+)'\s*:/g)) set.add(match[1].replace(/_/g,' ').toLowerCase());
+    for(const match of text.matchAll(/([A-Za-z_][A-Za-z0-9_.-]*)\s*:/g)){
+      const tip=match[1];
+      if(!/^n\d+$/i.test(tip)) set.add(tip.replace(/_/g,' ').toLowerCase());
+    }
+    return set;
+  }
+  async ensureChronogramEntry(entry){
+    if(!entry||entry._loaded) return entry;
+    if(!entry.newick&&entry.file){
+      try{
+        const response=await fetch(entry.file);
+        if(response.ok) entry.newick=await response.text();
+      }catch{}
+    }
+    entry.tipSet=this.chronogramTipSet(entry.newick);
+    entry.genusIndex=this.genusIndexFromTips(entry.tipSet);
+    entry._loaded=true;
+    return entry;
+  }
+  genusIndexFromTips(tipSet){
+    const index=new Map();
+    for(const tip of tipSet||[]){
+      const genus=String(tip).split(' ')[0];
+      if(!genus) continue;
+      const list=index.get(genus);
+      if(list) list.push(tip);
+      else index.set(genus,[tip]);
+    }
+    return index;
+  }
+  addDatingAlias(aliasMap,from,to){
+    const key=String(from||'').toLowerCase().replace(/_/g,' ').trim();
+    const tip=String(to||'').toLowerCase().replace(/_/g,' ').trim();
+    if(!key||!tip) return;
+    const list=aliasMap.get(key)||[];
+    if(!list.some(item=>String(item).toLowerCase()===tip)) list.push(tip);
+    aliasMap.set(key,list);
+  }
+  matchTipInSet(name,tipSet,aliasMap=new Map()){
+    if(!tipSet?.size) return null;
+    const norm=value=>String(value||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
+    const candidates=[];
+    const push=value=>{const n=norm(value); if(n&&!candidates.includes(n)) candidates.push(n);};
+    push(name); push(dateQueryName(name));
+    for(const alias of aliasMap.get(norm(name))||[]) push(alias);
+    for(const alias of aliasMap.get(norm(dateQueryName(name)))||[]) push(alias);
+    for(const cand of candidates){
+      if(tipSet.has(cand)) return cand;
+      const bin=cand.split(' ').slice(0,2).join(' ');
+      if(bin&&tipSet.has(bin)) return bin;
+    }
+    return null;
+  }
+  genusProxyTip(name,tipSet,genusIndex){
+    const bin=(canonicalBinomial(dateQueryName(name)||name)||dateQueryName(name)||'').toLowerCase();
+    if(!bin||!tipSet?.size) return null;
+    if(tipSet.has(bin)) return bin;
+    const genus=bin.split(' ')[0];
+    const epi=bin.split(' ')[1]||'';
+    const pool=genusIndex?.get(genus)||[];
+    if(!pool.length){
+      // Slow path: scan tip set once for this genus.
+      for(const tip of tipSet){
+        if(tip.startsWith(genus+' ')) pool.push(tip);
+      }
+    }
+    if(!pool.length) return null;
+    return pool.find(tip=>tip.split(' ')[1]===epi)||pool[0];
+  }
+  async openTreeNameHints(names){
+    const queries=[...new Set((names||[]).map(name=>dateQueryName(name)||String(name||'').trim()).filter(Boolean))];
+    if(!queries.length) return new Map();
+    try{
+      const data=await this.post('https://api.opentreeoflife.org/v3/tnrs/match_names',{
+        names:queries,
+        context_name:'All life',
+        do_approximate_matching:true
+      });
+      const out=new Map();
+      for(const result of data.results||[]){
+        const hints=[];
+        const add=value=>{
+          const tip=String(value||'').replace(/_/g,' ').trim();
+          if(!tip) return;
+          const bin=canonicalBinomial(tip)||tip;
+          if(bin&&!hints.some(item=>item.toLowerCase()===bin.toLowerCase())) hints.push(bin);
+        };
+        for(const match of result.matches||[]){
+          const taxon=match.taxon||{};
+          add(taxon.unique_name); add(taxon.name);
+          for(const syn of taxon.synonyms||[]) add(syn);
+        }
+        if(hints.length) out.set(String(result.name||'').toLowerCase(),hints);
+      }
+      return out;
+    }catch{return new Map();}
+  }
+  async expandChronogramAliases(names,aliasMap,tipSet,genusIndex,{openTree=true}={}){
+    const missing=[];
+    for(const name of names||[]){
+      if(!this.matchTipInSet(name,tipSet,aliasMap)) missing.push(name);
+    }
+    if(!missing.length) return aliasMap;
+    // Open Tree approximate TNRS / synonyms → map onto chronogram tips.
+    if(openTree){
+      const hints=await this.openTreeNameHints(missing);
+      for(const name of missing){
+        const key=(dateQueryName(name)||name).toLowerCase();
+        for(const hint of hints.get(key)||hints.get(String(name).toLowerCase())||[]){
+          this.addDatingAlias(aliasMap,name,hint);
+          this.addDatingAlias(aliasMap,dateQueryName(name),hint);
+          if(tipSet.has(hint.toLowerCase())||tipSet.has((canonicalBinomial(hint)||'').toLowerCase())) break;
+        }
+      }
+    }
+    // Genus proxy: date via a congener present in the packaged tree (offline-safe).
+    for(const name of missing){
+      if(this.matchTipInSet(name,tipSet,aliasMap)) continue;
+      const proxy=this.genusProxyTip(name,tipSet,genusIndex);
+      if(!proxy) continue;
+      this.addDatingAlias(aliasMap,name,proxy);
+      this.addDatingAlias(aliasMap,dateQueryName(name),proxy);
+    }
+    return aliasMap;
   }
   datingTree(node){
     if(!node) return null;
@@ -546,17 +692,50 @@ class AnimalStore {
       const data=await this.json('chronograms/catalog.json');
       this.chronoCatalog=data&&Array.isArray(data.trees)?data:{trees:[]};
     }catch{this.chronoCatalog={trees:[]};}
+    if(!this.chronoTipSet){
+      try{
+        const tips=await this.json('chronograms/tips.json');
+        if(Array.isArray(tips)){
+          this.chronoTipSet=new Set(tips.map(t=>String(t).toLowerCase()));
+          this.chronoGenusIndex=this.genusIndexFromTips(this.chronoTipSet);
+        }
+      }catch{}
+    }
     return this.chronoCatalog;
   }
   async staticChronogramDates(names,aliasMap=new Map()){
     const tips=[...new Set((names||[]).map(dateQueryName).filter(Boolean))];
     if(tips.length<2) return null;
     const catalog=await this.loadChronogramCatalog();
+    // Prefer a loaded tip universe for Open Tree / genus proxies before picking a tree.
+    let universe=this.chronoTipSet;
+    let genusIndex=this.chronoGenusIndex;
+    if(!universe?.size){
+      for(const entry of catalog.trees||[]){
+        await this.ensureChronogramEntry(entry);
+        if(entry.tipSet?.size>(universe?.size||0)){universe=entry.tipSet;genusIndex=entry.genusIndex;}
+      }
+    }
+    if(universe?.size) await this.expandChronogramAliases(tips,aliasMap,universe,genusIndex,{openTree:true});
     const chosen=tips.map(name=>({tip:name.toLowerCase(),raw:name,query:name,aliases:[name,...(aliasMap.get(name.toLowerCase())||[])]}));
     let best=null;
     for(const entry of catalog.trees||[]){
-      if(!entry?.newick) continue;
-      const dated=this.chronogramAges(entry.newick);
+      await this.ensureChronogramEntry(entry);
+      if(!entry?.newick||!entry.tipSet?.size) continue;
+      // Tree-local genus proxies only (Open Tree already ran once against the tip universe).
+      await this.expandChronogramAliases(tips,aliasMap,entry.tipSet,entry.genusIndex,{openTree:false});
+      const matched=new Set();
+      for(const item of chosen){
+        const hit=this.matchTipInSet(item.query,entry.tipSet,aliasMap);
+        if(hit) matched.add(hit);
+      }
+      if(matched.size<2) continue;
+      // Prefer more tip hits; for ties prefer smaller / newer TT6 packs over ToL2015.
+      const score=matched.size*1e9-(entry.tipCount||entry.tipSet.size||0);
+      if(best&&score<=best.score) continue;
+      if(!entry.parsed) entry.parsed=collapseUnary(parseNewick(entry.newick));
+      const pruned=this.pruneChronogram(entry.parsed,matched);
+      const dated=this.chronogramAges(pruned||entry.parsed);
       if(!dated) continue;
       dated.aliases=aliasMap;
       dated.source='catalog';
@@ -564,7 +743,7 @@ class AnimalStore {
       const {coverage}=this.chronogramCoverage(dated,chosen,aliasMap);
       const hits=Math.round(coverage*chosen.length);
       if(hits<2) continue;
-      if(!best||hits>best.hits||(hits===best.hits&&coverage>best.coverage)) best={dated,hits,coverage};
+      best={dated,hits,coverage,score};
     }
     return best?.dated||null;
   }
@@ -785,15 +964,7 @@ class AnimalStore {
     if(results.length<5)return null;
     // Prefer species present in packaged chronograms so GitHub Pages / iPad draws get Ma ages.
     await this.loadChronogramCatalog();
-    const datedTips=this.chronoTipSet||(this.chronoTipSet=(()=>{
-      const set=new Set();
-      for(const tree of (this.chronoCatalog?.trees||[])){
-        for(const tip of String(tree.newick||'').match(/[A-Za-z][^():,]*(?=:)/g)||[]){
-          if(!/^n\d+$/i.test(tip)) set.add(tip.replace(/_/g,' ').toLowerCase());
-        }
-      }
-      return set;
-    })());
+    const datedTips=this.chronoTipSet||(this.chronoTipSet=new Set());
     this.shuffle(results);
     results.sort((a,b)=>{
       const aHit=datedTips.has(String(a.name||'').toLowerCase())?0:1;
