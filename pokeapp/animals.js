@@ -506,7 +506,7 @@ class AnimalStore {
     }
     tree.dated=!!tree.keepAge;
     tree.dateCoverage=tipMap.size/tips.length;
-    tree.dateSource='datelife';
+    tree.dateSource=dated.source==='catalog'?'catalog':'datelife';
     return tree.age>0&&tree.dated;
   }
   chronogramCoverage(dated,chosen,aliasMap){
@@ -524,13 +524,49 @@ class AnimalStore {
     const missing=chosen.filter(entry=>!hit(entry.query)&&!hit(entry.tip)&&!hit(entry.raw));
     return {coverage:(chosen.length-missing.length)/chosen.length,missing,present};
   }
+  datingApiAvailable(){
+    // Local serve.py hosts /api/*; GitHub Pages does not.
+    const host=String(globalThis.location?.hostname||'');
+    return host==='127.0.0.1'||host==='localhost'||host.endsWith('.local');
+  }
   async fetchChronogram(queryTips){
+    if(!this.datingApiAvailable()) return null;
     const unique=[...new Set((queryTips||[]).map(name=>dateQueryName(name)).filter(Boolean))];
     if(unique.length<2) return null;
-    const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:'('+unique.map(name=>String(name).replace(/\s+/g,'_')).join(',')+');'})});
-    if(!response.ok) return null;
-    const payload=await response.json();
-    return payload.newick?this.chronogramAges(payload.newick):null;
+    try{
+      const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:'('+unique.map(name=>String(name).replace(/\s+/g,'_')).join(',')+');'})});
+      if(!response.ok) return null;
+      const payload=await response.json();
+      return payload.newick?this.chronogramAges(payload.newick):null;
+    }catch{return null;}
+  }
+  async loadChronogramCatalog(){
+    if(this.chronoCatalog) return this.chronoCatalog;
+    try{
+      const data=await this.json('chronograms/catalog.json');
+      this.chronoCatalog=data&&Array.isArray(data.trees)?data:{trees:[]};
+    }catch{this.chronoCatalog={trees:[]};}
+    return this.chronoCatalog;
+  }
+  async staticChronogramDates(names,aliasMap=new Map()){
+    const tips=[...new Set((names||[]).map(dateQueryName).filter(Boolean))];
+    if(tips.length<2) return null;
+    const catalog=await this.loadChronogramCatalog();
+    const chosen=tips.map(name=>({tip:name.toLowerCase(),raw:name,query:name,aliases:[name,...(aliasMap.get(name.toLowerCase())||[])]}));
+    let best=null;
+    for(const entry of catalog.trees||[]){
+      if(!entry?.newick) continue;
+      const dated=this.chronogramAges(entry.newick);
+      if(!dated) continue;
+      dated.aliases=aliasMap;
+      dated.source='catalog';
+      dated.catalogId=entry.id;
+      const {coverage}=this.chronogramCoverage(dated,chosen,aliasMap);
+      const hits=Math.round(coverage*chosen.length);
+      if(hits<2) continue;
+      if(!best||hits>best.hits||(hits===best.hits&&coverage>best.coverage)) best={dated,hits,coverage};
+    }
+    return best?.dated||null;
   }
   async refineChronogram(candidates,aliasMap){
     const chosen=candidates.map(entry=>({...entry,index:0,query:entry.aliases[0]||dateQueryName(entry.raw)}));
@@ -575,16 +611,15 @@ class AnimalStore {
     if(this.dateCache.has(key)) return this.dateCache.get(key);
     const promise=(async()=>{
       try{
-        // Fast path: primary tip names only. Most vertebrate packs date without GBIF.
         const primary=names.map(name=>{
           const query=dateQueryName(name);
           return {tip:query.toLowerCase(),raw:name,aliases:[query]};
         }).filter(entry=>entry.aliases[0]);
         let aliasMap=new Map();
+        // 1) Live DateLife via serve.py (skipped on GitHub Pages).
         let dated=await this.refineChronogram(primary,aliasMap);
         let coverage=dated?this.chronogramCoverage(dated,primary.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage:0;
-        // Slow path: GBIF synonyms for renamed taxa (Sciurocheirus→Galago, etc.).
-        if(!dated||coverage<0.5){
+        if(this.datingApiAvailable()&&(!dated||coverage<0.5)){
           const syn=await this.datingAliases(tree);
           aliasMap=syn.aliasMap;
           const withSyn=await this.refineChronogram(syn.candidates,aliasMap);
@@ -592,19 +627,22 @@ class AnimalStore {
           if(withSyn&&(!dated||synCov>coverage)){dated=withSyn;coverage=synCov;}
           if(dated) dated.aliases=aliasMap;
         }
-        // Last resort DateLife: largest tip subset that returns a chronogram.
-        if(!dated&&primary.length>3){
-          const order=[...primary];
-          this.shuffle(order);
-          for(const size of [Math.min(5,primary.length-1),3]){
-            const subset=order.slice(0,size);
-            if(subset.length<2) continue;
-            const got=await this.refineChronogram(subset,aliasMap);
-            if(got){got.aliases=aliasMap;dated=got;coverage=this.chronogramCoverage(got,subset.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage;break;}
-          }
+        if(dated&&coverage>=0.5) return dated;
+        // 2) Packaged chronograms — works on GitHub Pages / iPads with no API server.
+        if(!aliasMap.size){
+          try{
+            const syn=await this.datingAliases(tree);
+            aliasMap=syn.aliasMap;
+          }catch{}
+        }
+        const packed=await this.staticChronogramDates(names,aliasMap);
+        if(packed){
+          const packCov=this.chronogramCoverage(packed,primary.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage;
+          if(!dated||packCov>coverage){dated=packed;coverage=packCov;}
+          if(dated) dated.aliases=aliasMap;
         }
         if(dated&&coverage>=0.5) return dated;
-        // TimeTree fallback (local serve.py proxy): pairwise MRCA ages on the Open Tree topology.
+        // 3) Live TimeTree via serve.py proxy.
         const timeTree=await this.timeTreeDates(names);
         if(timeTree) return timeTree;
         return dated;
@@ -615,6 +653,7 @@ class AnimalStore {
     return promise;
   }
   async timeTreeDates(names){
+    if(!this.datingApiAvailable()) return null;
     const tips=[...new Set((names||[]).map(dateQueryName).filter(Boolean))];
     if(tips.length<2) return null;
     try{
@@ -744,7 +783,23 @@ class AnimalStore {
     let results=this.usableSpecies(data.results);
     if(results.length<count&&page!==1){data=await this.taxonPage(node.id,1,perPage);results=this.usableSpecies(data.results);}
     if(results.length<5)return null;
+    // Prefer species present in packaged chronograms so GitHub Pages / iPad draws get Ma ages.
+    await this.loadChronogramCatalog();
+    const datedTips=this.chronoTipSet||(this.chronoTipSet=(()=>{
+      const set=new Set();
+      for(const tree of (this.chronoCatalog?.trees||[])){
+        for(const tip of String(tree.newick||'').match(/[A-Za-z][^():,]*(?=:)/g)||[]){
+          if(!/^n\d+$/i.test(tip)) set.add(tip.replace(/_/g,' ').toLowerCase());
+        }
+      }
+      return set;
+    })());
     this.shuffle(results);
+    results.sort((a,b)=>{
+      const aHit=datedTips.has(String(a.name||'').toLowerCase())?0:1;
+      const bHit=datedTips.has(String(b.name||'').toLowerCase())?0:1;
+      return aHit-bHit;
+    });
     const animals=results.slice(0,Math.min(results.length,count+8)).map(taxon=>{
       const existing=this.items.get(taxon.id);
       const animal=existing?.photo?existing:this.normalize(taxon);

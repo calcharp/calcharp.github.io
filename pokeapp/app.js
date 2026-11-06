@@ -277,11 +277,11 @@ async function refreshAnimalTree(){
 }
 function showAnimalError(message){announce(message);$('treeHint').textContent=message;const panel=$('picker').open?$('pickerCount'):null;if(panel)panel.textContent=message;}
 async function dateAnimalTree(request,tree){
-  if(!tree.dated) $('treeHint').textContent='Looking up published ages (DateLife, then TimeTree)…';
+  if(!tree.dated) $('treeHint').textContent='Looking up published ages…';
   const dated=await animalStore.dateTree(tree);
   if(request!==animalTreeRequest||speciesMode!=='animals') return;
   if(!dated){
-    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No DateLife/TimeTree ages for these tips (is serve.py running?). Showing synthetic time.':'Tap a photo to meet an animal. No DateLife/TimeTree ages for these tips (is serve.py running?). Showing synthetic time.';
+    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No published ages matched these tips, so time is synthetic.':'Tap a photo to meet an animal. No published ages matched these tips, so time is synthetic.';
     return;
   }
   const applied=dated.source==='timetree'?animalStore.applyTimeTreeDates(tree,dated):animalStore.applyDates(tree,dated);
@@ -289,13 +289,14 @@ async function dateAnimalTree(request,tree){
     if(!tree.dated) $('treeHint').textContent='Published ages came back, but they could not be matched to this tree. Showing synthetic time.';
     return;
   }
+  if(dated.source==='catalog') tree.dateSource='catalog';
   // Dated ages win over taxonomy-only layout.
   treeView.taxonomy=false;
   if(tree.taxonomySource) delete tree.taxonomySource;
   treeView.setData(data);renderActive(false);
   const coverage=tree.dateCoverage;
   const partial=coverage<0.999;
-  const source=tree.dateSource==='timetree'?'TimeTree':'DateLife';
+  const source=tree.dateSource==='timetree'?'TimeTree':tree.dateSource==='catalog'?'DateLife':'DateLife';
   document.querySelector('#treePanel .view-foot').innerHTML=partial?`<span>Open Tree of Life · ${source} ages where available</span><span>Earlier → Now · million years</span>`:`<span>Open Tree of Life · ${source} ages</span><span>Earlier → Now · million years</span>`;
   $('treeHint').textContent=partial
     ?`Branch lengths use ${source} ages for ${Math.round(coverage*100)}% of these tips (about ${Math.round(tree.age)} Ma at the root). Species missing published ages stay in place with short fillers.`
