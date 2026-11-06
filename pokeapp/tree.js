@@ -27,7 +27,16 @@ function stampTree(node, index = new Map()) {
 function pruneTree(node, selected) {
   if (!node.children) return selected.has(node.name)?{...node}:null;
   const children=node.children.map(c=>pruneTree(c,selected)).filter(Boolean);
-  return !children.length?null:children.length===1?children[0]:{...node,children};
+  if(!children.length) return null;
+  if(children.length===1){
+    const child=children[0];
+    // Preserve dating when unary ancestors collapse away during display pruning.
+    if((node.dated||node.keepAge)&&child.children){
+      return {...child,dated:child.dated||node.dated,keepAge:child.keepAge||node.keepAge,age:child.keepAge?child.age:Math.max(child.age||0,node.age||0),dateSource:child.dateSource||node.dateSource};
+    }
+    return child;
+  }
+  return {...node,children};
 }
 // Choose a complete small clade, never an unrelated sample of tips.
 function randomSubclade(root, current = new Set(), random = Math.random) {
@@ -104,8 +113,10 @@ class PokemonTree {
     const baseHeight=Math.max(stage[1],leaves.length*92+110);
     const w=circle?Math.max(780,leaves.length*146/Math.PI+320):Math.max(780,stage[0]/Math.max(.65,Math.min(1,stage[1]/baseHeight)));
     const h=circle?w:baseHeight;
-    const sourceAge=this.root.age||1, rootAge=root.age||1, tipX=w-365, start=55;
-    const dated=!!root.dated, scaleAge=dated?root.age:root.age/sourceAge;
+    const sourceAge=this.root.age||1, tipX=w-365, start=55;
+    const dated=!!(root.dated||this.root.dated);
+    const rootAge=Math.max(root.age||0, dated?0:1)||1;
+    const scaleAge=dated?rootAge:rootAge/sourceAge;
     const x=n=>start+(1-n.age/rootAge)*(tipX-start);
     this.axisInfo=(circle||this.taxonomy)?null:{start,end:tipX,age:scaleAge,dated};
     const cx=w/2,cy=h/2,radius=w/2-155;

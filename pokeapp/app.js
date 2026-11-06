@@ -27,9 +27,9 @@ const earth=new AnimalMap($('earthStage'),animalStore,common);
 function activeAtlas(){return speciesMode==='animals'?earth:atlas;}
 function announce(text){$('status').textContent=text;}
 function persist() {try{localStorage.setItem(speciesMode==='animals'?'animal-discovery-selection':'pokemon-phylogeny-selection',JSON.stringify([...selected]));}catch{}}
-function renderActive(reset=false) {if(!data)return;if(activeView==='tree')treeView.render(selected,reset);else activeAtlas().render(selected,reset);}
+function renderActive(reset=false) {if(!data)return;if(activeView==='tree')treeView.render(selected,reset);else activeAtlas().render(selected,reset);updateKeepButton();}
 function updateSelection(changedId) {
-  persist();$('selectionCount').textContent=selected.size;$('pickerSelected').textContent=selected.size;
+  persist();$('selectionCount').textContent=selected.size;$('pickerSelected').textContent=selected.size;updateKeepButton();
   if(changedId) document.querySelectorAll(`[data-pick-id="${changedId}"]`).forEach(button=>{
     const p=byId.get(changedId),isPicked=selected.has(p.name);button.setAttribute('aria-pressed',isPicked);button.setAttribute('aria-label',(isPicked?'Remove ':'Add ')+p.display);setPickMark(button,isPicked);
   });
@@ -199,6 +199,7 @@ for(const [id,shape] of [['branchShape','branch'],['circleShape','circle']]) $(i
   treeView.shape=shape;$('branchShape').setAttribute('aria-pressed',shape==='branch');$('circleShape').setAttribute('aria-pressed',shape==='circle');renderActive(true);
 };
 $('clearColors').onclick=()=>{treeView.clearColors();$('clearColors').hidden=true;};
+$('keepPicks').onclick=()=>keepOnlyPicks();
 $('treeIn').onclick=()=>treeView.viewport.zoom(1.3);$('treeOut').onclick=()=>treeView.viewport.zoom(1/1.3);$('treeFit').onclick=()=>treeView.viewport.fit();
 $('region').onchange=()=>atlas.setFocus($('region').value);$('mapIn').onclick=()=>activeAtlas().viewport.zoom(1.35);$('mapOut').onclick=()=>activeAtlas().viewport.zoom(1/1.35);$('mapFit').onclick=()=>activeAtlas().reset();
 $('mapPrev').onclick=()=>atlas.changePage(-1);$('mapNext').onclick=()=>atlas.changePage(1);
@@ -276,15 +277,16 @@ async function refreshAnimalTree(){
 }
 function showAnimalError(message){announce(message);$('treeHint').textContent=message;const panel=$('picker').open?$('pickerCount'):null;if(panel)panel.textContent=message;}
 async function dateAnimalTree(request,tree){
-  if(!tree.dated) $('treeHint').textContent='Looking up published ages from DateLife…';
+  if(!tree.dated) $('treeHint').textContent='Looking up published ages (DateLife, then TimeTree)…';
   const dated=await animalStore.dateTree(tree);
   if(request!==animalTreeRequest||speciesMode!=='animals') return;
   if(!dated){
-    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No published chronogram covered enough of these tips, so time is synthetic.':'Tap a photo to meet an animal. Tap a dot to color its branch. No published chronogram covered enough of these tips, so time is synthetic.';
+    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No DateLife/TimeTree ages for these tips (is serve.py running?). Showing synthetic time.':'Tap a photo to meet an animal. No DateLife/TimeTree ages for these tips (is serve.py running?). Showing synthetic time.';
     return;
   }
-  if(!animalStore.applyDates(tree,dated)){
-    if(!tree.dated) $('treeHint').textContent='DateLife returned ages, but they could not be matched to this tree. Showing synthetic time.';
+  const applied=dated.source==='timetree'?animalStore.applyTimeTreeDates(tree,dated):animalStore.applyDates(tree,dated);
+  if(!applied){
+    if(!tree.dated) $('treeHint').textContent='Published ages came back, but they could not be matched to this tree. Showing synthetic time.';
     return;
   }
   // Dated ages win over taxonomy-only layout.
@@ -293,10 +295,28 @@ async function dateAnimalTree(request,tree){
   treeView.setData(data);renderActive(false);
   const coverage=tree.dateCoverage;
   const partial=coverage<0.999;
-  document.querySelector('#treePanel .view-foot').innerHTML=partial?'<span>Open Tree of Life · DateLife ages where available</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>';
+  const source=tree.dateSource==='timetree'?'TimeTree':'DateLife';
+  document.querySelector('#treePanel .view-foot').innerHTML=partial?`<span>Open Tree of Life · ${source} ages where available</span><span>Earlier → Now · million years</span>`:`<span>Open Tree of Life · ${source} ages</span><span>Earlier → Now · million years</span>`;
   $('treeHint').textContent=partial
-    ?`Branch lengths use DateLife ages for ${Math.round(coverage*100)}% of these tips (about ${Math.round(tree.age)} Ma at the root). Species missing from published chronograms stay in place with short fillers.`
-    :`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(tree.age)} million years ago.`;
+    ?`Branch lengths use ${source} ages for ${Math.round(coverage*100)}% of these tips (about ${Math.round(tree.age)} Ma at the root). Species missing published ages stay in place with short fillers.`
+    :`Branch lengths are ${source} ages, in millions of years. The oldest split shown is about ${Math.round(tree.age)} million years ago.`;
+}
+function keepOnlyPicks(){
+  if(!data?.tree||selected.size<1){announce('Pick at least one species first.');return;}
+  const pruned=pruneTree(data.tree,selected);
+  if(!pruned){announce('Nothing left to keep.');return;}
+  data={...data,tree:pruned};
+  treeView.clades.clear();$('clearColors').hidden=true;
+  treeView.setData(data);persist();renderActive(true);
+  updateKeepButton();
+  announce(`Dropped everything except ${selected.size} picked ${noun()}.`);
+  if(speciesMode==='animals'&&selected.size>=2&&data.tree?.children) dateAnimalTree(++animalTreeRequest,data.tree);
+}
+function updateKeepButton(){
+  const button=$('keepPicks');
+  if(!button||!data?.tree) return;
+  const tipCount=treeView.root?.tips?.length||0;
+  button.hidden=selected.size<1||tipCount<=selected.size;
 }
 async function switchMode(mode){
   if(!pokemonData)return;if(mode===speciesMode){modeRequest++;return;}const request=++modeRequest;animalSearchRequest++;closePreviews();

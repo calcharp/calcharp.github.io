@@ -506,6 +506,7 @@ class AnimalStore {
     }
     tree.dated=!!tree.keepAge;
     tree.dateCoverage=tipMap.size/tips.length;
+    tree.dateSource='datelife';
     return tree.age>0&&tree.dated;
   }
   chronogramCoverage(dated,chosen,aliasMap){
@@ -591,7 +592,7 @@ class AnimalStore {
           if(withSyn&&(!dated||synCov>coverage)){dated=withSyn;coverage=synCov;}
           if(dated) dated.aliases=aliasMap;
         }
-        // Last resort: date the largest tip subset DateLife will return.
+        // Last resort DateLife: largest tip subset that returns a chronogram.
         if(!dated&&primary.length>3){
           const order=[...primary];
           this.shuffle(order);
@@ -599,15 +600,79 @@ class AnimalStore {
             const subset=order.slice(0,size);
             if(subset.length<2) continue;
             const got=await this.refineChronogram(subset,aliasMap);
-            if(got){got.aliases=aliasMap;return got;}
+            if(got){got.aliases=aliasMap;dated=got;coverage=this.chronogramCoverage(got,subset.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage;break;}
           }
         }
+        if(dated&&coverage>=0.5) return dated;
+        // TimeTree fallback (local serve.py proxy): pairwise MRCA ages on the Open Tree topology.
+        const timeTree=await this.timeTreeDates(names);
+        if(timeTree) return timeTree;
         return dated;
       }catch{return null;}
     })();
     this.dateCache.set(key,promise);
     promise.then(result=>{if(!result) this.dateCache.delete(key);});
     return promise;
+  }
+  async timeTreeDates(names){
+    const tips=[...new Set((names||[]).map(dateQueryName).filter(Boolean))];
+    if(tips.length<2) return null;
+    try{
+      const response=await fetch('/api/timetree',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({names:tips})});
+      if(!response.ok) return null;
+      const payload=await response.json();
+      const pairs=payload?.pairs||{};
+      const ages=[...Object.values(pairs)].map(Number).filter(age=>age>0);
+      if(ages.length<1) return null;
+      return {source:'timetree',pairs,crown:Math.max(...ages),unit:payload.unit||'Ma'};
+    }catch{return null;}
+  }
+  applyTimeTreeDates(tree,dated){
+    if(!tree||!dated?.pairs) return false;
+    const norm=name=>String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
+    const pairLookup=new Map();
+    for(const [key,value] of Object.entries(dated.pairs||{})){
+      const age=Number(value); if(!(age>0)) continue;
+      const parts=String(key).split('|'); if(parts.length!==2) continue;
+      pairLookup.set(norm(parts[0])+'|'+norm(parts[1]),age);
+    }
+    const pairAge=(a,b)=>{
+      const left=norm(dateQueryName(a)), right=norm(dateQueryName(b));
+      return pairLookup.get(left+'|'+right)||pairLookup.get(right+'|'+left)||null;
+    };
+    const tipNames=node=>node.children?node.children.flatMap(tipNames):[node.ottName||node.name||node.label||''];
+    const nodes=[];
+    const collect=node=>{nodes.push(node);if(node.children)node.children.forEach(collect);};
+    collect(tree);
+    let datedTips=0;
+    for(const node of nodes){
+      const names=[...new Set(tipNames(node).map(dateQueryName).filter(Boolean))];
+      if(names.length<=1){node.age=0;node.keepAge=true;node.dated=true;if(names.length===1) datedTips+=1;continue;}
+      let age=null;
+      for(let i=0;i<names.length;i++){
+        for(let j=i+1;j<names.length;j++){
+          const hit=pairAge(names[i],names[j]);
+          if(hit!=null) age=age==null?hit:Math.max(age,hit);
+        }
+      }
+      if(!(age>0)) continue;
+      node.age=age;node.keepAge=true;node.dated=true;
+    }
+    if(!tree.keepAge){
+      const ages=nodes.filter(node=>node.keepAge).map(node=>node.age||0);
+      if(ages.length){tree.age=Math.max(dated.crown||0,...ages);tree.keepAge=true;tree.dated=true;}
+    }
+    const named=[...new Set(tipNames(tree).map(dateQueryName).filter(Boolean))];
+    let covered=0;
+    for(let i=0;i<named.length;i++){
+      for(let j=i+1;j<named.length;j++){
+        if(pairAge(named[i],named[j])!=null){covered+=1;break;}
+      }
+    }
+    tree.dated=!!tree.keepAge;
+    tree.dateCoverage=named.length?covered/named.length:0;
+    tree.dateSource='timetree';
+    return tree.age>0&&tree.dated;
   }
   taxonPage(id,page,perPage){const params=new URLSearchParams({taxon_id:String(id),rank:'species',is_active:'true',per_page:String(perPage),page:String(page),order_by:'observations_count',order:'desc',locale:'en'});return this.json('https://api.inaturalist.org/v1/taxa?'+params);}
   // Chronogram databases are dense for vertebrates, sparse for most insect families.
