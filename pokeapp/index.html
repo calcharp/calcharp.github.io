@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f267b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Explore Pokémon and real animals with photos, classification trees, and maps. Built for Virginia Tech Science Day.">
+  <title>Discovery Lab · Pokémon & Real Animals</title>
+  <link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="lab.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <nav class="app-bar" aria-label="Discovery Lab">
+      <div class="mode-switch" role="group" aria-label="Species mode"><button id="pokemonMode" aria-pressed="true">Pokémon</button><button id="animalMode" aria-pressed="false">Real animals</button></div>
+      <div class="view-tabs" role="tablist" aria-label="Explore">
+        <button id="treeTab" role="tab" aria-selected="true" aria-controls="treePanel">Family tree</button>
+        <button id="mapTab" role="tab" aria-selected="false" aria-controls="mapPanel">World map</button>
+      </div>
+      <div class="quick-search" id="quickSearchWrap">
+        <span aria-hidden="true" class="search-symbol">⌕</span>
+        <input id="quickSearch" type="search" placeholder="Find a Pokémon…" autocomplete="off" aria-label="Find a Pokémon" aria-expanded="false" aria-controls="previews">
+        <div class="previews" id="previews" hidden></div>
+      </div>
+      <button class="top-action" id="randomizeTop">Randomize</button><button class="top-action" id="resetTop">Reset</button><label class="sprite-size"><span id="sizeLabel">Sprites</span> <input id="spriteSize" aria-label="Sprite size" type="range" min="50" max="150" value="100"></label><button class="choose-button" id="choose"><span id="chooseLabel">Choose Pokémon</span> <span id="selectionCount">0</span></button>
+      <button class="info-button" id="about" aria-label="About this tree and sources">i</button>
+    </nav>
+    <main>
+      <section id="treePanel" class="explorer" role="tabpanel" aria-labelledby="treeTab">
+        <div class="view-bar">
+          <button class="quiet-button" id="tipBars" aria-pressed="true">Tip bars</button><div class="shape-buttons" role="group" aria-label="Tree shape">
+            <button id="branchShape" class="shape-button" aria-label="Branching tree" aria-pressed="true" title="Branching tree">
+              <svg width="36" height="30" viewBox="0 0 36 30" aria-hidden="true"><path d="M3 15h7M10 6v18M10 6h9M10 24h9M19 3v6M19 21v6M19 3h13M19 9h13M19 21h13M19 27h13"/><circle cx="32" cy="3" r="2"/><circle cx="32" cy="9" r="2"/><circle cx="32" cy="21" r="2"/><circle cx="32" cy="27" r="2"/></svg>
+            </button>
+            <button id="circleShape" class="shape-button" aria-label="Circular tree" aria-pressed="false" title="Circular tree">
+              <svg width="36" height="30" viewBox="0 0 36 30" aria-hidden="true"><path d="M18 15V8M18 8L9 3M18 8l9-5M18 15l-6 4M12 19l-8-2M12 19l-1 8M18 15l6 4M24 19l8-2M24 19l1 8"/><circle cx="9" cy="3" r="2"/><circle cx="27" cy="3" r="2"/><circle cx="4" cy="17" r="2"/><circle cx="11" cy="27" r="2"/><circle cx="32" cy="17" r="2"/><circle cx="25" cy="27" r="2"/></svg>
+            </button>
+          </div>
+          <p class="view-hint" id="treeHint">Tap a Pokémon to meet it. Tap a dot to color its family.</p>
+          <button id="clearColors" class="quiet-button" hidden>Clear colors</button>
+          <div class="zoom-buttons" role="group" aria-label="Tree zoom">
+            <button id="treeOut" aria-label="Zoom out tree">−</button><button id="treeFit">Fit</button><button id="treeIn" aria-label="Zoom in tree">+</button>
+          </div>
+        </div>
+        <div id="treeStage" class="stage tree-stage" aria-label="Interactive family tree"></div>
+        <footer class="view-foot"><span>Model family tree · added relationships are estimates</span><span>Earlier → Now · relative time</span></footer>
+      </section>
+      <section id="mapPanel" class="explorer" role="tabpanel" aria-labelledby="mapTab" hidden>
+        <div class="view-bar map-bar">
+          <label class="region-control"><span class="sr-only">Choose a region</span><select id="region" aria-label="Choose a region"><option value="world">Whole world</option><option value="Kanto">Kanto</option><option value="Johto">Johto</option><option value="Hoenn">Hoenn</option><option value="Sinnoh">Sinnoh / Hisui</option><option value="Unova">Unova</option><option value="Kalos">Kalos</option><option value="Alola">Alola</option><option value="Galar">Galar</option><option value="Paldea">Paldea</option></select></label>
+          <p class="view-hint">Drag to explore · pinch to zoom</p>
+          <div id="mapPager" class="map-pager" hidden><button id="mapPrev" aria-label="Previous Pokémon">‹</button><span id="mapPage"></span><button id="mapNext" aria-label="Next Pokémon">›</button></div>
+          <div class="zoom-buttons" role="group" aria-label="Map zoom"><button id="mapOut" aria-label="Zoom out map">−</button><button id="mapFit">Reset</button><button id="mapIn" aria-label="Zoom in map">+</button></div>
+        </div>
+        <div id="mapStage" class="stage map-stage" aria-label="Interactive Pokémon world map"></div><div id="earthStage" class="stage earth-stage" aria-label="Animal sightings on Earth" hidden></div>
+        <footer class="view-foot"><span>Grouped by debut generation · fan map</span><a href="https://www.deviantart.com/mossen1998/art/Pokemon-World-Map-as-of-2023-kitakami-988993196" target="_blank" rel="noopener">Map by MosseN1998 ↗</a></footer>
+      </section>
+    </main>
+    <div id="status" class="sr-only" role="status" aria-live="polite"></div>
+  </div>
+  <dialog id="picker" class="picker" aria-labelledby="pickerTitle">
+    <div class="picker-head"><div><h1 id="pickerTitle">Choose your Pokémon</h1><p>Tap a card to add it. Tap again to take it out.</p></div><button id="pickerDone" class="choose-button">Done <span id="pickerSelected">0</span></button></div>
+    <div class="picker-tools"><label class="picker-search"><span aria-hidden="true">⌕</span><input id="pickerSearch" type="search" placeholder="Search all 1,025 Pokémon…" aria-label="Search all Pokémon" autocomplete="off"></label><select id="pickerRegion" aria-label="Filter by region"><option value="">All regions</option></select><button id="pickedOnly" class="filter-button" aria-pressed="false">My picks</button></div>
+    <div class="picker-summary"><span id="pickerCount">1,025 Pokémon</span><div><button id="surprise" class="text-button">Surprise me!</button><button id="clearSelection" class="text-button">Clear picks</button></div></div>
+    <div id="pokemonGrid" class="pokemon-grid" role="group" aria-label="Species cards"></div><button id="moreAnimals" class="filter-button" hidden>Show more animals</button>
+  </dialog>
+  <aside id="pokemonDetail" class="pokemon-detail species-panel" aria-labelledby="detailTitle" hidden></aside>
+  <dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle">
+    <button class="close-button" data-close="aboutDialog" aria-label="Close about">×</button><p class="eyebrow">VIRGINIA TECH · SCIENCE DAY</p><h1 id="aboutTitle">Discovery Lab</h1><section id="animalAbout" hidden><h2>Real animals · Open Tree of Life</h2><p>Search animals by common or scientific name. Photos come from iNaturalist. Relationships come from the Open Tree of Life. Tap an animal for its photo credit and source links.</p><p>The tree is the Open Tree of Life pruned to the species you picked, so the order of splits stays the order from that tree. The drawing starts on a synthetic ultrametric scale. When this page is opened through serve.py, DateLife looks up published chronograms and, if they cover every species, replaces those lengths with ages in millions of years. The Open Tree split order stays in place. If no chronogram covers the set, the synthetic scale remains. A species is included only when its photo loads. Randomize draws a number from 5 to 10, skips groups with fewer species than that number, and picks that many species from one phylum, class, order, or family.</p><p>The world map shows up to 100 coordinate-checked GBIF records per species. These are a sample of recorded sightings, not a complete range or proof that a species is absent elsewhere. Records may be biased, historical, or include captive animals. iNaturalist supplies example photos; photos are not necessarily from the mapped GBIF records.</p><p>Starter taxonomy and sightings were cached on 4 November 2026; additional searches and sightings load online. GBIF name matching requires an exact species-level match; unmatched taxa stay in the tree with an unavailable map. Credits: <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist contributors</a>, <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF and its data publishers</a>, Esri and map contributors. Map record popups link to individual sources. <a href="https://www.gbif.org/terms" target="_blank" rel="noopener">GBIF terms</a>.</p></section><section id="pokemonAbout">
+    <p>Explore 1,025 species, from Bulbasaur to Pecharunt. Pokémon are imaginary, but asking how living things are related is real science!</p>
+    <h2>What does this tree show?</h2>
+    <p>This is an educational model. The original dataset contains 340 representatives from Generations I–V, not the whole Pokédex. It includes a 747-character matrix and analysis instructions, but no machine-readable tree. Our backbone is a new neighbor-joining reconstruction from that matrix’s Hamming distances; it is not the paper’s Bayesian tree.</p>
+    <p>The other 685 species have <strong>estimated placements</strong>. Missing members of represented game evolution families are attached at their family’s common ancestor. New families are attached beside the most similar archived representative, using types (45%), egg groups (30%), shape (20%), and habitat (5%, when known). Ties use the lowest Pokédex number. Family members form unresolved groups. These choices preserve all relationships among the original 340 tips, but they have not been tested as a biological phylogeny. Game evolution is a transformation, not speciation.</p>
+    <p>Every tip lines up with “Now.” Node ages use the maximum number of edges to a descendant tip, scaled so the full root is 1 and tips are 0. Subsets retain those ages. The root is arbitrary. This is an ultrametric drawing with <strong>synthetic relative time</strong>, not dates or measured divergence times.</p>
+    <h2>Maps, sprites & facts</h2>
+    <p>The existing <a href="https://www.deviantart.com/mossen1998/art/Pokemon-World-Map-as-of-2023-kitakami-988993196" target="_blank" rel="noopener">world map by MosseN1998</a> is an illustrative fan map. Pokémon are grouped by debut generation; positions within regions are for display, not encounter locations. Hisui additions appear with Sinnoh. All selected Pokémon appear together, spread around their regions.</p>
+    <p>All 1,025 sprites are existing images from <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener">PokéAPI</a>: original game sprites and matching Gen 5-style community sprites by Smogon contributors. Source image files are unchanged; the display fits around their transparent margins. No artwork was generated. Forms such as Mega Evolutions are not additional species and are not separate picker cards.</p>
+    <p>Species facts: <a href="https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv" target="_blank" rel="noopener">PokéAPI</a>. Short biology excerpts: <a href="https://bulbapedia.bulbagarden.net/" target="_blank" rel="noopener">Bulbapedia contributors</a>, credited on each card. Pokémon belongs to its respective rights holders. Selections stay in this browser.</p>
+    <p><a href="https://zenodo.org/records/61631" target="_blank" rel="noopener">Shelomi, Richards, Li & Okido (2012)</a>, “A Phylogeny and Evolutionary History of the Pokémon,” <i>Annals of Improbable Research</i> 18(4):15–17. Archive DOI: 10.5281/zenodo.61631.</p>
+    </section><button class="choose-button" data-close="aboutDialog">Back to exploring</button>
+  </dialog>
+  <script src="viewport.js"></script><script src="tree.js"></script><script src="atlas.js"></script><script src="vendor/leaflet.js"></script><script src="animals.js"></script><script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{
+  "recommended": "mossen-world.jpg",
+  "width": 1280,
+  "height": 860,
+  "source": "https://www.deviantart.com/mossen1998/art/Pokemon-World-Map-as-of-2023-kitakami-988993196",
+  "image_url": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/da41e761-f773-46de-ae68-89306eaa9127/dgctk18-03eea05f-50b4-4318-950c-904b661378a5.png/v1/fill/w_1280%2Ch_860%2Cq_80%2Cstrp/pokemon_world_map_as_of_2023__kitakami__by_mossen1998_dgctk18-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9ODYwIiwicGF0aCI6Ii9mL2RhNDFlNzYxLWY3NzMtNDZkZS1hZTY4LTg5MzA2ZWFhOTEyNy9kZ2N0azE4LTAzZWVhMDVmLTUwYjQtNDMxOC05NTBjLTkwNGI2NjEzNzhhNS5wbmciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.YUxrRK0Au2boPgeh8b1OkHmdxI6AZUAXjAlKZVP02Js",
+  "credit": "MosseN1998 — Pokémon World Map as of 2023 (Kitakami)",
+  "kind": "Existing fan-made map; region positions are illustrative, not official geography.",
+  "regions": [
+    {
+      "name": "Kanto",
+      "center": [
+        810,
+        409
+      ],
+      "crop": [
+        700,
+        315,
+        240,
+        185
+      ]
+    },
+    {
+      "name": "Johto",
+      "center": [
+        695,
+        410
+      ],
+      "crop": [
+        565,
+        330,
+        235,
+        190
+      ]
+    },
+    {
+      "name": "Hoenn",
+      "center": [
+        780,
+        530
+      ],
+      "crop": [
+        650,
+        450,
+        260,
+        180
+      ]
+    },
+    {
+      "name": "Sinnoh",
+      "center": [
+        780,
+        130
+      ],
+      "crop": [
+        650,
+        20,
+        290,
+        215
+      ]
+    },
+    {
+      "name": "Unova",
+      "center": [
+        495,
+        535
+      ],
+      "crop": [
+        380,
+        445,
+        235,
+        195
+      ]
+    },
+    {
+      "name": "Kalos",
+      "center": [
+        490,
+        310
+      ],
+      "crop": [
+        385,
+        220,
+        230,
+        180
+      ]
+    },
+    {
+      "name": "Alola",
+      "center": [
+        1090,
+        420
+      ],
+      "crop": [
+        900,
+        315,
+        360,
+        220
+      ]
+    },
+    {
+      "name": "Galar",
+      "center": [
+        150,
+        315
+      ],
+      "crop": [
+        0,
+        145,
+        290,
+        310
+      ]
+    },
+    {
+      "name": "Paldea",
+      "center": [
+        315,
+        430
+      ],
+      "crop": [
+        200,
+        320,
+        240,
+        230
+      ]
+    }
+  ],
+  "alternative": {
+    "file": "pinterest-world.jpg",
+    "width": 1756,
+    "height": 1181,
+    "source": "https://www.pinterest.com/pin/pokmon-map--87116574038168085/",
+    "note": "Same image at enlarged resolution, source author now verified against directly retrieved original."
+  }
+}
