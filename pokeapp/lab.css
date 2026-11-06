@@ -99,3 +99,23 @@ body.detail-open .explorer{padding-right:min(680px,100%)}
   .species-panel .detail-stage.photo-carousel,.species-panel .detail-stage:has(.animal-photo){height:min(36vh,280px)}
   .photo-nav{width:38px;height:38px;font-size:24px}
 }
+
+.photo-zoomable{cursor:zoom-in}
+.occurrence-photo-link{display:block;padding:0;background:none;border:0;width:100%;cursor:zoom-in}
+.photo-lightbox{position:fixed;inset:0;z-index:1200;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#1a1028f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.photo-lightbox[hidden]{display:none!important}
+body.lightbox-open{overflow:hidden}
+.photo-lightbox-frame{margin:0;grid-column:2;max-width:min(1200px,100%);max-height:100%;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.photo-lightbox-frame img{max-width:100%;max-height:calc(100dvh - 110px);width:auto;height:auto;object-fit:contain;border-radius:14px;background:#2a1b40;box-shadow:0 18px 50px #0008}
+.photo-lightbox-frame figcaption{color:#f4ecff;text-align:center;display:flex;flex-direction:column;gap:4px;font-size:13px;max-width:min(720px,92vw)}
+.photo-lightbox-frame figcaption a{color:#ffe171}
+.photo-lightbox-frame figcaption span{opacity:.9}
+.photo-lightbox-close{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:46px;height:46px;border-radius:999px;background:#fffdf8;color:#3f245f;font-size:28px;line-height:1;z-index:2}
+.photo-lightbox-nav{width:48px;height:48px;border-radius:999px;background:#fffdf8ef;color:#3f245f;font-size:30px;line-height:1;box-shadow:0 6px 18px #0005}
+.photo-lightbox-nav[hidden]{display:none!important}
+@media(max-width:760px){
+  .photo-lightbox{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;justify-items:center}
+  .photo-lightbox-frame{grid-column:1;grid-row:2}
+  .photo-lightbox-nav.prev{grid-row:3;justify-self:start}
+  .photo-lightbox-nav.next{grid-row:3;justify-self:end;grid-column:1}
+}

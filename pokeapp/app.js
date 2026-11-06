@@ -18,7 +18,7 @@ function spriteHTML(p) {
   return `<svg xmlns="http://www.w3.org/2000/svg" class="sprite-svg" viewBox="${spriteBox(p)}" aria-hidden="true" focusable="false"><image href="${spriteURL(p)}" width="96" height="96"/></svg>`;
 }
 function spriteURL(p){if(p.real)return p.photo||'';return spriteSources.get(p.id)||`sprites/${p.id}.png`;}
-const common={escape:escapeHTML,activate,spriteBox,spriteURL,sprite:spriteHTML,onMeet:openPokemon,onRemove:removeFromTree,onPick:()=>openPicker(),onColor:n=>{$('clearColors').hidden=!n;},onHint:text=>{$('treeHint').textContent=text;}};
+const common={escape:escapeHTML,activate,spriteBox,spriteURL,sprite:spriteHTML,onMeet:openPokemon,onRemove:removeFromTree,onPick:()=>openPicker(),onColor:n=>{$('clearColors').hidden=!n;},onHint:text=>{$('treeHint').textContent=text;},onPhoto:(photos,index=0,title='')=>openPhotoLightbox(photos,index,title)};
 const treeView=new PokemonTree($('treeStage'),common);
 const atlas=new PokemonAtlas($('mapStage'),{...common,onRegion:name=>{$('region').value=name;},onPage:(page,pages)=>{
   $('mapPager').hidden=pages<=1;$('mapPage').textContent=`${page+1} / ${pages}`;$('mapPrev').disabled=page===0;$('mapNext').disabled=page===pages-1;
@@ -346,6 +346,71 @@ async function randomAnimals(){
     if(request===animalPickRequest){$('randomizeTop').disabled=false;$('surprise').disabled=false;}
   }
 }
+function largerPhotoURL(url){
+  return String(url||'').replace(/\/(square|small|medium|thumb)\./i,'/large.');
+}
+let lightboxState=null;
+function ensurePhotoLightbox(){
+  let box=$('photoLightbox');
+  if(box) return box;
+  box=document.createElement('div');
+  box.id='photoLightbox';
+  box.className='photo-lightbox';
+  box.hidden=true;
+  box.setAttribute('role','dialog');
+  box.setAttribute('aria-modal','true');
+  box.setAttribute('aria-label','Full screen photo');
+  box.innerHTML='<button type="button" class="photo-lightbox-close" aria-label="Close full screen photo">×</button><button type="button" class="photo-lightbox-nav prev" data-lightbox-dir="-1" aria-label="Previous photo">‹</button><figure class="photo-lightbox-frame"><img alt="" referrerpolicy="no-referrer"><figcaption></figcaption></figure><button type="button" class="photo-lightbox-nav next" data-lightbox-dir="1" aria-label="Next photo">›</button>';
+  document.body.append(box);
+  const close=()=>closePhotoLightbox();
+  box.querySelector('.photo-lightbox-close').onclick=close;
+  box.addEventListener('click',e=>{if(e.target===box)close();});
+  box.querySelectorAll('[data-lightbox-dir]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();shiftPhotoLightbox(+btn.dataset.lightboxDir);});
+  box.querySelector('img').onclick=e=>e.stopPropagation();
+  return box;
+}
+function paintPhotoLightbox(){
+  if(!lightboxState)return;
+  const {photos,title}=lightboxState;
+  lightboxState.index=((lightboxState.index%photos.length)+photos.length)%photos.length;
+  const shot=photos[lightboxState.index];
+  const box=ensurePhotoLightbox();
+  const img=box.querySelector('img');
+  img.src=largerPhotoURL(shot.url||shot.photo||'');
+  img.alt=shot.alt||title||'Photo';
+  const credit=shot.credit?escapeHTML(shot.credit):'';
+  const link=shot.link?'<a href="'+escapeHTML(shot.link)+'" target="_blank" rel="noopener">Open source ↗</a>':'';
+  const count=photos.length>1?(lightboxState.index+1)+' / '+photos.length:'';
+  box.querySelector('figcaption').innerHTML='<strong>'+escapeHTML(title||shot.alt||'Photo')+'</strong>'+(count?'<span>'+count+'</span>':'')+(credit||link?'<span>'+credit+(credit&&link?' · ':'')+link+'</span>':'');
+  for(const btn of box.querySelectorAll('[data-lightbox-dir]')) btn.hidden=photos.length<2;
+}
+function openPhotoLightbox(photos,index=0,title=''){
+  const list=(photos||[]).map(p=>typeof p==='string'?{url:p}:{...p,url:p.url||p.photo}).filter(p=>p.url);
+  if(!list.length)return;
+  lightboxState={photos:list,index:index||0,title:title||list[0].alt||''};
+  const box=ensurePhotoLightbox();
+  box.hidden=false;
+  document.body.classList.add('lightbox-open');
+  paintPhotoLightbox();
+  box.querySelector('.photo-lightbox-close').focus();
+}
+function shiftPhotoLightbox(delta){
+  if(!lightboxState||lightboxState.photos.length<2)return;
+  lightboxState.index+=delta;
+  paintPhotoLightbox();
+}
+function closePhotoLightbox(){
+  const box=$('photoLightbox');
+  if(box) box.hidden=true;
+  document.body.classList.remove('lightbox-open');
+  lightboxState=null;
+}
+document.addEventListener('keydown',e=>{
+  if(!lightboxState)return;
+  if(e.key==='Escape'){e.preventDefault();closePhotoLightbox();}
+  if(e.key==='ArrowLeft'){e.preventDefault();shiftPhotoLightbox(-1);}
+  if(e.key==='ArrowRight'){e.preventDefault();shiftPhotoLightbox(1);}
+});
 function mountAnimalGallery(animal,photos){
   const stage=$('animalPhotoStage'),credit=$('animalPhotoCredit');
   if(!stage)return;
@@ -355,14 +420,30 @@ function mountAnimalGallery(animal,photos){
     index=((i%photos.length)+photos.length)%photos.length;
     const shot=photos[index];
     const img=stage.querySelector('.animal-photo');
-    if(img){img.src=shot.url;img.alt=animal.display;}
+    if(img){
+      img.src=shot.url;img.alt=animal.display;
+      img.classList.add('photo-zoomable');
+      img.title='View full screen';
+      img.setAttribute('role','button');
+      img.tabIndex=0;
+    }
     stage.dataset.index=String(index);
     const count=stage.querySelector('.photo-count');
     if(count)count.textContent=photos.length>1?`${index+1} / ${photos.length}`:'';
     if(credit)credit.innerHTML=`${escapeHTML(shot.credit||'Photo credit unavailable')} · <a href="${escapeHTML(shot.link)}" target="_blank" rel="noopener">Photo source ↗</a>`;
   };
+  for(const sel of ['[data-photo-dir="-1"]','[data-photo-dir="1"]']){
+    const btn=stage.querySelector(sel); if(!btn) continue;
+    const next=btn.cloneNode(true); btn.replaceWith(next);
+  }
   stage.querySelector('[data-photo-dir="-1"]')?.addEventListener('click',()=>show(index-1));
   stage.querySelector('[data-photo-dir="1"]')?.addEventListener('click',()=>show(index+1));
+  const img=stage.querySelector('.animal-photo');
+  if(img){
+    const open=()=>openPhotoLightbox(photos.map(p=>({...p,alt:animal.display})), index, animal.display);
+    img.onclick=e=>{e.stopPropagation();open();};
+    img.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};
+  }
   show(0);
 }
 async function openAnimal(animal){

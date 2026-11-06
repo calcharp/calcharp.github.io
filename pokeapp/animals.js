@@ -533,7 +533,7 @@ class AnimalMap {
             const popup=marker.getPopup();
             const body=()=>{
               const bits=[];
-              if(record.photo) bits.push('<a class="occurrence-photo-link" href="'+this.helpers.escape(record.photoLink||('https://www.gbif.org/occurrence/'+record.key))+'" target="_blank" rel="noopener"><img class="occurrence-preview" src="'+this.helpers.escape(record.photo)+'" alt="'+name+' sighting" loading="lazy" referrerpolicy="no-referrer"></a>');
+              if(record.photo) bits.push('<button type="button" class="occurrence-photo-link" data-occurrence-photo="1" aria-label="View full screen sighting photo"><img class="occurrence-preview" src="'+this.helpers.escape(record.photo)+'" alt="'+name+' sighting" loading="lazy" referrerpolicy="no-referrer"></button>');
               else bits.push('<p class="occurrence-empty">No photo attached to this GBIF record.</p>');
               bits.push('<strong>'+name+'</strong>');
               if(record.locality) bits.push('<p>'+this.helpers.escape(record.locality)+'</p>');
@@ -548,6 +548,13 @@ class AnimalMap {
               await this.store.occurrencePreview(record);
             }
             popup.setContent(body());
+            const photoBtn=popup.getElement()?.querySelector('[data-occurrence-photo]');
+            if(photoBtn&&this.helpers.onPhoto){
+              photoBtn.onclick=e=>{
+                e.preventDefault();e.stopPropagation();
+                this.helpers.onPhoto([{url:record.photo,link:record.photoLink||('https://www.gbif.org/occurrence/'+record.key),credit:record.publisher||'GBIF data publisher',alt:animal.display+' sighting'}],0,animal.display);
+              };
+            }
           });
           marker.addTo(this.layers);
         }
