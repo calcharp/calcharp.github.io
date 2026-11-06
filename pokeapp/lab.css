@@ -34,8 +34,8 @@
 svg.pick-mark,.pokemon-card[aria-pressed=true] svg.pick-mark{width:26px;height:26px;background:transparent;box-shadow:none}
 .species-panel{position:fixed;top:var(--detail-top,72px);right:0;bottom:0;width:min(680px,100%);max-width:none;max-height:none;margin:0;border:0;border-left:1px solid #eadff3;border-radius:0;box-shadow:-10px 0 28px #2a143822;background:#fffdf8;z-index:40;padding:14px 16px 28px}
 body.detail-open .explorer{padding-right:min(680px,100%)}
-.species-panel .detail-stage{height:148px;margin:8px 0}
-.species-panel .detail-stage .sprite-svg,.species-panel .animal-photo{width:132px;height:132px}
+.species-panel .detail-stage{height:148px;margin:8px 0}.species-panel .detail-stage.photo-carousel,.species-panel .detail-stage:has(.animal-photo){height:min(42vh,380px)}
+.species-panel .detail-stage .sprite-svg{width:132px;height:132px}.species-panel .detail-stage .animal-photo{width:100%;height:100%;max-width:none;object-fit:contain}
 .species-panel h1{font-size:24px}
 .species-panel .detail-actions{flex-wrap:wrap}
 .species-panel .detail-actions .choose-button{min-height:44px}
@@ -76,4 +76,26 @@ body.detail-open .explorer{padding-right:min(680px,100%)}
   .pokemon-detail,.about-dialog{width:min(680px,calc(100vw - 48px))}
   .detail-stage{height:280px}
   .picker h1{font-size:28px}
+}
+
+/* Larger animal detail photos + wraparound iNat gallery */
+.species-panel .detail-stage.photo-carousel,
+.species-panel .detail-stage:has(.animal-photo){height:min(42vh,380px);margin:10px 0;position:relative;overflow:hidden}
+.species-panel .detail-stage .animal-photo{width:100%;height:100%;max-width:none;object-fit:contain;border-radius:14px}
+.photo-carousel{display:grid;place-items:center}
+.photo-carousel .animal-photo{grid-area:1/1}
+.photo-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:42px;height:42px;border-radius:999px;background:#fffdf8ef;color:#4a2a6d;font-size:28px;line-height:1;box-shadow:0 4px 14px #2a143833;display:grid;place-items:center}
+.photo-nav.prev{left:10px}
+.photo-nav.next{right:10px}
+.photo-count{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:2;background:#fffdf8ef;color:#5b3a78;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;box-shadow:0 2px 8px #2a143822}
+.occurrence-popup{display:flex;flex-direction:column;gap:6px;min-width:180px}
+.occurrence-popup p{margin:0;font-size:12px;line-height:1.35;color:#5a4170}
+.occurrence-popup strong{font-size:14px;color:#3f245f}
+.occurrence-preview{display:block;width:100%;max-height:180px;object-fit:cover;border-radius:10px;background:#e8dff3;margin-bottom:4px}
+.occurrence-photo-link{display:block}
+.occurrence-empty,.occurrence-loading{font-size:12px;color:#80678d;margin:0 0 4px}
+.leaflet-popup.occurrence-popup-wrap .leaflet-popup-content{margin:10px 12px}
+@media(max-width:760px){
+  .species-panel .detail-stage.photo-carousel,.species-panel .detail-stage:has(.animal-photo){height:min(36vh,280px)}
+  .photo-nav{width:38px;height:38px;font-size:24px}
 }

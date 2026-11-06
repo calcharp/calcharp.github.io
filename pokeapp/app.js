@@ -342,11 +342,40 @@ async function randomAnimals(){
     if(request===animalPickRequest){$('randomizeTop').disabled=false;$('surprise').disabled=false;}
   }
 }
+function mountAnimalGallery(animal,photos){
+  const stage=$('animalPhotoStage'),credit=$('animalPhotoCredit');
+  if(!stage)return;
+  let index=0;
+  const show=i=>{
+    if(!photos.length)return;
+    index=((i%photos.length)+photos.length)%photos.length;
+    const shot=photos[index];
+    const img=stage.querySelector('.animal-photo');
+    if(img){img.src=shot.url;img.alt=animal.display;}
+    stage.dataset.index=String(index);
+    const count=stage.querySelector('.photo-count');
+    if(count)count.textContent=photos.length>1?`${index+1} / ${photos.length}`:'';
+    if(credit)credit.innerHTML=`${escapeHTML(shot.credit||'Photo credit unavailable')} · <a href="${escapeHTML(shot.link)}" target="_blank" rel="noopener">Photo source ↗</a>`;
+  };
+  stage.querySelector('[data-photo-dir="-1"]')?.addEventListener('click',()=>show(index-1));
+  stage.querySelector('[data-photo-dir="1"]')?.addEventListener('click',()=>show(index+1));
+  show(0);
+}
 async function openAnimal(animal){
   if(!animal||typeof animal!=='object')return;
   if(!animal.ancestors?.length){try{const full=await animalStore.hydrate(animal.id);if(full)animal=full;syncAnimals();}catch{}}
   animal.ancestors=animal.ancestors||[];
   const dialog=$('pokemonDetail'),esc=escapeHTML;
-  dialog.innerHTML=`<button class="close-button" id="closeDetail" aria-label="Close animal details">×</button><p class="eyebrow">REAL ANIMALS · OPEN TREE OF LIFE</p><h1 id="detailTitle">${esc(animal.display)}</h1><p class="scientific-name">${esc(animal.name)}</p><div class="detail-stage">${spriteHTML(animal)}</div><p class="detail-source">${esc(animal.credit||'Photo credit unavailable')} · <a href="${esc(animal.photoLink)}" target="_blank" rel="noopener">Photo source ↗</a></p><div class="taxonomy-trail">${animal.ancestors.filter(n=>['phylum','class','order','family','genus'].includes(n.rank)).map(n=>`<button type="button" class="taxon-chip" data-taxon="${n.id}" aria-pressed="false"><small>${esc(n.rank)}</small><b>${esc(n.common||n.name)}</b><span>${esc(n.name)}</span></button>`).join('')}</div>${animal.summary?`<p class="animal-summary">${esc(animal.summary.length>=900?animal.summary.slice(0,animal.summary.lastIndexOf(' '))+'…':animal.summary)}</p><p class="detail-source">Wikipedia contributors via iNaturalist · <a href="${esc(animal.wiki||'https://www.wikipedia.org')}" target="_blank" rel="noopener">Source & history ↗</a> · CC BY-SA</p>`:''}<p>This animal’s place in the tree comes from the Open Tree of Life, so the order of splits stays the order from that tree. Branch lengths are DateLife ages in millions of years when a published chronogram covers every species shown. Otherwise the scale is synthetic and every species still lines up with Now.</p>${kinMarkup()}<div class="detail-actions"><a href="https://www.inaturalist.org/taxa/${animal.id}" target="_blank" rel="noopener">Photos & facts on iNaturalist ↗</a><button class="choose-button" id="detailPick"></button></div>${animal.wiki?`<p><a href="${esc(animal.wiki)}" target="_blank" rel="noopener">Read about this animal ↗</a></p>`:''}<p class="detail-note">Open Tree of Life supplies the branching order. DateLife supplies ages from published chronograms when this page is served locally and a chronogram covers the species. Map dots are sampled GBIF records; this photo may come from another observation.</p>`;
+  const starter=animal.photos?.length?animal.photos:[{url:animal.photo||'',credit:animal.credit||'',link:animal.photoLink||`https://www.inaturalist.org/taxa/${animal.id}`}].filter(p=>p.url);
+  const carousel=`<div class="detail-stage photo-carousel" id="animalPhotoStage" data-index="0"><button type="button" class="photo-nav prev" data-photo-dir="-1" aria-label="Previous iNaturalist photo" ${starter.length>1?'':'hidden'}>‹</button>${starter.length?`<img class="animal-photo" src="${esc(starter[0].url)}" alt="${esc(animal.display)}" referrerpolicy="no-referrer">`:'<span class="photo-missing">No photo yet</span>'}<button type="button" class="photo-nav next" data-photo-dir="1" aria-label="Next iNaturalist photo" ${starter.length>1?'':'hidden'}>›</button><span class="photo-count" ${starter.length>1?'':'hidden'}>1 / ${starter.length||1}</span></div>`;
+  dialog.innerHTML=`<button class="close-button" id="closeDetail" aria-label="Close animal details">×</button><p class="eyebrow">REAL ANIMALS · OPEN TREE OF LIFE</p><h1 id="detailTitle">${esc(animal.display)}</h1><p class="scientific-name">${esc(animal.name)}</p>${carousel}<p class="detail-source" id="animalPhotoCredit">${esc((starter[0]&&starter[0].credit)||animal.credit||'Photo credit unavailable')} · <a href="${esc((starter[0]&&starter[0].link)||animal.photoLink||('https://www.inaturalist.org/taxa/'+animal.id))}" target="_blank" rel="noopener">Photo source ↗</a></p><div class="taxonomy-trail">${animal.ancestors.filter(n=>['phylum','class','order','family','genus'].includes(n.rank)).map(n=>`<button type="button" class="taxon-chip" data-taxon="${n.id}" aria-pressed="false"><small>${esc(n.rank)}</small><b>${esc(n.common||n.name)}</b><span>${esc(n.name)}</span></button>`).join('')}</div>${animal.summary?`<p class="animal-summary">${esc(animal.summary.length>=900?animal.summary.slice(0,animal.summary.lastIndexOf(' '))+'…':animal.summary)}</p><p class="detail-source">Wikipedia contributors via iNaturalist · <a href="${esc(animal.wiki||'https://www.wikipedia.org')}" target="_blank" rel="noopener">Source & history ↗</a> · CC BY-SA</p>`:''}<p>This animal’s place in the tree comes from the Open Tree of Life, so the order of splits stays the order from that tree. Branch lengths are DateLife ages in millions of years when a published chronogram covers every species shown. Otherwise the scale is synthetic and every species still lines up with Now.</p>${kinMarkup()}<div class="detail-actions"><a href="https://www.inaturalist.org/taxa/${animal.id}" target="_blank" rel="noopener">Photos & facts on iNaturalist ↗</a><button class="choose-button" id="detailPick"></button></div>${animal.wiki?`<p><a href="${esc(animal.wiki)}" target="_blank" rel="noopener">Read about this animal ↗</a></p>`:''}<p class="detail-note">Open Tree of Life supplies the branching order. DateLife supplies ages from published chronograms when this page is served locally and a chronogram covers the species. Map dots are sampled GBIF records; these photos come from iNaturalist taxon examples and may differ from mapped GBIF records.</p>`;
   $('closeDetail').onclick=hideDetail;$('detailPick').onclick=async()=>{const name=animal.name;await toggle(animal.id);if(!selected.has(name))hideDetail();};updateDetailButton();mountAnimalKin(animal);showDetail();$('closeDetail').focus();
+  mountAnimalGallery(animal,starter);
+  animalStore.gallery(animal).then(photos=>{
+    if($('detailTitle')?.textContent!==animal.display)return;
+    const stage=$('animalPhotoStage');
+    if(!stage||!photos.length)return;
+    for(const btn of stage.querySelectorAll('.photo-nav,.photo-count')) btn.hidden=photos.length<2;
+    mountAnimalGallery(animal,photos);
+  });
 }

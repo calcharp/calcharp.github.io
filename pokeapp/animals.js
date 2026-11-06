@@ -96,11 +96,42 @@ class AnimalStore {
   }
   async init(){const response=await fetch('animals.json');if(!response.ok)throw Error('Animal collection unavailable.');const data=await response.json();this.groups=data.groups;this.snapshotDate=data.snapshotDate;this.nodes=[];data.animals.forEach(a=>this.items.set(a.id,animalToSpecies(a)));try{const nodeResponse=await fetch('animal-nodes.json');if(nodeResponse.ok){const catalog=await nodeResponse.json();this.nodes=catalog.nodes||[];}}catch{}try{JSON.parse(localStorage.getItem('animal-discovery-cache')||'[]').forEach(a=>{if(a.id&&a.name&&Array.isArray(a.ancestors)&&(a.hydrated||a.photo))this.items.set(a.id,a);});}catch{}return this;}
   save(){try{localStorage.setItem('animal-discovery-cache',JSON.stringify([...this.items.values()].filter(a=>a.hydrated||a.photoOk).slice(-150)));}catch{}}
+  photoEntry(p,taxonId){
+    if(!p)return null;
+    const url=p.medium_url||p.url?.replace('/square.','/medium.')||p.url||'';
+    if(!url)return null;
+    return {id:p.id||null,url,credit:p.attribution||'',link:p.id?`https://www.inaturalist.org/photos/${p.id}`:`https://www.inaturalist.org/taxa/${taxonId}`,cc:!!p.license_code?.startsWith('cc')};
+  }
   normalize(t){
-    const photos=[t.default_photo,...(t.taxon_photos||[]).map(p=>p.photo)].filter(Boolean);
-    const photo=photos.find(p=>p.license_code?.startsWith('cc'))||photos[0];
+    const seen=new Set(),gallery=[];
+    for(const raw of [t.default_photo,...(t.taxon_photos||[]).map(p=>p.photo)]){
+      const entry=this.photoEntry(raw,t.id);
+      if(!entry)continue;
+      const key=String(entry.id||entry.url);
+      if(seen.has(key))continue;
+      seen.add(key);gallery.push(entry);
+    }
+    const photo=gallery.find(p=>p.cc)||gallery[0];
     const summary=new DOMParser().parseFromString(t.wikipedia_summary||'','text/html').body.textContent.slice(0,900);
-    return animalToSpecies({id:t.id,name:t.name,display:t.preferred_common_name||t.name,rank:t.rank,ancestors:(t.ancestors||[]).filter(a=>a.name!=='Life').map(a=>({id:a.id,name:a.name,rank:a.rank,common:a.preferred_common_name||''})),photo:photo?.medium_url||photo?.url?.replace('/square.','/medium.')||'',credit:photo?.attribution||'',photoLink:photo?.id?`https://www.inaturalist.org/photos/${photo.id}`:`https://www.inaturalist.org/taxa/${t.id}`,wiki:t.wikipedia_url,summary,observations:t.observations_count,hydrated:!!t.ancestors,points:null});
+    return animalToSpecies({id:t.id,name:t.name,display:t.preferred_common_name||t.name,rank:t.rank,ancestors:(t.ancestors||[]).filter(a=>a.name!=='Life').map(a=>({id:a.id,name:a.name,rank:a.rank,common:a.preferred_common_name||''})),photo:photo?.url||'',credit:photo?.credit||'',photoLink:photo?.link||`https://www.inaturalist.org/taxa/${t.id}`,photos:gallery.map(({id,url,credit,link})=>({id,url,credit,link})),wiki:t.wikipedia_url,summary,observations:t.observations_count,hydrated:!!t.ancestors,points:null});
+  }
+  async gallery(animal){
+    if(animal.photos?.length>1||(animal.photos?.length===1&&animal.galleryReady))return animal.photos;
+    try{
+      const result=await this.json(`https://api.inaturalist.org/v1/taxa/${animal.id}?locale=en`);
+      const taxon=result.results?.[0];
+      if(taxon){
+        const next=this.normalize({...taxon,ancestors:taxon.ancestors||animal.ancestors});
+        animal.photos=next.photos||[];
+        if(next.photo){animal.photo=next.photo;animal.credit=next.credit;animal.photoLink=next.photoLink;}
+        animal.galleryReady=true;animal.hydrated=true;this.items.set(animal.id,animal);this.save();
+      }
+    }catch{}
+    if(!animal.photos?.length&&animal.photo){
+      animal.photos=[{id:null,url:animal.photo,credit:animal.credit||'',link:animal.photoLink||`https://www.inaturalist.org/taxa/${animal.id}`}];
+    }
+    animal.galleryReady=true;
+    return animal.photos||[];
   }
   async search(query='',group='',page=1){
     const params=new URLSearchParams({q:query,taxon_id:group||'1',rank:'species',is_active:'true',per_page:'24',page:String(page),order_by:'observations_count',locale:'en'});
@@ -111,13 +142,36 @@ class AnimalStore {
   async hydrate(id){let animal=this.items.get(id);if(!animal)throw Error('Animal not found.');if(animal.ancestors.length)return animal;
     const result=await this.json(`https://api.inaturalist.org/v1/taxa/${id}?locale=en`);const taxon=result.results?.[0];if(!taxon||taxon.rank!=='species'||!(taxon.ancestor_ids||[]).includes(1))throw Error('No animal taxonomy available for this species.');animal=this.normalize(taxon);animal.hydrated=true;this.items.set(id,animal);this.save();return animal;
   }
+  occurrenceFields(r){
+    const media=(r.media||[]).find(m=>m.type==='StillImage'&&(m.identifier||m.references));
+    return {
+      lat:r.decimalLatitude,lng:r.decimalLongitude,key:r.key,
+      publisher:r.datasetName||r.institutionCode||'GBIF data publisher',
+      photo:media?.identifier||'',
+      photoLink:media?.references||`https://www.gbif.org/occurrence/${r.key}`,
+      locality:[r.locality,r.country].filter(Boolean).join(' · '),
+      date:(r.eventDate||'').slice(0,10),
+      recordedBy:r.recordedBy||''
+    };
+  }
   async occurrences(animal){
     if(Array.isArray(animal.points)){if(animal.points.length>100){animal.points=animal.points.slice(0,100);this.save();}return animal.points;}
     if(!animal.gbifKey){const match=await this.json('https://api.gbif.org/v1/species/match?'+new URLSearchParams({name:animal.name,kingdom:'Animalia',strict:'true'}));
       if(match.matchType!=='EXACT'||match.rank!=='SPECIES'||match.kingdom!=='Animalia')throw Error('No exact GBIF species match.');animal.gbifKey=match.acceptedUsageKey||match.usageKey;
     }
     const records=await this.json('https://api.gbif.org/v1/occurrence/search?'+new URLSearchParams({taxonKey:animal.gbifKey,hasCoordinate:'true',hasGeospatialIssue:'false',occurrenceStatus:'PRESENT',limit:'100'}));
-    animal.points=(records.results||[]).filter(r=>Number.isFinite(r.decimalLatitude)&&Math.abs(r.decimalLatitude)<=90&&Number.isFinite(r.decimalLongitude)&&Math.abs(r.decimalLongitude)<=180).slice(0,100).map(r=>({lat:r.decimalLatitude,lng:r.decimalLongitude,key:r.key,publisher:r.datasetName||'GBIF data publisher'}));animal.occurrenceCount=Math.min(records.count||animal.points.length,100);this.save();return animal.points;
+    animal.points=(records.results||[]).filter(r=>Number.isFinite(r.decimalLatitude)&&Math.abs(r.decimalLatitude)<=90&&Number.isFinite(r.decimalLongitude)&&Math.abs(r.decimalLongitude)<=180).slice(0,100).map(r=>this.occurrenceFields(r));animal.occurrenceCount=Math.min(records.count||animal.points.length,100);this.save();return animal.points;
+  }
+  async occurrencePreview(record){
+    if(record.previewReady)return record;
+    try{
+      const detail=await this.json(`https://api.gbif.org/v1/occurrence/${record.key}`);
+      const fields=this.occurrenceFields(detail);
+      Object.assign(record,{photo:record.photo||fields.photo,photoLink:fields.photoLink||record.photoLink,locality:record.locality||fields.locality,date:record.date||fields.date,recordedBy:record.recordedBy||fields.recordedBy,publisher:record.publisher||fields.publisher,previewReady:true});
+    }catch{
+      record.previewReady=true;
+    }
+    return record;
   }
   async relatives(taxonId,query=''){
     const params=new URLSearchParams({q:query,taxon_id:String(taxonId),rank:'species',is_active:'true',per_page:'12',page:'1',order_by:'observations_count',order:'desc',locale:'en'});
@@ -439,8 +493,29 @@ class AnimalMap {
         card.querySelector('small').textContent=records.length?`${records.length} on the map`:'No mapped points';
         const name=this.helpers.escape(animal.display);
         for(const record of records){
-          const popup=`<strong>${name}</strong><p>${this.helpers.escape(record.publisher)}</p><p><a href="https://www.gbif.org/occurrence/${record.key}" target="_blank" rel="noopener">View sighting on GBIF ↗</a></p>`;
-          L.circleMarker([record.lat,record.lng],{radius:6,color:'white',weight:1,fillColor:color,fillOpacity:.75}).bindPopup(popup).addTo(this.layers);
+          const marker=L.circleMarker([record.lat,record.lng],{radius:6,color:'white',weight:1,fillColor:color,fillOpacity:.75});
+          marker.bindPopup('<div class="occurrence-popup"><strong>'+name+'</strong><p class="occurrence-loading">Loading sighting…</p></div>',{maxWidth:280,minWidth:200,className:'occurrence-popup-wrap'});
+          marker.on('popupopen',async()=>{
+            const popup=marker.getPopup();
+            const body=()=>{
+              const bits=[];
+              if(record.photo) bits.push('<a class="occurrence-photo-link" href="'+this.helpers.escape(record.photoLink||('https://www.gbif.org/occurrence/'+record.key))+'" target="_blank" rel="noopener"><img class="occurrence-preview" src="'+this.helpers.escape(record.photo)+'" alt="'+name+' sighting" loading="lazy" referrerpolicy="no-referrer"></a>');
+              else bits.push('<p class="occurrence-empty">No photo attached to this GBIF record.</p>');
+              bits.push('<strong>'+name+'</strong>');
+              if(record.locality) bits.push('<p>'+this.helpers.escape(record.locality)+'</p>');
+              if(record.date) bits.push('<p>'+this.helpers.escape(record.date)+'</p>');
+              if(record.recordedBy) bits.push('<p>Recorded by '+this.helpers.escape(record.recordedBy)+'</p>');
+              bits.push('<p>'+this.helpers.escape(record.publisher||'GBIF data publisher')+'</p>');
+              bits.push('<p><a href="https://www.gbif.org/occurrence/'+record.key+'" target="_blank" rel="noopener">View sighting on GBIF ↗</a></p>');
+              return '<div class="occurrence-popup">'+bits.join('')+'</div>';
+            };
+            if(!record.previewReady){
+              popup.setContent('<div class="occurrence-popup"><strong>'+name+'</strong><p class="occurrence-loading">Loading sighting…</p></div>');
+              await this.store.occurrencePreview(record);
+            }
+            popup.setContent(body());
+          });
+          marker.addTo(this.layers);
         }
       }catch(error){if(revision!==this.revision)return;card.querySelector('small').textContent='Map unavailable';card.title=error.message;}
     }));
