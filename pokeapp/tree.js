@@ -64,17 +64,26 @@ class PokemonTree {
     this.root=data.tree; this.index=stampTree(this.root);
     this.species=new Map(data.pokemon.map(p=>[p.name,p]));
   }
-  clearColors() { this.clades.clear(); this.render(this.selected,false); }
+  clearColors() { this.clades.clear(); this.activeClade=null; this.render(this.selected,false); this.helpers.onColor(0); }
   color(node) {
     let color='#8864aa';
     for (const [key,c] of this.clades) if (node.tips.every(t=>this.index.get(key).tips.includes(t))) color=c;
     return color;
   }
+  cladeTips(key){
+    const node=this.index.get(key);
+    if(!node?.tips?.length) return [];
+    return node.tips.filter(name=>this.selected?.has(name));
+  }
   toggleClade(key) {
     const palette=['#ab4d91','#d47b28','#338a9a','#5d75be','#799344'];
-    if(this.clades.has(key)) this.clades.delete(key); else this.clades.set(key,palette[this.clades.size%palette.length]);
+    // Selecting a clade always colors it so the branch stays visible with the sidebar open.
+    if(!this.clades.has(key)) this.clades.set(key,palette[this.clades.size%palette.length]);
+    this.activeClade=key;
     this.render(this.selected,false); this.helpers.onColor(this.clades.size);
-    if(this.real){const node=this.index.get(key);const count=node.tips.filter(t=>this.selected.has(t)).length;this.helpers.onHint(node.label?`${node.label} · ${count} of your animals`:`Shared ancestor · ${count} of your animals`);}
+    const tips=this.cladeTips(key);
+    const node=this.index.get(key);
+    this.helpers.onClade?.(key,tips,node);
   }
   drawAxis() {
     if(this.taxonomy||!this.axisInfo||!this.viewport.box)return;
@@ -156,8 +165,9 @@ class PokemonTree {
           paint(child);
         }
         const count=n.tips.filter(t=>selected.has(t)).length;
-        const cladeLabel=this.real?`${esc(n.label)||'Shared ancestor'}, ${count} animals`:`Color family of ${count} selected Pokémon`;
-        parts.push(`<g role="button" tabindex="0" class="clade" data-clade="${n.key}" aria-label="${cladeLabel}" aria-pressed="${this.clades.has(n.key)}"><title>${this.real?esc(n.label)||'Shared ancestor':'Tap to color this family'}</title><circle cx="${nx}" cy="${ny}" r="22" fill="transparent"/><circle class="visible-dot" cx="${nx}" cy="${ny}" r="${this.clades.has(n.key)?7:5}" fill="${col}" stroke="#fffdf8" stroke-width="2"/></g>`);
+        const cladeLabel=this.real?`Open clade with ${count} animals`:`Open family with ${count} selected Pokémon`;
+        const active=this.activeClade===n.key;
+        parts.push(`<g role="button" tabindex="0" class="clade${active?' clade-active':''}" data-clade="${n.key}" aria-label="${cladeLabel}" aria-pressed="${active}"><title>${this.real?'Tap for clade facts · remove or keep':'Tap for this family · remove or keep'}</title><circle cx="${nx}" cy="${ny}" r="26" fill="transparent"/>${active?`<circle cx="${nx}" cy="${ny}" r="12" fill="none" stroke="${col}" stroke-width="3" opacity=".9"/>`:''}<circle class="visible-dot" cx="${nx}" cy="${ny}" r="${active?8:5}" fill="${col}" stroke="#fffdf8" stroke-width="2"/></g>`);
         if(this.real&&dated&&!n.layoutAge&&n.age>0.5&&(!circle||r(n)>36)){
           const ageText=formatAge(n.age,true);
           const [lx,ly]=circle?[nx+Math.cos(n.a+Math.PI/2)*26, ny+Math.sin(n.a+Math.PI/2)*26]:[nx-8,ny-7];

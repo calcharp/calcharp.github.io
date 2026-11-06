@@ -18,7 +18,111 @@ function spriteHTML(p) {
   return `<svg xmlns="http://www.w3.org/2000/svg" class="sprite-svg" viewBox="${spriteBox(p)}" aria-hidden="true" focusable="false"><image href="${spriteURL(p)}" width="96" height="96"/></svg>`;
 }
 function spriteURL(p){if(p.real)return p.photo||'';return spriteSources.get(p.id)||`sprites/${p.id}.png`;}
-const common={escape:escapeHTML,activate,spriteBox,spriteURL,sprite:spriteHTML,onMeet:openPokemon,onRemove:removeFromTree,onPick:()=>openPicker(),onColor:n=>{$('clearColors').hidden=!n;},onHint:text=>{$('treeHint').textContent=text;},onPhoto:(photos,index=0,title='')=>openPhotoLightbox(photos,index,title)};
+const common={escape:escapeHTML,activate,spriteBox,spriteURL,sprite:spriteHTML,onMeet:openPokemon,onRemove:removeFromTree,onPick:()=>openPicker(),onColor:n=>{$('clearColors').hidden=!n;},onClade:openClade,onHint:text=>{$('treeHint').textContent=text;},onPhoto:(photos,index=0,title='')=>openPhotoLightbox(photos,index,title)};
+let cladeRequest=0;
+function clearCladeFocus(){
+  treeView.activeClade=null;
+}
+function sharedInatAncestor(tipNames){
+  const animals=(tipNames||[]).map(name=>byName.get(name)).filter(animal=>animal?.ancestors?.length);
+  if(animals.length<2) return animals[0]?{id:animals[0].id,name:animals[0].name,rank:animals[0].rank||'species',common:animals[0].display}:null;
+  const chains=animals.map(animal=>[...animal.ancestors,{id:animal.id,name:animal.name,rank:animal.rank||'species',common:animal.display}]);
+  let shared=null;
+  for(const step of chains[0]){
+    if(chains.every(chain=>chain.some(node=>node.id===step.id))) shared=step;
+  }
+  // Prefer a named clade below kingdom when possible.
+  if(shared&&(shared.rank==='kingdom'||shared.name==='Animalia')&&chains[0].length>1){
+    const deeper=[...chains[0]].reverse().find(step=>step.rank!=='kingdom'&&step.name!=='Animalia'&&chains.every(chain=>chain.some(node=>node.id===step.id)));
+    if(deeper) shared=deeper;
+  }
+  return shared;
+}
+function keepOnlyClade(){
+  const key=treeView.activeClade;
+  const tips=treeView.cladeTips(key);
+  if(!tips.length) return;
+  selected=new Set(tips);
+  treeView.clades.clear();
+  clearCladeFocus();
+  hideDetail();
+  updateSelection();
+  announce(`Kept ${selected.size} ${noun()} from that clade.`);
+}
+function removeClade(){
+  const key=treeView.activeClade;
+  const tips=treeView.cladeTips(key);
+  if(!tips.length) return;
+  for(const name of tips) selected.delete(name);
+  treeView.clades.clear();
+  clearCladeFocus();
+  hideDetail();
+  updateSelection();
+  announce(selected.size?`Removed ${tips.length} ${noun()} from the tree.`:`Cleared the tree.`);
+}
+async function openClade(key,tips,node){
+  if(!key||!tips?.length) return;
+  const request=++cladeRequest;
+  const animals=tips.map(name=>byName.get(name)).filter(Boolean);
+  const wholeTree=tips.length>=selected.size;
+  const datedAge=node?.keepAge||node?.dated?node.age:null;
+  const ageLine=Number.isFinite(datedAge)&&datedAge>0.05?`About ${datedAge>=10?Math.round(datedAge):datedAge.toFixed(1)} million years at this split.`:'';
+  const tipList=animals.slice(0,12).map(animal=>`<li><button type="button" class="text-button clade-tip" data-meet="${animal.id}">${escapeHTML(animal.display)}</button></li>`).join('')
+    +(animals.length>12?`<li>…and ${animals.length-12} more</li>`:'');
+  const dialog=$('pokemonDetail'),esc=escapeHTML;
+  inspected={clade:true,key,tips};
+  dialog.innerHTML=`<button class="close-button" id="closeDetail" aria-label="Close clade details">×</button><p class="eyebrow">${speciesMode==='animals'?'REAL ANIMALS · CLADE':'POKÉMON · FAMILY BRANCH'}</p><h1 id="detailTitle">Shared ancestor</h1><p class="scientific-name" id="cladeScience">Looking up this group…</p><div class="detail-stage" id="cladePhotoStage"><span class="photo-missing">Loading clade…</span></div><p class="detail-source" id="cladeCredit"></p><p id="cladeSummary" class="animal-summary">${esc(ageLine||`This branch holds ${tips.length} of your picks.`)}</p><ul class="clade-tip-list">${tipList}</ul><div class="detail-actions"><button class="choose-button" id="cladeRemove">${wholeTree?`Clear tree (${tips.length})`:`Remove clade (${tips.length})`}</button>${wholeTree?'':`<button class="choose-button" id="cladeKeep">Keep only clade (${tips.length})</button>`}</div><p class="detail-note" id="cladeNote">Facts for named groups come from iNaturalist taxon pages (Wikipedia summaries and example photos).</p>`;
+  $('closeDetail').onclick=()=>{clearCladeFocus();hideDetail();treeView.render(selected,false);};
+  $('cladeRemove').onclick=()=>removeClade();
+  const keep=$('cladeKeep'); if(keep) keep.onclick=()=>keepOnlyClade();
+  dialog.querySelectorAll('[data-meet]').forEach(el=>el.onclick=()=>openPokemon(+el.dataset.meet));
+  showDetail();
+  $('treeHint').textContent=`Clade with ${tips.length} ${noun()}. Remove it or keep only these from the sidebar.`;
+  $('closeDetail').focus();
+  if(speciesMode!=='animals'){
+    if(request!==cladeRequest) return;
+    $('detailTitle').textContent='Family branch';
+    $('cladeScience').textContent=`${tips.length} selected Pokémon`;
+    $('cladePhotoStage').innerHTML='<span class="photo-missing">Pokémon family branch</span>';
+    $('cladeNote').textContent='This group is a branch of your model tree. Remove it or keep only these picks.';
+    return;
+  }
+  let taxon=null;
+  try{
+    const shared=sharedInatAncestor(tips);
+    if(shared?.id) taxon=await animalStore.taxonById(shared.id);
+    if((!taxon||taxon.rank==='kingdom')&&node?.label&&!/^ancestor$/i.test(node.label)&&!/^n\d+$/i.test(node.label)){
+      const named=await animalStore.taxonByName(node.label);
+      if(named&&(!taxon||(named.rank!=='kingdom'&&named.rank!=='species'))) taxon=named;
+    }
+  }catch{}
+  if(request!==cladeRequest||inspected?.key!==key) return;
+  if(!taxon){
+    $('detailTitle').textContent=node?.label&&node.label!=='Ancestor'?node.label:'Shared ancestor';
+    $('cladeScience').textContent=`${tips.length} species on this branch`;
+    $('cladePhotoStage').innerHTML='<span class="photo-missing">No iNaturalist match for this clade yet</span>';
+    $('cladeSummary').textContent=ageLine||`These ${tips.length} tips share this split on the Open Tree of Life.`;
+    return;
+  }
+  $('detailTitle').textContent=taxon.display||taxon.name;
+  $('cladeScience').textContent=`${taxon.rank||'clade'} · ${taxon.name} · ${tips.length} tips here`;
+  if(taxon.photo){
+    $('cladePhotoStage').innerHTML=`<img class="animal-photo" src="${esc(taxon.photo)}" alt="${esc(taxon.display)}" referrerpolicy="no-referrer">`;
+    $('cladeCredit').innerHTML=`${esc(taxon.credit||'Photo credit unavailable')} · <a href="${esc(taxon.photoLink||('https://www.inaturalist.org/taxa/'+taxon.id))}" target="_blank" rel="noopener">Photo source ↗</a>`;
+  }else{
+    $('cladePhotoStage').innerHTML='<span class="photo-missing">No example photo</span>';
+  }
+  const blurb=taxon.summary?esc(taxon.summary.length>=900?taxon.summary.slice(0,taxon.summary.lastIndexOf(' '))+'…':taxon.summary):'';
+  $('cladeSummary').innerHTML=`${ageLine?`<strong>${esc(ageLine)}</strong> `:''}${blurb||esc(`iNaturalist taxon for this shared ancestor (${tips.length} tips on the branch).`)}${taxon.wiki?` <a href="${esc(taxon.wiki)}" target="_blank" rel="noopener">Wikipedia ↗</a>`:''}`;
+  const actions=dialog.querySelector('.detail-actions');
+  if(actions&&!actions.querySelector('[data-inat-clade]')){
+    const link=document.createElement('a');
+    link.href=`https://www.inaturalist.org/taxa/${taxon.id}`;
+    link.target='_blank';link.rel='noopener';link.dataset.inatClade='1';
+    link.textContent='This group on iNaturalist ↗';
+    actions.append(link);
+  }
+}
 const treeView=new PokemonTree($('treeStage'),common);
 const atlas=new PokemonAtlas($('mapStage'),{...common,onRegion:name=>{$('region').value=name;},onPage:(page,pages)=>{
   $('mapPager').hidden=pages<=1;$('mapPage').textContent=`${page+1} / ${pages}`;$('mapPrev').disabled=page===0;$('mapNext').disabled=page===pages-1;
@@ -40,7 +144,7 @@ function updateSelection(changedId) {
 }
 function removeFromTree(id){
   const p=byId.get(+id);if(!p||!selected.has(p.name))return;
-  selected.delete(p.name);treeView.clades.clear();$('clearColors').hidden=true;
+  selected.delete(p.name);treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;
   updateSelection(p.id);announce('Removed '+p.display+'.');
 }
 let kinRequest=0,kinTimer=0,kinTaxon=null;
@@ -173,7 +277,7 @@ function hideDetail(){
   requestAnimationFrame(()=>{if(treeView?.viewport?.svg)treeView.viewport.fit();});
 }
 function openPokemon(id) {
-  inspected=byId.get(+id);if(!inspected)return;if(speciesMode==='animals'){openAnimal(inspected);return;}const p=inspected,dialog=$('pokemonDetail');
+  inspected=byId.get(+id);if(!inspected)return;clearCladeFocus();if(speciesMode==='animals'){openAnimal(inspected);return;}const p=inspected,dialog=$('pokemonDetail');
   dialog.innerHTML=`<button class="close-button" id="closeDetail" aria-label="Close Pokémon details">×</button><p class="eyebrow">#${String(p.id).padStart(4,'0')} · ${escapeHTML(p.genus)}</p><h1 id="detailTitle">${escapeHTML(p.display)}</h1><div class="detail-stage">${spriteHTML(p)}</div><div class="type-badges">${p.types.map(t=>`<span>${escapeHTML(t)}</span>`).join('')}</div><div class="detail-traits"><div><small>HEIGHT</small>${p.height} m</div><div><small>WEIGHT</small>${p.weight} kg</div><div><small>ABILITIES</small>${p.abilities.map(escapeHTML).join(', ')}</div><div><small>GENERATION REGION</small>${escapeHTML(p.region)}</div></div>${p.wikiExcerpt?`<blockquote>“${escapeHTML(p.wikiExcerpt)}”</blockquote><p class="detail-source">Short biology excerpt · Bulbapedia contributors</p>`:p.dexExcerpt?`<blockquote>“${escapeHTML(p.dexExcerpt)}…”</blockquote><p class="detail-source">Pokédex excerpt · via PokéAPI</p>`:''}${kinMarkup()}<div class="detail-actions"><a href="${escapeHTML(p.wiki)}" target="_blank" rel="noopener">More facts on Bulbapedia ↗</a><button class="choose-button" id="detailPick"></button></div><p class="detail-note">${p.inSource?'Included in the original 340-species dataset.':'Added to this model using '+(p.placement==='family'?'its game evolution family.':'shared traits. Its placement is an estimate.')}</p>`;
   $('closeDetail').onclick=hideDetail;$('detailPick').onclick=()=>{const name=p.name;toggle(p.id);if(!selected.has(name))hideDetail();};updateDetailButton();mountPokemonKin(p);showDetail();$('closeDetail').focus();
 }
@@ -186,14 +290,59 @@ document.addEventListener('pointerdown',e=>{if(!$('quickSearchWrap').contains(e.
 $('choose').onclick=()=>openPicker();$('pickerDone').onclick=closePicker;
 $('picker').addEventListener('cancel',()=>requestAnimationFrame(()=>{if(speciesMode==='animals')refreshAnimalTree();else renderActive();}));
 $('pickerSearch').oninput=()=>{clearTimeout(filterTimer);filterTimer=setTimeout(()=>{renderGrid();$('pokemonGrid').scrollTop=0;},100);};
-$('pickerRegion').onchange=()=>{renderGrid();$('pokemonGrid').scrollTop=0;};
+let animalPickRequest=0;
+$('pickerRegion').onchange=()=>{updateAddAllButton();renderGrid();$('pokemonGrid').scrollTop=0;};
+function updateAddAllButton(){
+  const button=$('addAllGroup');
+  if(!button) return;
+  const groupId=speciesMode==='animals'?$('pickerRegion').value:'';
+  const group=groupId?animalStore.groupById(groupId):null;
+  button.hidden=!group;
+  if(group) button.textContent=group.maxAdd?`Add ${group.name} (up to ${group.maxAdd})`:`Add all ${group.name}`;
+}
+async function addAllInGroup(){
+  if(speciesMode!=='animals'||!animalReady) return;
+  const groupId=$('pickerRegion').value;
+  const group=animalStore.groupById(groupId);
+  if(!group) return;
+  const button=$('addAllGroup');
+  const request=++animalPickRequest;
+  button.disabled=true;button.textContent=`Adding ${group.name}…`;
+  announce(`Adding ${group.name}…`);
+  try{
+    const animals=await animalStore.collectGroupSpecies(groupId);
+    if(request!==animalPickRequest||speciesMode!=='animals') return;
+    let added=0;
+    for(const animal of animals){
+      let full=animal;
+      if(!full.ancestors?.length){
+        try{full=await animalStore.hydrate(animal.id);}catch{full=animalStore.items.get(animal.id)||animal;}
+      }
+      if(!full?.name||!full.photo) continue;
+      byId.set(full.id,full);byName.set(full.name,full);animalStore.items.set(full.id,full);
+      if(!selected.has(full.name)){selected.add(full.name);added+=1;}
+    }
+    syncAnimals();
+    updateSelection();
+    if($('picker').open) renderAnimalGrid();
+    const capped=group.maxAdd&&animals.length>=group.maxAdd;
+    announce(added
+      ?`Added ${added} ${group.name.toLowerCase()}${capped?` (balanced sample of ${group.maxAdd})`:''}.`
+      :(animals.length?`Those ${group.name.toLowerCase()} were already picked.`:`Could not load ${group.name.toLowerCase()}. Try again.`));
+  }catch{
+    if(request===animalPickRequest) announce(`Could not add ${group.name.toLowerCase()}. Check the connection and try again.`);
+  }finally{
+    if(request===animalPickRequest){button.disabled=false;updateAddAllButton();}
+  }
+}
+$('addAllGroup').onclick=()=>addAllInGroup();
 $('pickedOnly').onclick=()=>{selectedOnly=!selectedOnly;$('pickedOnly').setAttribute('aria-pressed',selectedOnly);renderGrid();};
-$('clearSelection').onclick=()=>{selected.clear();treeView.clades.clear();$('clearColors').hidden=true;updateSelection();announce('All picks cleared.');};
+$('clearSelection').onclick=()=>{selected.clear();treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;updateSelection();announce('All picks cleared.');};
 $('surprise').onclick=()=>{
   if(speciesMode==='animals'){randomAnimals();return;}
   const clade=randomSubclade(data.tree,selected);
   if(!clade)return;
-  selected=clade;treeView.clades.clear();$('clearColors').hidden=true;updateSelection();announce(`${selected.size} Pokémon from one family-tree branch picked!`);
+  selected=clade;treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;updateSelection();announce(`${selected.size} Pokémon from one family-tree branch picked!`);
 };
 for(const [id,shape] of [['branchShape','branch'],['circleShape','circle']]) $(id).onclick=()=>{
   treeView.shape=shape;$('branchShape').setAttribute('aria-pressed',shape==='branch');$('circleShape').setAttribute('aria-pressed',shape==='circle');renderActive(true);
@@ -254,7 +403,7 @@ async function refreshAnimalTree(){
     data={pokemon:animals,tree:selected.size?tree:{name:'Animals',label:'Animals'}};
     byId=new Map(animals.map(a=>[a.id,a]));byName=new Map(animals.map(a=>[a.name,a]));
     const taxonomyFallback=data.tree?.taxonomySource==='inat';
-    treeView.real=true;treeView.taxonomy=taxonomyFallback;treeView.clades.clear();$('clearColors').hidden=true;
+    treeView.real=true;treeView.taxonomy=taxonomyFallback;treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;
     persist();$('selectionCount').textContent=selected.size;$('pickerSelected').textContent=selected.size;
     document.querySelectorAll('[data-pick-id]').forEach(button=>{const animal=byId.get(+button.dataset.pickId);if(!animal)return;const on=selected.has(animal.name);button.setAttribute('aria-pressed',on);button.setAttribute('aria-label',(on?'Remove ':'Add ')+animal.display);setPickMark(button,on);});
     const label=animalStore.pendingLabel;animalStore.pendingLabel='';
@@ -315,7 +464,7 @@ async function keepOnlyPicks(){
   const pruned=pruneTree(data.tree,selected);
   if(!pruned){announce('Nothing left to keep.');return;}
   data={...data,tree:pruned};
-  treeView.clades.clear();$('clearColors').hidden=true;
+  treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;
   const request=++animalTreeRequest;
   if(speciesMode==='animals'&&selected.size>=2&&data.tree?.children&&!data.tree.dated){
     $('treeHint').textContent='Looking up published ages…';
@@ -337,16 +486,18 @@ async function switchMode(mode){
   if(mode==='animals'&&!animalReady){$('animalMode').disabled=true;$('animalMode').textContent='Loading…';try{await animalStore.init();animalReady=true;}catch(error){$('treeHint').textContent='Animals could not load. Tap Real animals to retry.';return;}finally{$('animalMode').disabled=false;$('animalMode').textContent='Real animals';}}
   if(request!==modeRequest)return;
   if(speciesMode==='pokemon')pokemonSelection=new Set(selected);else animalSelection=new Set(selected);
-  speciesMode=mode;document.body.dataset.mode=mode;treeView.real=mode==='animals';treeView.taxonomy=false;treeView.signature='';treeView.clades.clear();$('clearColors').hidden=true;hideDetail();inspected=null;
+  speciesMode=mode;document.body.dataset.mode=mode;treeView.real=mode==='animals';treeView.taxonomy=false;treeView.signature='';treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;hideDetail();inspected=null;
   if(mode==='animals'){
-    syncAnimals();if(!animalSelection){let saved;try{saved=JSON.parse(localStorage.getItem('animal-discovery-selection'));}catch{}animalSelection=new Set(Array.isArray(saved)?saved.filter(n=>byName.has(n)):animalStore.groups[0].ids.map(id=>byId.get(id)?.name).filter(Boolean));}selected=new Set(animalSelection);
+    syncAnimals();if(!animalSelection){let saved;try{saved=JSON.parse(localStorage.getItem('animal-discovery-selection'));}catch{}const starter=animalStore.starterGroups?.[0]||animalStore.groups.find(g=>g.ids?.length)||animalStore.groups[0];animalSelection=new Set(Array.isArray(saved)?saved.filter(n=>byName.has(n)):(starter?.ids||[]).map(id=>byId.get(id)?.name).filter(Boolean));}selected=new Set(animalSelection);
   }else{data=pokemonData;byId=new Map(data.pokemon.map(p=>[p.id,p]));byName=new Map(data.pokemon.map(p=>[p.name,p]));selected=new Set(pokemonSelection);treeView.setData(data);}
   $('pokemonMode').setAttribute('aria-pressed',mode==='pokemon');$('animalMode').setAttribute('aria-pressed',mode==='animals');
   const real=mode==='animals';$('treeTab').textContent='Family tree';$('treeStage').setAttribute('aria-label',real?'Open Tree of Life':'Interactive family tree');$('quickSearch').value='';$('quickSearch').placeholder=real?'Find an animal…':'Find a Pokémon…';$('quickSearch').setAttribute('aria-label',real?'Find an animal':'Find a Pokémon');
   $('chooseLabel').textContent=real?'Choose animals':'Choose Pokémon';$('sizeLabel').textContent=real?'Photos':'Sprites';$('spriteSize').setAttribute('aria-label',real?'Photo size':'Sprite size');
   $('pickerTitle').textContent=real?'Choose your animals':'Choose your Pokémon';$('pickerSearch').placeholder=real?'Search common or scientific names…':'Search all 1,025 Pokémon…';$('pickerSearch').setAttribute('aria-label',real?'Search animals':'Search all Pokémon');
+  $('pickerBlurb').textContent=real?'Pick a group to browse, tap Add all for a ready-made set, or choose species one by one.':'Tap a card to add it. Tap again to take it out.';
   $('pickerRegion').innerHTML=real?'<option value="">All animals</option>'+animalStore.groups.map(g=>`<option value="${g.id}">${escapeHTML(g.name)}</option>`).join(''):'<option value="">All regions</option>'+['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'].map(n=>`<option>${n}</option>`).join('');$('pickerRegion').setAttribute('aria-label',real?'Filter by animal group':'Filter by region');
   $('region').parentElement.hidden=real;$('mapStage').hidden=real;$('earthStage').hidden=!real;$('mapPager').hidden=true;$('moreAnimals').hidden=true;
+  if(real) updateAddAllButton(); else $('addAllGroup').hidden=true;
   $('animalAbout').hidden=!real;$('pokemonAbout').hidden=real;
   document.querySelector('#treePanel .view-foot').innerHTML=real?'<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>':'<span>Model family tree · added relationships are estimates</span><span>Earlier → Now · relative time</span>';
   document.querySelector('#mapPanel .view-foot').innerHTML=real?'<span>GBIF sighting samples · photos & taxonomy: iNaturalist</span><a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF & data publishers ↗</a>':'<span>Grouped by debut generation · fan map</span><a href="https://www.deviantart.com/mossen1998/art/Pokemon-World-Map-as-of-2023-kitakami-988993196" target="_blank" rel="noopener">Map by MosseN1998 ↗</a>';
@@ -378,10 +529,10 @@ async function renderAnimalGrid(append=false){
     if(!items.length&&!append)$('pokemonGrid').innerHTML='<p class="no-results">No animals found. Try another name or group.</p>';
     const count=$('pokemonGrid').querySelectorAll('.pokemon-card').length;$('pickerCount').textContent=`${count} animals shown · ${selected.size} picked`;
     $('moreAnimals').hidden=selectedOnly||(!q&&!group)||!items.length||count>=total;
+    updateAddAllButton();
   }catch(error){if(request!==animalSearchRequest||speciesMode!=='animals')return;$('pickerCount').textContent='Search unavailable. Try again or choose All animals.';if(!append)$('pokemonGrid').innerHTML='<p class="no-results">Could not connect to iNaturalist. The starter collection is still available under All animals.</p>';}
 }
 $('moreAnimals').onclick=()=>{animalPage++;renderAnimalGrid(true);};
-let animalPickRequest=0;
 async function randomAnimals(){
   if(speciesMode!=='animals'||!animalReady)return;
   const request=++animalPickRequest;
@@ -394,7 +545,7 @@ async function randomAnimals(){
     syncAnimals();
     animalStore.pendingLabel=sample.node.common||sample.node.name;
     selected=new Set(sample.animals.map(animal=>animal.name).filter(name=>byName.get(name)?.photo));
-    treeView.clades.clear();$('clearColors').hidden=true;updateSelection();
+    treeView.clades.clear();clearCladeFocus();$('clearColors').hidden=true;updateSelection();
     announce(`${selected.size} species from ${animalStore.pendingLabel}.`);
   }catch(error){
     if(request===animalPickRequest)announce('Could not choose animals. Try Randomize again.');
@@ -542,6 +693,7 @@ function mountAnimalGallery(animal,photos){
 }
 async function openAnimal(animal){
   if(!animal||typeof animal!=='object')return;
+  clearCladeFocus();
   if(!animal.ancestors?.length){try{const full=await animalStore.hydrate(animal.id);if(full)animal=full;syncAnimals();}catch{}}
   animal.ancestors=animal.ancestors||[];
   const dialog=$('pokemonDetail'),esc=escapeHTML;

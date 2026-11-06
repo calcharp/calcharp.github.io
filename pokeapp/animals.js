@@ -92,6 +92,57 @@ function photoLoads(url,timeout=4000){
     image.src=url;
   });
 }
+// Curated iNaturalist taxa for Science Day browsing (picker filter + Add all).
+// maxAdd: huge / deep-time clades stay at 50 evenly sampled tips so trees stay usable.
+const ANIMAL_BROWSE_GROUPS=[
+  {id:42043,name:'Dogs & foxes',scientific:'Canidae'},
+  {id:41944,name:'Cats',scientific:'Felidae'},
+  {id:41636,name:'Bears',scientific:'Ursidae'},
+  {id:41770,name:'Weasels & otters',scientific:'Mustelidae'},
+  {id:42158,name:'Deer',scientific:'Cervidae'},
+  {id:40268,name:'Bats',scientific:'Chiroptera',maxAdd:50},
+  {id:43367,name:'Primates',scientific:'Primates'},
+  {id:71390,name:'Galagos',scientific:'Galagidae'},
+  {id:43607,name:'Lemurs',scientific:'Lemuridae'},
+  {id:152871,name:'Whales & dolphins',scientific:'Cetacea'},
+  {id:41479,name:'Ocean dolphins',scientific:'Delphinidae'},
+  {id:19350,name:'Owls',scientific:'Strigiformes'},
+  {id:5067,name:'Hawks & eagles',scientific:'Accipitridae',maxAdd:50},
+  {id:18874,name:'Parrots',scientific:'Psittaciformes',maxAdd:50},
+  {id:3806,name:'Penguins',scientific:'Spheniscidae'},
+  {id:47273,name:'Sharks & rays',scientific:'Elasmobranchii',maxAdd:50},
+  {id:20979,name:'Frogs & toads',scientific:'Anura',maxAdd:50},
+  {id:1658175,name:'Tree frogs',scientific:'Hylidae',maxAdd:50},
+  {id:27701,name:'Newts & salamanders',scientific:'Salamandridae'},
+  {id:39532,name:'Turtles & tortoises',scientific:'Testudines'},
+  {id:85553,name:'Snakes',scientific:'Serpentes',maxAdd:50},
+  {id:26039,name:'Crocodilians',scientific:'Crocodylia'},
+  {id:47224,name:'Butterflies',scientific:'Papilionoidea',maxAdd:50},
+  {id:47922,name:'Brush-footed butterflies',scientific:'Nymphalidae',maxAdd:50},
+  {id:47221,name:'Bees',scientific:'Apidae',maxAdd:50},
+  {id:47336,name:'Ants',scientific:'Formicidae',maxAdd:50},
+  {id:47208,name:'Beetles',scientific:'Coleoptera',maxAdd:50},
+  {id:47792,name:'Dragonflies',scientific:'Odonata',maxAdd:50}
+];
+function sampleEven(list,limit){
+  if(!list?.length||limit<=0) return [];
+  if(list.length<=limit) return list.slice();
+  if(limit===1) return [list[0]];
+  const out=[];
+  const seen=new Set();
+  for(let i=0;i<limit;i++){
+    const index=Math.round(i*(list.length-1)/(limit-1));
+    if(seen.has(index)) continue;
+    seen.add(index);
+    out.push(list[index]);
+  }
+  // Fill any rounding gaps from unused slots.
+  for(let i=0;i<list.length&&out.length<limit;i++){
+    if(seen.has(i)) continue;
+    seen.add(i);out.push(list[i]);
+  }
+  return out;
+}
 class AnimalStore {
   constructor(){this.items=new Map();this.cache=new Map();this.pending=0;this.waiters=[];this.treeCache=new Map();this.dateCache=new Map();this.synonymCache=new Map();this.pendingLabel='';}
   async json(url) {
@@ -104,7 +155,66 @@ class AnimalStore {
     })();this.cache.set(url,promise);
     try{return await promise;}catch(error){this.cache.delete(url);throw error;}
   }
-  async init(){const response=await fetch('animals.json');if(!response.ok)throw Error('Animal collection unavailable.');const data=await response.json();this.groups=data.groups;this.snapshotDate=data.snapshotDate;this.nodes=[];data.animals.forEach(a=>this.items.set(a.id,animalToSpecies(a)));try{const nodeResponse=await fetch('animal-nodes.json');if(nodeResponse.ok){const catalog=await nodeResponse.json();this.nodes=catalog.nodes||[];}}catch{}try{JSON.parse(localStorage.getItem('animal-discovery-cache')||'[]').forEach(a=>{if(a.id&&a.name&&Array.isArray(a.ancestors)&&(a.hydrated||a.photo))this.items.set(a.id,a);});}catch{}return this;}
+  async init(){
+    const response=await fetch('animals.json');
+    if(!response.ok)throw Error('Animal collection unavailable.');
+    const data=await response.json();
+    this.starterGroups=data.groups||[];
+    const starterById=new Map(this.starterGroups.map(group=>[group.id,group]));
+    this.groups=ANIMAL_BROWSE_GROUPS.map(group=>{
+      const starter=starterById.get(group.id);
+      return {...group,ids:starter?.ids||[]};
+    });
+    // Keep any starter-only packs that are not in the curated browse list.
+    for(const starter of this.starterGroups){
+      if(!this.groups.some(group=>group.id===starter.id)) this.groups.push({id:starter.id,name:starter.name,scientific:starter.scientific||'',ids:starter.ids||[]});
+    }
+    this.snapshotDate=data.snapshotDate;this.nodes=[];
+    data.animals.forEach(a=>this.items.set(a.id,animalToSpecies(a)));
+    try{const nodeResponse=await fetch('animal-nodes.json');if(nodeResponse.ok){const catalog=await nodeResponse.json();this.nodes=catalog.nodes||[];}}catch{}
+    try{JSON.parse(localStorage.getItem('animal-discovery-cache')||'[]').forEach(a=>{if(a.id&&a.name&&Array.isArray(a.ancestors)&&(a.hydrated||a.photo))this.items.set(a.id,a);});}catch{}
+    return this;
+  }
+  groupById(id){return this.groups.find(group=>String(group.id)===String(id))||null;}
+  async collectGroupSpecies(groupId){
+    const group=this.groupById(groupId);
+    const maxAdd=group?.maxAdd||0;
+    // Soft ceiling so uncapped groups still finish on tablets; capped groups pull a wider pool then sample evenly.
+    const poolTarget=maxAdd?Math.min(150,maxAdd*3):200;
+    const pageSize=50;
+    const maxPages=Math.ceil(poolTarget/pageSize)+1;
+    const collected=[];
+    const seen=new Set();
+    const take=animal=>{
+      if(!animal?.photo||!animal.name||seen.has(animal.id)||seen.has(animal.name)) return;
+      seen.add(animal.id);seen.add(animal.name);collected.push(animal);
+    };
+    let total=null;
+    for(let page=1;page<=maxPages&&collected.length<poolTarget;page++){
+      try{
+        const result=await this.search('',String(groupId),page,pageSize);
+        if(total==null) total=result.total||0;
+        for(const animal of result.items||[]) take(animal);
+        if(!(result.items||[]).length) break;
+        if(total&&page*pageSize>=total) break;
+        if(!maxAdd&&total&&collected.length>=total) break;
+      }catch{break;}
+    }
+    if(collected.length<8&&group?.ids?.length){
+      for(const id of group.ids){
+        const animal=this.items.get(id);
+        if(animal) take(animal);
+      }
+    }
+    if(maxAdd&&collected.length>maxAdd) return sampleEven(collected,maxAdd);
+    return collected;
+  }
+  mapPointBudget(speciesCount){
+    const n=Math.max(1,speciesCount|0);
+    // Keep total markers roughly steady so 40–50 tip trees stay snappy on iPads.
+    const budget=260;
+    return Math.max(4,Math.min(80,Math.floor(budget/n)));
+  }
   save(){try{localStorage.setItem('animal-discovery-cache',JSON.stringify([...this.items.values()].filter(a=>a.hydrated||a.photoOk).slice(-150)));}catch{}}
   photoEntry(p,taxonId){
     if(!p)return null;
@@ -143,14 +253,33 @@ class AnimalStore {
     animal.galleryReady=true;
     return animal.photos||[];
   }
-  async search(query='',group='',page=1){
-    const params=new URLSearchParams({q:query,taxon_id:group||'1',rank:'species',is_active:'true',per_page:'24',page:String(page),order_by:'observations_count',locale:'en'});
+  async search(query='',group='',page=1,perPage=24){
+    const params=new URLSearchParams({q:query,taxon_id:group||'1',rank:'species',is_active:'true',per_page:String(Math.max(1,Math.min(200,perPage||24))),page:String(page),order_by:'observations_count',locale:'en'});
     const data=await this.json('https://api.inaturalist.org/v1/taxa?'+params);
     const items=(data.results||[]).filter(t=>t.rank==='species'&&t.is_active!==false&&!t.extinct&&(t.ancestor_ids||[]).includes(1)&&(t.default_photo?.medium_url||t.default_photo?.url)).map(t=>{const existing=this.items.get(t.id);if(existing)return existing;const animal=this.normalize(t);if(!animal.photo)return null;this.items.set(animal.id,animal);return animal;}).filter(Boolean);
     return {items,total:data.total_results||0};
   }
   async hydrate(id){let animal=this.items.get(id);if(!animal)throw Error('Animal not found.');if(animal.ancestors?.length&&animal.hydrated)return animal;
     const result=await this.json(`https://api.inaturalist.org/v1/taxa/${id}?locale=en`);const taxon=result.results?.[0];if(!taxon||taxon.rank!=='species'||!(taxon.ancestor_ids||[]).includes(1))throw Error('No animal taxonomy available for this species.');animal=this.normalize(taxon);animal.hydrated=true;this.items.set(id,animal);this.save();return animal;
+  }
+  // Any-rank iNat taxon card (clades: family/order/class, etc.) with Wikipedia blurb + photo.
+  async taxonById(id){
+    if(!id) return null;
+    const result=await this.json(`https://api.inaturalist.org/v1/taxa/${id}?locale=en`);
+    const taxon=result.results?.[0];
+    if(!taxon) return null;
+    return this.normalize(taxon);
+  }
+  async taxonByName(name){
+    const query=String(name||'').trim();
+    if(!query) return null;
+    const params=new URLSearchParams({q:query,is_active:'true',per_page:'8',locale:'en'});
+    const data=await this.json('https://api.inaturalist.org/v1/taxa?'+params);
+    const rows=(data.results||[]).filter(t=>t.is_active!==false&&(t.ancestor_ids||[]).includes(1));
+    const exact=rows.find(t=>String(t.name||'').toLowerCase()===query.toLowerCase())
+      ||rows.find(t=>String(t.preferred_common_name||'').toLowerCase()===query.toLowerCase())
+      ||rows[0];
+    return exact?this.normalize(exact):null;
   }
   occurrenceFields(r){
     const media=(r.media||[]).find(m=>m.type==='StillImage'&&(m.identifier||m.references));
@@ -164,13 +293,20 @@ class AnimalStore {
       recordedBy:r.recordedBy||''
     };
   }
-  async occurrences(animal){
-    if(Array.isArray(animal.points)){if(animal.points.length>100){animal.points=animal.points.slice(0,100);this.save();}return animal.points;}
+  async occurrences(animal,{limit=100}={}){
+    const want=Math.max(1,Math.min(100,Number(limit)||100));
+    if(Array.isArray(animal.points)&&animal.points.length){
+      if(animal.points.length>100){animal.points=animal.points.slice(0,100);this.save();}
+      return animal.points.slice(0,want);
+    }
     if(!animal.gbifKey){const match=await this.json('https://api.gbif.org/v1/species/match?'+new URLSearchParams({name:animal.name,kingdom:'Animalia',strict:'true'}));
       if(match.matchType!=='EXACT'||match.rank!=='SPECIES'||match.kingdom!=='Animalia')throw Error('No exact GBIF species match.');animal.gbifKey=match.acceptedUsageKey||match.usageKey;
     }
-    const records=await this.json('https://api.gbif.org/v1/occurrence/search?'+new URLSearchParams({taxonKey:animal.gbifKey,hasCoordinate:'true',hasGeospatialIssue:'false',occurrenceStatus:'PRESENT',limit:'100'}));
-    animal.points=(records.results||[]).filter(r=>Number.isFinite(r.decimalLatitude)&&Math.abs(r.decimalLatitude)<=90&&Number.isFinite(r.decimalLongitude)&&Math.abs(r.decimalLongitude)<=180).slice(0,100).map(r=>this.occurrenceFields(r));animal.occurrenceCount=Math.min(records.count||animal.points.length,100);this.save();return animal.points;
+    const records=await this.json('https://api.gbif.org/v1/occurrence/search?'+new URLSearchParams({taxonKey:animal.gbifKey,hasCoordinate:'true',hasGeospatialIssue:'false',occurrenceStatus:'PRESENT',limit:String(want)}));
+    animal.points=(records.results||[]).filter(r=>Number.isFinite(r.decimalLatitude)&&Math.abs(r.decimalLatitude)<=90&&Number.isFinite(r.decimalLongitude)&&Math.abs(r.decimalLongitude)<=180).slice(0,want).map(r=>this.occurrenceFields(r));
+    animal.occurrenceCount=Math.min(records.count||animal.points.length,want);
+    this.save();
+    return animal.points.slice(0,want);
   }
   async occurrencePreview(record){
     if(record.previewReady)return record;
@@ -1059,9 +1195,10 @@ class AnimalMap {
     const animals=[...selected].map(name=>[...this.store.items.values()].find(a=>a.name===name)).filter(Boolean);
     if(!animals.length){this.loaded=true;this.syncSize(true);return;}
     const colors=['#7b2c91','#007d9c','#ce661a','#32752d','#c43b67','#425cc2','#8b6414','#357e7e','#8c4c4c','#583bba'];
+    const perSpecies=this.store.mapPointBudget(animals.length);
     await Promise.all(animals.map(async(animal,i)=>{const color=colors[i%colors.length];
       const card=document.createElement('button');card.className='animal-map-card';card.style.setProperty('--animal-color',color);card.innerHTML=`${this.helpers.sprite(animal)}<b>${this.helpers.escape(animal.display)}</b><small>Loading…</small>`;card.onclick=()=>this.helpers.onMeet(animal.id);legend.append(card);
-      try{const records=(await this.store.occurrences(animal)).slice(0,100);if(revision!==this.revision)return;
+      try{const records=await this.store.occurrences(animal,{limit:perSpecies});if(revision!==this.revision)return;
         card.querySelector('small').textContent=records.length?`${records.length} on the map`:'No mapped points';
         const name=this.helpers.escape(animal.display);
         for(const record of records){

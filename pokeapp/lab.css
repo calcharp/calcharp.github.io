@@ -38,7 +38,7 @@ body.detail-open .explorer{padding-right:min(680px,100%)}
 .species-panel .detail-stage .sprite-svg{width:132px;height:132px}.species-panel .detail-stage .animal-photo{width:100%;height:100%;max-width:none;object-fit:contain}
 .species-panel h1{font-size:24px}
 .species-panel .detail-actions{flex-wrap:wrap}
-.species-panel .detail-actions .choose-button{min-height:44px}
+.species-panel .detail-actions .choose-button{min-height:44px}.clade-tip-list{margin:10px 0 14px;padding:0 0 0 18px;max-height:160px;overflow:auto}.clade-tip-list li{margin:4px 0}.clade-tip-list .text-button{font-weight:700;text-align:left}
 @media(max-width:760px){body.detail-open .explorer{padding-right:0}.species-panel{width:min(100%,440px)}}
 
 /* iPad portrait and landscape. Keep the world, the tree, and the time scale from covering one another. */
