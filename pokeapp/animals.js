@@ -139,7 +139,7 @@ class AnimalStore {
     const items=(data.results||[]).filter(t=>t.rank==='species'&&t.is_active!==false&&!t.extinct&&(t.ancestor_ids||[]).includes(1)&&(t.default_photo?.medium_url||t.default_photo?.url)).map(t=>{const existing=this.items.get(t.id);if(existing)return existing;const animal=this.normalize(t);if(!animal.photo)return null;this.items.set(animal.id,animal);return animal;}).filter(Boolean);
     return {items,total:data.total_results||0};
   }
-  async hydrate(id){let animal=this.items.get(id);if(!animal)throw Error('Animal not found.');if(animal.ancestors.length)return animal;
+  async hydrate(id){let animal=this.items.get(id);if(!animal)throw Error('Animal not found.');if(animal.ancestors?.length&&animal.hydrated)return animal;
     const result=await this.json(`https://api.inaturalist.org/v1/taxa/${id}?locale=en`);const taxon=result.results?.[0];if(!taxon||taxon.rank!=='species'||!(taxon.ancestor_ids||[]).includes(1))throw Error('No animal taxonomy available for this species.');animal=this.normalize(taxon);animal.hydrated=true;this.items.set(id,animal);this.save();return animal;
   }
   occurrenceFields(r){
@@ -176,7 +176,7 @@ class AnimalStore {
   async relatives(taxonId,query=''){
     const params=new URLSearchParams({q:query,taxon_id:String(taxonId),rank:'species',is_active:'true',per_page:'12',page:'1',order_by:'observations_count',order:'desc',locale:'en'});
     const data=await this.json('https://api.inaturalist.org/v1/taxa?'+params);
-    return (data.results||[]).filter(t=>t.rank==='species'&&t.is_active!==false&&!t.extinct&&(t.ancestor_ids||[]).includes(1)&&(t.default_photo?.medium_url||t.default_photo?.url)).slice(0,12).map(t=>{const existing=this.items.get(t.id);if(existing?.photo)return existing;const animal=this.normalize(t);if(!animal.photo)return null;this.items.set(animal.id,animal);return animal;}).filter(Boolean);
+    return (data.results||[]).filter(t=>t.rank==='species'&&t.is_active!==false&&!t.extinct&&(t.ancestor_ids||[]).includes(1)&&(t.default_photo?.medium_url||t.default_photo?.url)).slice(0,12).map(t=>{const existing=this.items.get(t.id);if(existing?.photo&&existing.ancestors?.length)return existing;const animal=this.normalize(t);if(!animal.photo)return null;if(existing){animal.points=existing.points;animal.gbifKey=existing.gbifKey;animal.ottId=existing.ottId;animal.ottName=existing.ottName;}this.items.set(animal.id,animal);return animal;}).filter(Boolean);
   }
   shuffle(list){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
   usableSpecies(results){return (results||[]).filter(t=>t.rank==='species'&&t.is_active!==false&&!t.extinct&&t.name&&(t.ancestor_ids||[]).includes(1)&&(t.default_photo?.medium_url||t.default_photo?.url));}
@@ -238,24 +238,51 @@ class AnimalStore {
     }
     throw Error('Open Tree of Life could not place these species.');
   }
+  tipNamesOf(node,names=new Set()){
+    if(!node) return names;
+    if(!node.children){if(node.name)names.add(node.name);return names;}
+    node.children.forEach(child=>this.tipNamesOf(child,names));
+    return names;
+  }
+  inatTaxonomyTree(animals){
+    const list=(animals||[]).filter(animal=>animal?.name&&animal.ancestors?.length);
+    if(!list.length){
+      const only=(animals||[]).filter(animal=>animal?.name);
+      if(only.length===1) return {name:only[0].name,label:only[0].display,ottId:only[0].ottId,taxonomySource:'inat'};
+      return {name:'Animals',label:'Animals',taxonomySource:'inat'};
+    }
+    if(list.length===1) return {name:list[0].name,label:list[0].display,ottId:list[0].ottId,taxonomySource:'inat'};
+    const tree=buildTaxonomy(list);
+    tree.taxonomySource='inat';
+    if(!tree.label) tree.label='Animals';
+    return tree;
+  }
   async openTree(animals){
+    const list=(animals||[]).filter(animal=>animal?.name);
+    if(!list.length) return {name:'Animals',label:'Animals'};
+    if(list.length===1) return {name:list[0].name,label:list[0].display,ottId:list[0].ottId};
+    const key='open:'+list.map(animal=>animal.name).sort().join('|');
+    if(this.treeCache.has(key)) return this.treeCache.get(key);
+    const finish=tree=>{this.treeCache.set(key,tree);return tree;};
     const byOtt=new Map();
-    for(const animal of animals){
+    for(const animal of list){
       if(!animal?.ottId) continue;
-      const list=byOtt.get(animal.ottId)||[];
-      if(!list.some(item=>item.name===animal.name)) list.push(animal);
-      byOtt.set(animal.ottId,list);
+      const group=byOtt.get(animal.ottId)||[];
+      if(!group.some(item=>item.name===animal.name)) group.push(animal);
+      byOtt.set(animal.ottId,group);
     }
     const ids=[...byOtt.keys()];
-    if(!ids.length) return {name:'Animals',label:'Animals'};
-    if(ids.length===1&&byOtt.get(ids[0]).length===1){const animal=byOtt.get(ids[0])[0];return {name:animal.name,label:animal.display,ottId:animal.ottId};}
-    const key=ids.slice().sort((a,b)=>a-b).join(',')+'|'+[...byOtt.values()].flat().map(animal=>animal.name).sort().join(',');
-    if(this.treeCache.has(key)) return this.treeCache.get(key);
-    let tree=attachTips(collapseUnary(parseNewick(await this.inducedSubtree(ids))),byOtt);
-    tree=collapseUnary(tree)||{name:'Animals',label:'Animals'};
-    if(!tree.label) tree.label='Animals';
-    this.treeCache.set(key,tree);
-    return tree;
+    // Species pruned from the synthetic Open Tree (common for incertae sedis) need a taxonomy fallback.
+    if(ids.length>=2){
+      try{
+        let tree=attachTips(collapseUnary(parseNewick(await this.inducedSubtree(ids))),byOtt);
+        tree=collapseUnary(tree)||{name:'Animals',label:'Animals'};
+        if(!tree.label) tree.label='Animals';
+        const placed=this.tipNamesOf(tree);
+        if(list.every(animal=>placed.has(animal.name))) return finish(tree);
+      }catch{}
+    }
+    return finish(this.inatTaxonomyTree(list));
   }
   newickOf(node){
     if(!node?.children) return String(node?.name||'').replace(/\s+/g,'_');

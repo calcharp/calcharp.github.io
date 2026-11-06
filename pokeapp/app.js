@@ -237,23 +237,38 @@ async function refreshAnimalTree(){
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
     await animalStore.ensureOtt(visible);
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
-    const tree=await animalStore.openTree(visible.filter(animal=>animal.ottId));
+    // Hydrate any selected relative that still lacks ancestry so taxonomy fallback can place it.
+    for(const animal of visible){
+      if(!animal.ancestors?.length){
+        try{await animalStore.hydrate(animal.id);}catch{}
+      }
+    }
+    syncAnimals();
+    const ready=[...selected].map(name=>byName.get(name)).filter(animal=>animal?.photo);
+    const tree=await animalStore.openTree(ready);
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
-    selected=new Set([...placedNames(tree)].filter(name=>byName.has(name)));
+    // Keep every photo-ready pick; taxonomy fallback can place tips Open Tree prunes.
+    selected=new Set(ready.map(animal=>animal.name));
     const animals=[...animalStore.items.values()];
     data={pokemon:animals,tree:selected.size?tree:{name:'Animals',label:'Animals'}};
     byId=new Map(animals.map(a=>[a.id,a]));byName=new Map(animals.map(a=>[a.name,a]));
-    treeView.real=true;treeView.taxonomy=false;treeView.clades.clear();$('clearColors').hidden=true;treeView.setData(data);
+    const taxonomyFallback=data.tree?.taxonomySource==='inat';
+    treeView.real=true;treeView.taxonomy=taxonomyFallback;treeView.clades.clear();$('clearColors').hidden=true;treeView.setData(data);
     persist();$('selectionCount').textContent=selected.size;$('pickerSelected').textContent=selected.size;
     document.querySelectorAll('[data-pick-id]').forEach(button=>{const animal=byId.get(+button.dataset.pickId);if(!animal)return;const on=selected.has(animal.name);button.setAttribute('aria-pressed',on);button.setAttribute('aria-label',(on?'Remove ':'Add ')+animal.display);setPickMark(button,on);});
     renderActive(true);
     const label=animalStore.pendingLabel;animalStore.pendingLabel='';
     const leftOut=chosen.length-selected.size;
-    $('treeHint').textContent=leftOut?`${selected.size} species on the Open Tree of Life. ${leftOut} left out without a photo or tree match.`:(label?`${selected.size} species from ${label}. Tap a photo to meet an animal.`:'Tap a photo to meet an animal. Tap a dot to color its branch.');
     const foot=document.querySelector('#treePanel .view-foot');
-    if(foot) foot.innerHTML=data.tree?.dated?'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>';
-    if(data.tree?.dated) $('treeHint').textContent=`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(data.tree.age)} million years ago.`;
-    if(selected.size>=2&&data.tree?.children) dateAnimalTree(request,data.tree);
+    if(taxonomyFallback){
+      if(foot) foot.innerHTML='<span>iNaturalist taxonomy · Open Tree could not place these tips</span><span>Related by classification</span>';
+      $('treeHint').textContent=leftOut?`${selected.size} species shown by taxonomy. ${leftOut} left out without a photo or ancestry.`:(label?`${selected.size} species from ${label}. Open Tree lacks these tips, so classification is shown.`:'Open Tree lacks these tips, so the tree uses iNaturalist classification. Tap a photo to meet an animal.');
+    }else{
+      $('treeHint').textContent=leftOut?`${selected.size} species on the Open Tree of Life. ${leftOut} left out without a photo or tree match.`:(label?`${selected.size} species from ${label}. Tap a photo to meet an animal.`:'Tap a photo to meet an animal. Tap a dot to color its branch.');
+      if(foot) foot.innerHTML=data.tree?.dated?'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>';
+      if(data.tree?.dated) $('treeHint').textContent=`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(data.tree.age)} million years ago.`;
+      if(selected.size>=2&&data.tree?.children) dateAnimalTree(request,data.tree);
+    }
   }catch(error){
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
     showAnimalError('The Open Tree of Life could not be loaded. Try again.');
