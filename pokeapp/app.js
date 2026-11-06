@@ -254,46 +254,52 @@ async function refreshAnimalTree(){
     data={pokemon:animals,tree:selected.size?tree:{name:'Animals',label:'Animals'}};
     byId=new Map(animals.map(a=>[a.id,a]));byName=new Map(animals.map(a=>[a.name,a]));
     const taxonomyFallback=data.tree?.taxonomySource==='inat';
-    treeView.real=true;treeView.taxonomy=taxonomyFallback;treeView.clades.clear();$('clearColors').hidden=true;treeView.setData(data);
+    treeView.real=true;treeView.taxonomy=taxonomyFallback;treeView.clades.clear();$('clearColors').hidden=true;
     persist();$('selectionCount').textContent=selected.size;$('pickerSelected').textContent=selected.size;
     document.querySelectorAll('[data-pick-id]').forEach(button=>{const animal=byId.get(+button.dataset.pickId);if(!animal)return;const on=selected.has(animal.name);button.setAttribute('aria-pressed',on);button.setAttribute('aria-label',(on?'Remove ':'Add ')+animal.display);setPickMark(button,on);});
-    renderActive(true);
     const label=animalStore.pendingLabel;animalStore.pendingLabel='';
     const leftOut=chosen.length-selected.size;
+    // Date before first paint so iPads don't flash synthetic ultrametric then jump to Ma.
+    if(selected.size>=2&&data.tree?.children){
+      $('treeHint').textContent='Looking up published ages…';
+      await dateAnimalTree(request,data.tree,{paint:false});
+      if(request!==animalTreeRequest||speciesMode!=='animals')return;
+    }
+    treeView.setData(data);
+    renderActive(true);
     const foot=document.querySelector('#treePanel .view-foot');
-    if(taxonomyFallback){
+    if(data.tree?.dated||(selected.size>=2&&data.tree?.children)){
+      // dateAnimalTree already wrote the Ma or synthetic fallback hint/foot.
+    }else if(taxonomyFallback){
       if(foot) foot.innerHTML='<span>iNaturalist taxonomy · Open Tree could not place these tips</span><span>Related by classification</span>';
       $('treeHint').textContent=leftOut?`${selected.size} species shown by taxonomy. ${leftOut} left out without a photo or ancestry.`:(label?`${selected.size} species from ${label}. Open Tree lacks these tips, so classification is shown.`:'Open Tree lacks these tips, so the tree uses iNaturalist classification. Tap a photo to meet an animal.');
     }else{
       $('treeHint').textContent=leftOut?`${selected.size} species on the Open Tree of Life. ${leftOut} left out without a photo or tree match.`:(label?`${selected.size} species from ${label}. Tap a photo to meet an animal.`:'Tap a photo to meet an animal. Tap a dot to color its branch.');
-      if(foot) foot.innerHTML=data.tree?.dated?'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>';
-      if(data.tree?.dated) $('treeHint').textContent=`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(data.tree.age)} million years ago.`;
+      if(foot) foot.innerHTML='<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>';
     }
-    if(selected.size>=2&&data.tree?.children) dateAnimalTree(request,data.tree);
   }catch(error){
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
     showAnimalError('The Open Tree of Life could not be loaded. Try again.');
   }
 }
 function showAnimalError(message){announce(message);$('treeHint').textContent=message;const panel=$('picker').open?$('pickerCount'):null;if(panel)panel.textContent=message;}
-async function dateAnimalTree(request,tree){
+async function dateAnimalTree(request,tree,{paint=true}={}){
   if(!tree.dated) $('treeHint').textContent='Looking up published ages…';
   const dated=await animalStore.dateTree(tree);
-  if(request!==animalTreeRequest||speciesMode!=='animals') return;
+  if(request!==animalTreeRequest||speciesMode!=='animals') return false;
   if(!dated){
     if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No published ages matched these tips, so time is synthetic.':'Tap a photo to meet an animal. No published ages matched these tips, so time is synthetic.';
-    return;
+    return false;
   }
   const applied=dated.source==='timetree'?animalStore.applyTimeTreeDates(tree,dated):animalStore.applyDates(tree,dated);
   if(!applied){
     if(!tree.dated) $('treeHint').textContent='Published ages came back, but they could not be matched to this tree. Showing synthetic time.';
-    return;
+    return false;
   }
   if(dated.source==='catalog') tree.dateSource='catalog';
   // Dated ages win over taxonomy-only layout.
   treeView.taxonomy=false;
   if(tree.taxonomySource) delete tree.taxonomySource;
-  treeView.setData(data);renderActive(false);
   const coverage=tree.dateCoverage;
   const partial=coverage<0.999;
   const source=tree.dateSource==='timetree'?'TimeTree':tree.dateSource==='catalog'?'DateLife':'DateLife';
@@ -301,17 +307,24 @@ async function dateAnimalTree(request,tree){
   $('treeHint').textContent=partial
     ?`Branch lengths use ${source} ages for ${Math.round(coverage*100)}% of these tips (about ${Math.round(tree.age)} Ma at the root). Species missing published ages stay in place with short fillers.`
     :`Branch lengths are ${source} ages, in millions of years. The oldest split shown is about ${Math.round(tree.age)} million years ago.`;
+  if(paint){treeView.setData(data);renderActive(false);}
+  return true;
 }
-function keepOnlyPicks(){
+async function keepOnlyPicks(){
   if(!data?.tree||selected.size<1){announce('Pick at least one species first.');return;}
   const pruned=pruneTree(data.tree,selected);
   if(!pruned){announce('Nothing left to keep.');return;}
   data={...data,tree:pruned};
   treeView.clades.clear();$('clearColors').hidden=true;
+  const request=++animalTreeRequest;
+  if(speciesMode==='animals'&&selected.size>=2&&data.tree?.children&&!data.tree.dated){
+    $('treeHint').textContent='Looking up published ages…';
+    await dateAnimalTree(request,data.tree,{paint:false});
+    if(request!==animalTreeRequest||speciesMode!=='animals') return;
+  }
   treeView.setData(data);persist();renderActive(true);
   updateKeepButton();
   announce(`Dropped everything except ${selected.size} picked ${noun()}.`);
-  if(speciesMode==='animals'&&selected.size>=2&&data.tree?.children) dateAnimalTree(++animalTreeRequest,data.tree);
 }
 function updateKeepButton(){
   const button=$('keepPicks');
