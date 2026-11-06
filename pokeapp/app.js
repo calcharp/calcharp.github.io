@@ -280,7 +280,7 @@ async function dateAnimalTree(request,tree){
   const dated=await animalStore.dateTree(tree);
   if(request!==animalTreeRequest||speciesMode!=='animals') return;
   if(!dated){
-    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. Published ages need the local DateLife server.':'Tap a photo to meet an animal. Tap a dot to color its branch. Published ages need the local DateLife server.';
+    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. No published chronogram covered enough of these tips, so time is synthetic.':'Tap a photo to meet an animal. Tap a dot to color its branch. No published chronogram covered enough of these tips, so time is synthetic.';
     return;
   }
   if(!animalStore.applyDates(tree,dated)){

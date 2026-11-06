@@ -508,7 +508,63 @@ class AnimalStore {
     tree.dateCoverage=tipMap.size/tips.length;
     return tree.age>0&&tree.dated;
   }
-  dateTree(tree){
+  chronogramCoverage(dated,chosen,aliasMap){
+    if(!dated?.root||!chosen?.length) return {coverage:0,missing:chosen||[]};
+    const present=new Set();
+    const gather=node=>{if(!node.children){const name=String(node.label||node.name||'').toLowerCase().replace(/_/g,' ').trim();if(name)present.add(name);}else node.children.forEach(gather);};
+    gather(dated.root);
+    const hit=name=>{
+      const norm=String(name||'').toLowerCase().replace(/_/g,' ').trim();
+      if(!norm) return false;
+      if(present.has(norm)) return true;
+      const aliases=aliasMap?.get(norm)||[];
+      return aliases.some(alias=>present.has(alias)||present.has(String(alias).split(' ').slice(0,2).join(' ')));
+    };
+    const missing=chosen.filter(entry=>!hit(entry.query)&&!hit(entry.tip)&&!hit(entry.raw));
+    return {coverage:(chosen.length-missing.length)/chosen.length,missing,present};
+  }
+  async fetchChronogram(queryTips){
+    const unique=[...new Set((queryTips||[]).map(name=>dateQueryName(name)).filter(Boolean))];
+    if(unique.length<2) return null;
+    const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:'('+unique.map(name=>String(name).replace(/\s+/g,'_')).join(',')+');'})});
+    if(!response.ok) return null;
+    const payload=await response.json();
+    return payload.newick?this.chronogramAges(payload.newick):null;
+  }
+  async refineChronogram(candidates,aliasMap){
+    const chosen=candidates.map(entry=>({...entry,index:0,query:entry.aliases[0]||dateQueryName(entry.raw)}));
+    let best=null;
+    const advance=entry=>{
+      const primary=entry.aliases[0]||'';
+      const genus=primary.split(' ')[0];
+      let next=entry.aliases.findIndex((alias,i)=>i>entry.index&&alias.split(' ')[0]!==genus);
+      if(next<0) next=entry.index+1;
+      if(next>=entry.aliases.length) return false;
+      entry.index=next;entry.query=entry.aliases[next];
+      return true;
+    };
+    for(let attempt=0;attempt<5;attempt++){
+      const dated=await this.fetchChronogram(chosen.map(entry=>entry.query));
+      if(!dated){
+        const entry=chosen.find(item=>{
+          const primary=item.aliases[0]||'';
+          const genus=primary.split(' ')[0];
+          return item.aliases.some((alias,i)=>i>item.index&&alias.split(' ')[0]!==genus);
+        });
+        if(!entry||!advance(entry)) break;
+        continue;
+      }
+      dated.aliases=aliasMap;
+      const {coverage,missing}=this.chronogramCoverage(dated,chosen,aliasMap);
+      if(!best||coverage>best.coverage) best={dated,coverage};
+      if(!missing.length) return dated;
+      let moved=false;
+      for(const entry of missing) if(advance(entry)) moved=true;
+      if(!moved) return best.dated;
+    }
+    return best?.dated||null;
+  }
+  async dateTree(tree){
     const datedTree=this.datingTree(tree)||tree;
     const names=[];
     const collect=node=>{if(!node?.children){if(node?.name)names.push(node.name);}else node.children.forEach(collect);};
@@ -518,61 +574,35 @@ class AnimalStore {
     if(this.dateCache.has(key)) return this.dateCache.get(key);
     const promise=(async()=>{
       try{
-        const {aliasMap,candidates}=await this.datingAliases(tree);
-        if(candidates.length<2) return null;
-        // One DateLife tip per species. If a tip misses, retry with the next GBIF synonym
-        // (genus moves like Sciurocheirus→Galago), same pattern as species-map-explorer.
-        const chosen=candidates.map(entry=>({...entry,index:0,query:entry.aliases[0]||dateQueryName(entry.raw)}));
-        let best=null;
-        for(let attempt=0;attempt<4;attempt++){
-          const queryTips=chosen.map(entry=>entry.query).filter(Boolean);
-          if([...new Set(queryTips.map(name=>name.toLowerCase()))].length<2) break;
-          const queryNewick='('+queryTips.map(name=>String(name).replace(/\s+/g,'_')).join(',')+');';
-          const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:queryNewick})});
-          if(!response.ok) break;
-          const payload=await response.json();
-          const advance=entry=>{
-            const primary=entry.aliases[0]||'';
-            const genus=primary.split(' ')[0];
-            // Prefer a genus-moved synonym; chronogram DBs often keep pre-split names.
-            let next=entry.aliases.findIndex((alias,i)=>i>entry.index&&alias.split(' ')[0]!==genus);
-            if(next<0) next=entry.index+1;
-            if(next>=entry.aliases.length) return false;
-            entry.index=next;entry.query=entry.aliases[next];
-            return true;
-          };
-          if(!payload.newick){
-            // Whole query missed. Swap one tip to a genus-moved synonym per attempt so
-            // already-matchable tips (e.g. Galago moholi) are not replaced with noise.
-            const entry=chosen.find(item=>{
-              const primary=item.aliases[0]||'';
-              const genus=primary.split(' ')[0];
-              return item.aliases.some((alias,i)=>i>item.index&&alias.split(' ')[0]!==genus);
-            });
-            if(!entry||!advance(entry)) break;
-            continue;
-          }
-          const dated=this.chronogramAges(payload.newick);
-          if(!dated) break;
-          dated.aliases=aliasMap;
-          const present=new Set();
-          const gather=node=>{if(!node.children){const name=String(node.label||node.name||'').toLowerCase().replace(/_/g,' ').trim();if(name)present.add(name);}else node.children.forEach(gather);};
-          gather(dated.root);
-          const hit=name=>{
-            const norm=String(name||'').toLowerCase().replace(/_/g,' ').trim();
-            if(present.has(norm)) return true;
-            const aliases=aliasMap.get(norm)||[];
-            return aliases.some(alias=>present.has(alias)||present.has(alias.split(' ').slice(0,2).join(' ')));
-          };
-          const missing=chosen.filter(entry=>!hit(entry.query)&&!hit(entry.tip)&&!hit(entry.raw));
-          const coverage=(chosen.length-missing.length)/chosen.length;
-          if(!best||coverage>best.coverage) best={dated,coverage};
-          if(!missing.length) return dated;
-          let moved=false;
-          for(const entry of missing) if(advance(entry)) moved=true;
-          if(!moved) return best.dated;
+        // Fast path: primary tip names only. Most vertebrate packs date without GBIF.
+        const primary=names.map(name=>{
+          const query=dateQueryName(name);
+          return {tip:query.toLowerCase(),raw:name,aliases:[query]};
+        }).filter(entry=>entry.aliases[0]);
+        let aliasMap=new Map();
+        let dated=await this.refineChronogram(primary,aliasMap);
+        let coverage=dated?this.chronogramCoverage(dated,primary.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage:0;
+        // Slow path: GBIF synonyms for renamed taxa (Sciurocheirus→Galago, etc.).
+        if(!dated||coverage<0.5){
+          const syn=await this.datingAliases(tree);
+          aliasMap=syn.aliasMap;
+          const withSyn=await this.refineChronogram(syn.candidates,aliasMap);
+          const synCov=withSyn?this.chronogramCoverage(withSyn,syn.candidates.map(entry=>({...entry,query:entry.aliases[0]})),aliasMap).coverage:0;
+          if(withSyn&&(!dated||synCov>coverage)){dated=withSyn;coverage=synCov;}
+          if(dated) dated.aliases=aliasMap;
         }
-        return best?.dated||null;
+        // Last resort: date the largest tip subset DateLife will return.
+        if(!dated&&primary.length>3){
+          const order=[...primary];
+          this.shuffle(order);
+          for(const size of [Math.min(5,primary.length-1),3]){
+            const subset=order.slice(0,size);
+            if(subset.length<2) continue;
+            const got=await this.refineChronogram(subset,aliasMap);
+            if(got){got.aliases=aliasMap;return got;}
+          }
+        }
+        return dated;
       }catch{return null;}
     })();
     this.dateCache.set(key,promise);
@@ -580,10 +610,41 @@ class AnimalStore {
     return promise;
   }
   taxonPage(id,page,perPage){const params=new URLSearchParams({taxon_id:String(id),rank:'species',is_active:'true',per_page:String(perPage),page:String(page),order_by:'observations_count',order:'desc',locale:'en'});return this.json('https://api.inaturalist.org/v1/taxa?'+params);}
+  // Chronogram databases are dense for vertebrates, sparse for most insect families.
+  chronogramFriendlyIds(){
+    return new Set([
+      3,20978,26036,40151,47178,196614,85497,49099,49231,152875, // vertebrate classes
+      47459,47533,47668,48836,47548 // a few marine invertebrates that often date
+    ]);
+  }
+  async isChronogramFriendly(node){
+    if(!node) return false;
+    if(node.dateable!=null) return node.dateable;
+    const friendly=this.chronogramFriendlyIds();
+    if(friendly.has(node.id)) return node.dateable=true;
+    if(node.rank==='class'||node.rank==='phylum') return node.dateable=false;
+    try{
+      const data=await this.json(`https://api.inaturalist.org/v1/taxa/${node.id}`);
+      const ids=new Set(data.results?.[0]?.ancestor_ids||[]);
+      node.dateable=[...friendly].some(id=>ids.has(id));
+    }catch{node.dateable=false;}
+    return node.dateable;
+  }
   // Draw 5–10 species from one catalogued group. Groups smaller than the draw are skipped.
   async sampleBranch(currentNames=new Set()){
     const minimum=5,maximum=10,count=minimum+Math.floor(Math.random()*(maximum-minimum+1));
-    let pool=(this.nodes||[]).filter(node=>node.speciesCount==null||node.speciesCount>=count);
+    const all=(this.nodes||[]).filter(node=>node.speciesCount==null||node.speciesCount>=count);
+    this.shuffle(all);
+    // Prefer clades DateLife can actually age; ~3/4 of the catalog is undatable insect families.
+    const preferred=[];
+    const wildcard=[];
+    for(const node of all){
+      if(preferred.length>=10&&wildcard.length>=4) break;
+      const friendly=await this.isChronogramFriendly(node);
+      if(friendly){if(preferred.length<10) preferred.push(node);}
+      else if(wildcard.length<4) wildcard.push(node);
+    }
+    const pool=Math.random()<0.12?[...preferred,...wildcard]:(preferred.length?preferred:all);
     this.shuffle(pool);
     for(const node of pool.slice(0,8)){
       try{
