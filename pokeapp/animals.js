@@ -49,34 +49,15 @@ function collapseUnary(node){
   if(node.children.length===1){const child=node.children[0];if(!child.label&&node.label)child.label=node.label;if(Number.isFinite(node.length))child.length=(Number.isFinite(child.length)?child.length:0)+node.length;return child;}
   return node;
 }
-// Chronogram DBs often still use pre-split Galago names for Sciurocheirus / Paragalago.
-function dateNameAliases(name){
-  const norm=String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
-  if(!norm) return [];
-  const parts=norm.split(' ').filter(Boolean);
-  const aliases=[];
-  const add=value=>{const next=String(value||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();if(next&&next!==norm&&!aliases.includes(next)) aliases.push(next);};
-  const known={
-    'sciurocheirus alleni':['galago alleni'],
-    'sciurocheirus cameronensis':['galago cameronensis','galago alleni'],
-    'sciurocheirus gabonensis':['galago gabonensis','galago alleni'],
-    'paragalago zanzibaricus':['galago zanzibaricus'],
-    'paragalago cocos':['galago cocos'],
-    'paragalago granti':['galago granti'],
-    'paragalago orinus':['galago orinus'],
-    'paragalago rondoensis':['galago rondoensis']
-  };
-  for(const value of known[norm]||[]) add(value);
-  if(parts.length>=2&&(parts[0]==='sciurocheirus'||parts[0]==='paragalago')) add('galago '+parts.slice(1).join(' '));
-  return aliases;
+// DateLife chronograms are picky about tip spelling; keep Genus species binomials.
+function canonicalBinomial(name){
+  const cleaned=String(name||'').replace(/_/g,' ').replace(/\s*\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
+  const parts=cleaned.split(' ').filter(Boolean);
+  if(parts.length<2||!/^[A-Za-z-]+$/.test(parts[0])||!/^[A-Za-z-]+$/.test(parts[1])) return '';
+  return parts[0].charAt(0).toUpperCase()+parts[0].slice(1).toLowerCase()+' '+parts[1].toLowerCase();
 }
 function dateQueryName(name){
-  const aliases=dateNameAliases(name);
-  const pick=aliases[0]||name;
-  // DateLife tip matching is case-sensitive; use Genus species binomial casing.
-  const parts=String(pick||'').replace(/_/g,' ').trim().split(/\s+/).filter(Boolean);
-  if(!parts.length) return name;
-  return parts.map((part,i)=>i===0?part.charAt(0).toUpperCase()+part.slice(1).toLowerCase():part.toLowerCase()).join(' ');
+  return canonicalBinomial(name)||String(name||'').replace(/_/g,' ').trim();
 }
 function attachTips(node,byOtt){
   if(!node?.children){
@@ -112,7 +93,7 @@ function photoLoads(url,timeout=4000){
   });
 }
 class AnimalStore {
-  constructor(){this.items=new Map();this.cache=new Map();this.pending=0;this.waiters=[];this.treeCache=new Map();this.dateCache=new Map();this.pendingLabel='';}
+  constructor(){this.items=new Map();this.cache=new Map();this.pending=0;this.waiters=[];this.treeCache=new Map();this.dateCache=new Map();this.synonymCache=new Map();this.pendingLabel='';}
   async json(url) {
     if(this.cache.has(url))return this.cache.get(url);
     const promise=(async()=>{
@@ -341,8 +322,7 @@ class AnimalStore {
   datingTree(node){
     if(!node) return null;
     if(!node.children){
-      const raw=node.ottName||node.name;
-      const query=dateQueryName(raw);
+      const query=dateQueryName(node.ottName||node.name);
       return {name:query,label:query};
     }
     const children=[];const seen=new Set();
@@ -358,6 +338,65 @@ class AnimalStore {
     if(children.length===1) return children[0];
     return {children};
   }
+  // Same idea as HDR species-map-explorer OneZoom resolve: walk GBIF synonyms for chronogram tip matching.
+  async synonymNames(name,gbifKey=null){
+    const primary=dateQueryName(name);
+    const cacheKey=primary.toLowerCase();
+    if(!cacheKey) return [];
+    if(this.synonymCache.has(cacheKey)) return this.synonymCache.get(cacheKey);
+    const promise=(async()=>{
+      const names=[];
+      const add=value=>{
+        const binomial=canonicalBinomial(value);
+        if(binomial&&!names.some(item=>item.toLowerCase()===binomial.toLowerCase())) names.push(binomial);
+      };
+      add(primary);
+      try{
+        let key=gbifKey;
+        if(!key){
+          const match=await this.json('https://api.gbif.org/v1/species/match?'+new URLSearchParams({name:primary,kingdom:'Animalia'}));
+          if(match?.matchType&&match.matchType!=='NONE'&&(match.rank==='SPECIES'||match.rank==='SUBSPECIES')) key=match.acceptedUsageKey||match.usageKey;
+        }
+        if(!key) return names;
+        const [sp,synonyms]=await Promise.all([
+          this.json(`https://api.gbif.org/v1/species/${key}`),
+          this.json(`https://api.gbif.org/v1/species/${key}/synonyms?limit=40`)
+        ]);
+        add(sp?.canonicalName);add(sp?.species);add(sp?.scientificName);
+        const rows=Array.isArray(synonyms)?synonyms:(synonyms?.results||[]);
+        for(const syn of rows){add(syn.canonicalName);add(syn.scientificName);add(syn.species);}
+      }catch{}
+      const genus=primary.split(' ')[0];
+      const moved=names.filter(item=>item!==primary&&item.split(' ')[0]!==genus);
+      const same=names.filter(item=>item!==primary&&item.split(' ')[0]===genus);
+      // Matching can use any synonym; query retries only try genus moves (pre-split names).
+      return {all:[primary,...moved,...same],query:[primary,...moved.slice(0,3)]};
+    })();
+    this.synonymCache.set(cacheKey,promise);
+    try{return await promise;}catch{this.synonymCache.delete(cacheKey);return primary?{all:[primary],query:[primary]}:{all:[],query:[]};}
+  }
+  async datingAliases(tree){
+    const tips=[];
+    const walk=node=>{
+      if(!node) return;
+      if(!node.children){tips.push({name:node.ottName||node.name,gbifKey:node.gbifKey||null});return;}
+      node.children.forEach(walk);
+    };
+    walk(tree);
+    const aliasMap=new Map();
+    const candidates=[];
+    await Promise.all(tips.map(async tip=>{
+      const primary=dateQueryName(tip.name);
+      if(!primary) return;
+      const animal=[...this.items.values()].find(item=>(item.ottName||item.name)===tip.name||item.name===tip.name);
+      const synonyms=await this.synonymNames(primary,tip.gbifKey||animal?.gbifKey||null);
+      const lower=(synonyms.all||[]).map(name=>name.toLowerCase());
+      const index=name=>{const key=String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();if(key) aliasMap.set(key,lower);};
+      index(primary);index(tip.name);index(animal?.name);index(animal?.ottName);
+      candidates.push({tip:primary.toLowerCase(),raw:tip.name,aliases:synonyms.query||[primary]});
+    }));
+    return {aliasMap,candidates};
+  }
   applyDates(tree,dated){
     if(!tree||!dated?.root) return false;
     const norm=name=>String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
@@ -367,18 +406,23 @@ class AnimalStore {
     const present=new Set();
     const gather=node=>{if(!node.children){const name=norm(node.label||node.name||'');if(name)present.add(name);}else node.children.forEach(gather);};
     gather(dated.root);
+    const aliasesFor=tip=>{
+      const name=norm(tip);
+      const fromMap=dated.aliases?.get(name)||dated.aliases?.get(binomial(name))||[];
+      return [...new Set([name,binomial(name),...fromMap].filter(Boolean))];
+    };
     // DateLife often drops subspecies, rare species, or spelling variants.
     const resolve=tip=>{
       const name=norm(tip); if(!name) return null;
       if(present.has(name)) return name;
       const bin=binomial(name); if(present.has(bin)) return bin;
-      for(const alias of dateNameAliases(name)){
+      for(const alias of aliasesFor(name)){
         if(present.has(alias)) return alias;
         const aliasBin=binomial(alias); if(present.has(aliasBin)) return aliasBin;
       }
       for(const item of present){
         if(name.startsWith(item+' ')||item.startsWith(name+' ')||binomial(item)===bin) return item;
-        for(const alias of dateNameAliases(name)){
+        for(const alias of aliasesFor(name)){
           if(alias.startsWith(item+' ')||item.startsWith(alias+' ')||binomial(item)===binomial(alias)) return item;
         }
       }
@@ -474,10 +518,61 @@ class AnimalStore {
     if(this.dateCache.has(key)) return this.dateCache.get(key);
     const promise=(async()=>{
       try{
-        const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:this.newickOf(datedTree)+';'})});
-        if(!response.ok) return null;
-        const payload=await response.json();
-        return payload.newick?this.chronogramAges(payload.newick):null;
+        const {aliasMap,candidates}=await this.datingAliases(tree);
+        if(candidates.length<2) return null;
+        // One DateLife tip per species. If a tip misses, retry with the next GBIF synonym
+        // (genus moves like Sciurocheirus→Galago), same pattern as species-map-explorer.
+        const chosen=candidates.map(entry=>({...entry,index:0,query:entry.aliases[0]||dateQueryName(entry.raw)}));
+        let best=null;
+        for(let attempt=0;attempt<4;attempt++){
+          const queryTips=chosen.map(entry=>entry.query).filter(Boolean);
+          if([...new Set(queryTips.map(name=>name.toLowerCase()))].length<2) break;
+          const queryNewick='('+queryTips.map(name=>String(name).replace(/\s+/g,'_')).join(',')+');';
+          const response=await fetch('/api/datelife',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newick:queryNewick})});
+          if(!response.ok) break;
+          const payload=await response.json();
+          const advance=entry=>{
+            const primary=entry.aliases[0]||'';
+            const genus=primary.split(' ')[0];
+            // Prefer a genus-moved synonym; chronogram DBs often keep pre-split names.
+            let next=entry.aliases.findIndex((alias,i)=>i>entry.index&&alias.split(' ')[0]!==genus);
+            if(next<0) next=entry.index+1;
+            if(next>=entry.aliases.length) return false;
+            entry.index=next;entry.query=entry.aliases[next];
+            return true;
+          };
+          if(!payload.newick){
+            // Whole query missed. Swap one tip to a genus-moved synonym per attempt so
+            // already-matchable tips (e.g. Galago moholi) are not replaced with noise.
+            const entry=chosen.find(item=>{
+              const primary=item.aliases[0]||'';
+              const genus=primary.split(' ')[0];
+              return item.aliases.some((alias,i)=>i>item.index&&alias.split(' ')[0]!==genus);
+            });
+            if(!entry||!advance(entry)) break;
+            continue;
+          }
+          const dated=this.chronogramAges(payload.newick);
+          if(!dated) break;
+          dated.aliases=aliasMap;
+          const present=new Set();
+          const gather=node=>{if(!node.children){const name=String(node.label||node.name||'').toLowerCase().replace(/_/g,' ').trim();if(name)present.add(name);}else node.children.forEach(gather);};
+          gather(dated.root);
+          const hit=name=>{
+            const norm=String(name||'').toLowerCase().replace(/_/g,' ').trim();
+            if(present.has(norm)) return true;
+            const aliases=aliasMap.get(norm)||[];
+            return aliases.some(alias=>present.has(alias)||present.has(alias.split(' ').slice(0,2).join(' ')));
+          };
+          const missing=chosen.filter(entry=>!hit(entry.query)&&!hit(entry.tip)&&!hit(entry.raw));
+          const coverage=(chosen.length-missing.length)/chosen.length;
+          if(!best||coverage>best.coverage) best={dated,coverage};
+          if(!missing.length) return dated;
+          let moved=false;
+          for(const entry of missing) if(advance(entry)) moved=true;
+          if(!moved) return best.dated;
+        }
+        return best?.dated||null;
       }catch{return null;}
     })();
     this.dateCache.set(key,promise);
