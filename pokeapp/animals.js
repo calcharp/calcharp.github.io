@@ -49,6 +49,35 @@ function collapseUnary(node){
   if(node.children.length===1){const child=node.children[0];if(!child.label&&node.label)child.label=node.label;if(Number.isFinite(node.length))child.length=(Number.isFinite(child.length)?child.length:0)+node.length;return child;}
   return node;
 }
+// Chronogram DBs often still use pre-split Galago names for Sciurocheirus / Paragalago.
+function dateNameAliases(name){
+  const norm=String(name||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();
+  if(!norm) return [];
+  const parts=norm.split(' ').filter(Boolean);
+  const aliases=[];
+  const add=value=>{const next=String(value||'').toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();if(next&&next!==norm&&!aliases.includes(next)) aliases.push(next);};
+  const known={
+    'sciurocheirus alleni':['galago alleni'],
+    'sciurocheirus cameronensis':['galago cameronensis','galago alleni'],
+    'sciurocheirus gabonensis':['galago gabonensis','galago alleni'],
+    'paragalago zanzibaricus':['galago zanzibaricus'],
+    'paragalago cocos':['galago cocos'],
+    'paragalago granti':['galago granti'],
+    'paragalago orinus':['galago orinus'],
+    'paragalago rondoensis':['galago rondoensis']
+  };
+  for(const value of known[norm]||[]) add(value);
+  if(parts.length>=2&&(parts[0]==='sciurocheirus'||parts[0]==='paragalago')) add('galago '+parts.slice(1).join(' '));
+  return aliases;
+}
+function dateQueryName(name){
+  const aliases=dateNameAliases(name);
+  const pick=aliases[0]||name;
+  // DateLife tip matching is case-sensitive; use Genus species binomial casing.
+  const parts=String(pick||'').replace(/_/g,' ').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return name;
+  return parts.map((part,i)=>i===0?part.charAt(0).toUpperCase()+part.slice(1).toLowerCase():part.toLowerCase()).join(' ');
+}
 function attachTips(node,byOtt){
   if(!node?.children){
     const animals=byOtt.get(node?.ottId)||[];
@@ -311,7 +340,11 @@ class AnimalStore {
   }
   datingTree(node){
     if(!node) return null;
-    if(!node.children) return {name:node.ottName||node.name,label:node.ottName||node.name};
+    if(!node.children){
+      const raw=node.ottName||node.name;
+      const query=dateQueryName(raw);
+      return {name:query,label:query};
+    }
     const children=[];const seen=new Set();
     for(const child of node.children){
       const next=this.datingTree(child);
@@ -339,8 +372,15 @@ class AnimalStore {
       const name=norm(tip); if(!name) return null;
       if(present.has(name)) return name;
       const bin=binomial(name); if(present.has(bin)) return bin;
+      for(const alias of dateNameAliases(name)){
+        if(present.has(alias)) return alias;
+        const aliasBin=binomial(alias); if(present.has(aliasBin)) return aliasBin;
+      }
       for(const item of present){
         if(name.startsWith(item+' ')||item.startsWith(name+' ')||binomial(item)===bin) return item;
+        for(const alias of dateNameAliases(name)){
+          if(alias.startsWith(item+' ')||item.startsWith(alias+' ')||binomial(item)===binomial(alias)) return item;
+        }
       }
       return null;
     };
