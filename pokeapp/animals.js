@@ -334,7 +334,7 @@ class AnimalStore {
     const present=new Set();
     const gather=node=>{if(!node.children){const name=norm(node.label||node.name||'');if(name)present.add(name);}else node.children.forEach(gather);};
     gather(dated.root);
-    // DateLife often drops subspecies or spelling variants; map OTT tips onto chronogram tips.
+    // DateLife often drops subspecies, rare species, or spelling variants.
     const resolve=tip=>{
       const name=norm(tip); if(!name) return null;
       if(present.has(name)) return name;
@@ -344,16 +344,15 @@ class AnimalStore {
       }
       return null;
     };
-    const mrcaAge=wanted=>{
-      const need=[...new Set(wanted.map(resolve).filter(Boolean))];
-      if(!need.length) return null;
-      if(need.length===1){
-        // Age of that tip is 0; use its parent branch age when available via crown of the singleton clade.
+    const mrcaAge=need=>{
+      const wanted=[...new Set((need||[]).map(norm).filter(Boolean))];
+      if(!wanted.length) return null;
+      if(wanted.length===1){
         let singleton=null;
         const find=node=>{
           if(!node.children) return [norm(node.label||node.name||'')];
           const names=node.children.flatMap(find);
-          if(!singleton&&need.every(n=>names.includes(n))&&names.every(n=>need.includes(n))) singleton=node;
+          if(!singleton&&wanted.every(n=>names.includes(n))&&names.every(n=>wanted.includes(n))) singleton=node;
           return names;
         };
         find(dated.root);
@@ -367,9 +366,9 @@ class AnimalStore {
         for(const child of node.children){
           const found=walk(child);
           names.push(...found);
-          if(!nested&&need.every(name=>found.includes(name))) nested=true;
+          if(!nested&&wanted.every(name=>found.includes(name))) nested=true;
         }
-        if(!nested&&need.every(name=>names.includes(name))) best=node;
+        if(!nested&&wanted.every(name=>names.includes(name))) best=node;
         return names;
       };
       walk(dated.root);
@@ -380,25 +379,50 @@ class AnimalStore {
     collect(tree);
     const tips=[...new Set(tipNames(tree).filter(Boolean))];
     if(tips.length<2) return false;
-    const resolved=tips.map(resolve);
-    if(resolved.some(name=>!name)) return false;
+    const tipMap=new Map();
+    for(const tip of tips){const hit=resolve(tip);if(hit) tipMap.set(tip,hit);}
+    // Galagos and many clades only get partial chronograms; still date whatever DateLife covered.
+    if(tipMap.size<2) return false;
+    const ageFor=names=>{
+      const covered=[...new Set(names.map(name=>tipMap.get(name)).filter(Boolean))];
+      if(covered.length<=1) return covered.length?0:null;
+      return mrcaAge(covered);
+    };
     for(const node of nodes){
       const names=[...new Set(tipNames(node).filter(Boolean))];
-      const uniq=[...new Set(names.map(resolve).filter(Boolean))];
-      const age=uniq.length<=1?0:mrcaAge(names);
-      if(!(age>=0)) return false;
+      const covered=names.filter(name=>tipMap.has(name));
+      if(names.length<=1){node.age=0;node.keepAge=true;node.dated=true;continue;}
+      if(!covered.length) continue;
+      const age=ageFor(covered);
+      if(!(age>=0)) continue;
       node.age=age;node.keepAge=true;node.dated=true;
+      if(covered.length<names.length) node.partialDate=true;
     }
-    const stub=Math.min(0.45,Math.max(0.05,(tree.age||1)*0.08));
+    // Fill parents that DateLife did not name but whose children are now dated.
+    let changed=true;
+    while(changed){
+      changed=false;
+      for(const node of nodes){
+        if(node.keepAge||!node.children?.length) continue;
+        if(!node.children.every(child=>child.keepAge)) continue;
+        node.age=Math.max(...node.children.map(child=>child.age||0));
+        node.keepAge=true;node.dated=true;changed=true;
+      }
+    }
+    if(!tree.keepAge){
+      const ages=nodes.filter(node=>node.keepAge).map(node=>node.age||0);
+      if(ages.length){tree.age=Math.max(dated.crown||0,...ages);tree.keepAge=true;tree.dated=true;}
+    }
+    const stub=Math.min(0.45,Math.max(0.05,(tree.age||dated.crown||1)*0.08));
     for(const node of nodes){
-      if(node.children&&node.children.length>1&&node.age===0){
+      if(node.children&&node.children.length>1&&node.age===0&&node.keepAge){
         const childAges=node.children.map(child=>child.age||0);
-        // Unresolved cluster inside one dated tip, or a same-age split DateLife could not separate.
         if(node.children.every(child=>!child.children)||childAges.every(age=>age===0)){node.age=stub;node.layoutAge=true;}
       }
     }
-    tree.dated=true;
-    return tree.age>0;
+    tree.dated=!!tree.keepAge;
+    tree.dateCoverage=tipMap.size/tips.length;
+    return tree.age>0&&tree.dated;
   }
   dateTree(tree){
     const datedTree=this.datingTree(tree)||tree;

@@ -267,8 +267,8 @@ async function refreshAnimalTree(){
       $('treeHint').textContent=leftOut?`${selected.size} species on the Open Tree of Life. ${leftOut} left out without a photo or tree match.`:(label?`${selected.size} species from ${label}. Tap a photo to meet an animal.`:'Tap a photo to meet an animal. Tap a dot to color its branch.');
       if(foot) foot.innerHTML=data.tree?.dated?'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · split order kept</span><span>Earlier → Now · synthetic time</span>';
       if(data.tree?.dated) $('treeHint').textContent=`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(data.tree.age)} million years ago.`;
-      if(selected.size>=2&&data.tree?.children) dateAnimalTree(request,data.tree);
     }
+    if(selected.size>=2&&data.tree?.children) dateAnimalTree(request,data.tree);
   }catch(error){
     if(request!==animalTreeRequest||speciesMode!=='animals')return;
     showAnimalError('The Open Tree of Life could not be loaded. Try again.');
@@ -280,16 +280,23 @@ async function dateAnimalTree(request,tree){
   const dated=await animalStore.dateTree(tree);
   if(request!==animalTreeRequest||speciesMode!=='animals') return;
   if(!dated){
-    if(!tree.dated) $('treeHint').textContent='Tap a photo to meet an animal. Tap a dot to color its branch. Published ages need the local DateLife server.';
+    if(!tree.dated) $('treeHint').textContent=tree.taxonomySource==='inat'?'Classification shown. Published ages need the local DateLife server.':'Tap a photo to meet an animal. Tap a dot to color its branch. Published ages need the local DateLife server.';
     return;
   }
   if(!animalStore.applyDates(tree,dated)){
     if(!tree.dated) $('treeHint').textContent='DateLife returned ages, but they could not be matched to this tree. Showing synthetic time.';
     return;
   }
+  // Dated ages win over taxonomy-only layout.
+  treeView.taxonomy=false;
+  if(tree.taxonomySource) delete tree.taxonomySource;
   treeView.setData(data);renderActive(false);
-  document.querySelector('#treePanel .view-foot').innerHTML='<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>';
-  $('treeHint').textContent=`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(tree.age)} million years ago.`;
+  const coverage=tree.dateCoverage;
+  const partial=coverage<0.999;
+  document.querySelector('#treePanel .view-foot').innerHTML=partial?'<span>Open Tree of Life · DateLife ages where available</span><span>Earlier → Now · million years</span>':'<span>Open Tree of Life · DateLife ages</span><span>Earlier → Now · million years</span>';
+  $('treeHint').textContent=partial
+    ?`Branch lengths use DateLife ages for ${Math.round(coverage*100)}% of these tips (about ${Math.round(tree.age)} Ma at the root). Species missing from published chronograms stay in place with short fillers.`
+    :`Branch lengths are DateLife ages, in millions of years. The oldest split shown is about ${Math.round(tree.age)} million years ago.`;
 }
 async function switchMode(mode){
   if(!pokemonData)return;if(mode===speciesMode){modeRequest++;return;}const request=++modeRequest;animalSearchRequest++;closePreviews();
