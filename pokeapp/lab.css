@@ -124,7 +124,7 @@ body.lightbox-open{overflow:hidden}
 .photo-carousel{cursor:grab}
 
 /* Collapse top chrome (app bar + view bars) for map/tree space on tablets */
-.chrome-toggle{position:fixed;left:50%;transform:translateX(-50%);z-index:1150;min-height:32px;padding:0 14px 3px;border-radius:0 0 12px 12px;background:#3f245ff2;color:#f7efff;font-size:12px;font-weight:800;box-shadow:0 4px 14px #2a143855;letter-spacing:.02em;top:var(--chrome-tab-top,122px)}
+.chrome-toggle{position:fixed;right:max(10px,env(safe-area-inset-right));left:auto;transform:none;z-index:1150;width:28px;height:22px;min-height:0;padding:0 0 1px;border-radius:0 0 8px 8px;background:#3f245ff0;color:#f7efff;font-size:14px;font-weight:700;line-height:1;display:grid;place-items:center;box-shadow:0 3px 10px #2a143844;top:var(--chrome-tab-top,122px)}
 body.chrome-collapsed .chrome-toggle{top:max(0px,env(safe-area-inset-top));background:var(--yellow);color:#442367}
 body.chrome-collapsed .app-bar,
 body.chrome-collapsed .view-bar{display:none!important}

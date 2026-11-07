@@ -287,7 +287,8 @@ function setChromeCollapsed(collapsed){
   const button=$('chromeToggle');
   if(button){
     button.setAttribute('aria-expanded',collapsed?'false':'true');
-    button.textContent=collapsed?'Show tools':'Hide tools';
+    button.textContent=collapsed?'▾':'▴';
+    button.setAttribute('aria-label',collapsed?'Show top tools':'Hide top tools');
     button.title=collapsed?'Show top tools':'Hide top tools';
   }
   if(detailOpen()) document.documentElement.style.setProperty('--detail-top',detailTopOffset()+'px');
