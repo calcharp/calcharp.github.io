@@ -129,5 +129,5 @@ body.chrome-collapsed .chrome-toggle{top:max(0px,env(safe-area-inset-top));backg
 body.chrome-collapsed .app-bar,
 body.chrome-collapsed .view-bar{display:none!important}
 body.chrome-collapsed .app{padding-top:0}
+/* Keep map legend / cards pinned to the bottom — do not set top or they stretch. */
 body.chrome-collapsed .species-panel{top:max(44px,env(safe-area-inset-top))}
-body.chrome-collapsed .earth-stage .animal-map-legend{top:52px}
