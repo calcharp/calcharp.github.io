@@ -333,7 +333,11 @@ $('treeTab').onclick=()=>setView('tree');$('mapTab').onclick=()=>setView('map');
 for(const id of ['treeTab','mapTab']) $(id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();setView(activeView==='tree'?'map':'tree');$(activeView+'Tab').focus();}};
 $('quickSearch').oninput=renderPreviews;$('quickSearch').onfocus=renderPreviews;
 $('quickSearch').onkeydown=e=>{if(e.key==='Escape')closePreviews();if(e.key==='Enter'){e.preventDefault();openPicker($('quickSearch').value.trim());}};
-document.addEventListener('pointerdown',e=>{if(!$('quickSearchWrap').contains(e.target))closePreviews();});
+document.addEventListener('pointerdown',e=>{
+  const t=e.target;
+  if($('quickSearchWrap').contains(t) || $('previews').contains(t)) return;
+  closePreviews();
+});
 $('choose').onclick=()=>openPicker();$('pickerDone').onclick=closePicker;
 $('picker').addEventListener('cancel',()=>requestAnimationFrame(()=>{if(speciesMode==='animals')refreshAnimalTree();else renderActive();}));
 $('pickerSearch').oninput=()=>{clearTimeout(filterTimer);filterTimer=setTimeout(()=>{renderGrid();$('pokemonGrid').scrollTop=0;},100);};
