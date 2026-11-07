@@ -275,6 +275,13 @@ function showDetail(){
   document.documentElement.style.setProperty('--detail-top',detailTopOffset()+'px');
   if(first) requestAnimationFrame(()=>{if(treeView?.viewport?.svg)treeView.viewport.fit();if(activeView==='map')activeAtlas()?.viewport?.fit?.();});
 }
+function syncChromeTab(){
+  if(document.body.classList.contains('chrome-collapsed')) return;
+  const bar=$('appBar');
+  const view=document.querySelector('.explorer:not([hidden]) .view-bar');
+  const top=(bar?.getBoundingClientRect().bottom||68)+(view?.getBoundingClientRect().height||0)-1;
+  document.documentElement.style.setProperty('--chrome-tab-top',Math.max(44,Math.round(top))+'px');
+}
 function setChromeCollapsed(collapsed){
   document.body.classList.toggle('chrome-collapsed',!!collapsed);
   const button=$('chromeToggle');
@@ -285,12 +292,15 @@ function setChromeCollapsed(collapsed){
   }
   if(detailOpen()) document.documentElement.style.setProperty('--detail-top',detailTopOffset()+'px');
   requestAnimationFrame(()=>{
+    syncChromeTab();
     if(activeView==='map'&&speciesMode==='animals') earth.syncSize(true);
     else if(activeView==='tree'&&treeView?.viewport?.svg) treeView.viewport.fit();
     else activeAtlas()?.viewport?.fit?.();
   });
 }
 $('chromeToggle').onclick=()=>setChromeCollapsed(!document.body.classList.contains('chrome-collapsed'));
+window.addEventListener('resize',()=>syncChromeTab());
+requestAnimationFrame(syncChromeTab);
 function hideDetail(){
   if($('pokemonDetail').hidden)return;
   $('pokemonDetail').hidden=true;document.body.classList.remove('detail-open');inspected=null;
