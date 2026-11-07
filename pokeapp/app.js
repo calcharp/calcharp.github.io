@@ -225,6 +225,21 @@ function card(p) {
   b.innerHTML=`${pickGlyph(isPicked?'on':'off')}${spriteHTML(p)}<b>${escapeHTML(p.display)}</b><small>${p.real?escapeHTML(p.name):'#'+String(p.id).padStart(4,'0')}</small>`;
   b.onclick=()=>toggle(p.id);return b;
 }
+function placePreviews(){
+  const panel=$('previews'),input=$('quickSearch'),wrap=$('quickSearchWrap');
+  if(!panel||panel.hidden||!input) return;
+  const box=(wrap||input).getBoundingClientRect();
+  const gap=6;
+  const width=Math.min(540,Math.max(280,window.innerWidth-20));
+  let left=Math.min(Math.max(10,box.left),window.innerWidth-width-10);
+  // Prefer anchoring under the search field; fall back left-aligned on narrow wraps.
+  if(box.width>120) left=Math.min(Math.max(10,box.left),window.innerWidth-width-10);
+  panel.style.top=Math.round(box.bottom+gap)+'px';
+  panel.style.left=Math.round(left)+'px';
+  panel.style.right='auto';
+  panel.style.width=width+'px';
+  panel.style.maxHeight=Math.max(160,window.innerHeight-box.bottom-gap-12)+'px';
+}
 function closePreviews() {animalSearchRequest++;clearTimeout(previewTimer);$('previews').hidden=true;$('quickSearch').setAttribute('aria-expanded','false');}
 function renderPreviews() {
   if(speciesMode==='animals'){renderAnimalPreviews();return;}
@@ -237,6 +252,7 @@ function renderPreviews() {
   if(!items.length)grid.innerHTML='<p class="no-results">No Pokémon found. Try a name or Pokédex number.</p>';panel.append(grid);
   const browse=document.createElement('button');browse.className='preview-footer';browse.textContent=q?'See all matching Pokémon →':'Browse all 1,025 Pokémon →';browse.onclick=()=>openPicker(q);panel.append(browse);
   panel.hidden=false;$('quickSearch').setAttribute('aria-expanded','true');
+  placePreviews();
 }
 function pickerItems() {
   const q=$('pickerSearch').value.trim(),region=$('pickerRegion').value;
@@ -300,7 +316,7 @@ function setChromeCollapsed(collapsed){
   });
 }
 $('chromeToggle').onclick=()=>setChromeCollapsed(!document.body.classList.contains('chrome-collapsed'));
-window.addEventListener('resize',()=>syncChromeTab());
+window.addEventListener('resize',()=>{syncChromeTab();placePreviews();});
 requestAnimationFrame(syncChromeTab);
 function hideDetail(){
   if($('pokemonDetail').hidden)return;
@@ -536,7 +552,7 @@ async function switchMode(mode){
 }
 $('pokemonMode').onclick=()=>switchMode('pokemon');$('animalMode').onclick=()=>switchMode('animals');
 async function renderAnimalPreviews(){
-  const request=++animalSearchRequest,q=$('quickSearch').value.trim(),panel=$('previews');panel.hidden=false;$('quickSearch').setAttribute('aria-expanded','true');
+  const request=++animalSearchRequest,q=$('quickSearch').value.trim(),panel=$('previews');panel.hidden=false;$('quickSearch').setAttribute('aria-expanded','true');placePreviews();
   panel.innerHTML='<p class="no-results">Finding animals…</p>';
   clearTimeout(previewTimer);previewTimer=setTimeout(async()=>{
     try{const items=q?(await animalStore.search(q)).items.slice(0,6):animalStore.groups[0].ids.slice(0,6).map(id=>animalStore.items.get(id));if(request!==animalSearchRequest||speciesMode!=='animals'||panel.hidden)return;
@@ -544,6 +560,7 @@ async function renderAnimalPreviews(){
       const title=document.createElement('div');title.className='preview-title';title.textContent='Tap a photo to add or remove';const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','Close search previews');close.onclick=closePreviews;title.append(close);panel.append(title);
       const grid=document.createElement('div');grid.className='preview-grid';items.forEach(a=>grid.append(card(a)));if(!items.length)grid.innerHTML='<p class="no-results">No animals found. Try a common or scientific name.</p>';panel.append(grid);
       const more=document.createElement('button');more.className='preview-footer';more.textContent='Browse animals →';more.onclick=()=>openPicker(q);panel.append(more);
+      placePreviews();
     }catch(error){if(request===animalSearchRequest&&!panel.hidden&&speciesMode==='animals')panel.innerHTML='<p class="no-results">Search could not connect. Try again, or use Choose animals for the starter collection.</p>';}
   },q?350:0);
 }

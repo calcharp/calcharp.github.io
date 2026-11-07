@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Explore Pokémon and real animals with photos, classification trees, and maps. Built for Virginia Tech Science Day.">
   <title>Discovery Lab · Pokémon & Real Animals</title>
-  <link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="lab.css?v=23">
+  <link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="lab.css?v=24">
 </head>
 <body>
   <div class="app" id="app">
@@ -22,7 +22,6 @@
       <div class="quick-search" id="quickSearchWrap">
         <span aria-hidden="true" class="search-symbol">⌕</span>
         <input id="quickSearch" type="search" placeholder="Find a Pokémon…" autocomplete="off" aria-label="Find a Pokémon" aria-expanded="false" aria-controls="previews">
-        <div class="previews" id="previews" hidden></div>
       </div>
       <button class="top-action" id="randomizeTop">Randomize</button><button class="top-action" id="resetTop">Reset</button><label class="sprite-size"><span id="sizeLabel">Sprites</span> <input id="spriteSize" aria-label="Sprite size" type="range" min="50" max="150" value="100"></label><button class="choose-button" id="choose"><span id="chooseLabel">Choose Pokémon</span> <span id="selectionCount">0</span></button>
       <button class="info-button" id="about" aria-label="About this tree and sources">i</button>
@@ -67,6 +66,7 @@
     <div class="picker-summary"><span id="pickerCount">1,025 Pokémon</span><div><button id="surprise" class="text-button">Surprise me!</button><button id="clearSelection" class="text-button">Clear picks</button></div></div>
     <div id="pokemonGrid" class="pokemon-grid" role="group" aria-label="Species cards"></div><button id="moreAnimals" class="filter-button" hidden>Show more animals</button>
   </dialog>
+  <div class="previews" id="previews" hidden></div>
   <aside id="pokemonDetail" class="pokemon-detail species-panel" aria-labelledby="detailTitle" hidden></aside>
   <dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle">
     <button class="close-button" data-close="aboutDialog" aria-label="Close about">×</button><p class="eyebrow">VIRGINIA TECH · SCIENCE DAY</p><h1 id="aboutTitle">Discovery Lab</h1><section id="animalAbout" hidden><h2>Real animals · Open Tree of Life</h2><p>Search animals by common or scientific name, or pick a ready-made group (cats, owls, butterflies, sharks, and more) and tap Add all. Photos come from iNaturalist. Relationships come from the Open Tree of Life. Tap an animal for its photo credit and source links.</p><p>The tree is the Open Tree of Life pruned to the species you picked, so the order of splits stays the order from that tree. The drawing starts on a synthetic ultrametric scale. Published ages work on the live GitHub site from packaged DateLife chronograms (mammals, birds, reptiles, amphibians, fishes, primates, and more). When you open the lab through serve.py, it can also query DateLife and TimeTree live. Partial coverage still gets a Ma axis. Tap a branch-point dot to open a clade sidebar (iNaturalist facts for the shared taxon) with Remove clade and Keep only clade. Use Keep only picks to drop unselected tips from the tree. A species is included only when its photo loads. Randomize draws a number from 5 to 10, prefers vertebrate groups that published chronograms usually cover, skips groups with fewer species than that number, and picks that many species from one phylum, class, order, or family.</p><p>The world map shares a fixed sighting budget across the species on the tree (fewer dots each when many species are picked) so large groups stay responsive. Each species still uses coordinate-checked GBIF records. These are a sample of recorded sightings, not a complete range or proof that a species is absent elsewhere. Records may be biased, historical, or include captive animals. iNaturalist supplies example photos; photos are not necessarily from the mapped GBIF records.</p><p>Starter taxonomy and sightings were cached on 4 November 2026; additional searches and sightings load online. GBIF name matching requires an exact species-level match; unmatched taxa stay in the tree with an unavailable map. Credits: <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist contributors</a>, <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF and its data publishers</a>, Esri and map contributors. Map record popups link to individual sources. <a href="https://www.gbif.org/terms" target="_blank" rel="noopener">GBIF terms</a>.</p></section><section id="pokemonAbout">
@@ -82,6 +82,6 @@
     <p><a href="https://zenodo.org/records/61631" target="_blank" rel="noopener">Shelomi, Richards, Li & Okido (2012)</a>, “A Phylogeny and Evolutionary History of the Pokémon,” <i>Annals of Improbable Research</i> 18(4):15–17. Archive DOI: 10.5281/zenodo.61631.</p>
     </section><button class="choose-button" data-close="aboutDialog">Back to exploring</button>
   </dialog>
-  <script src="viewport.js"></script><script src="tree.js?v=23"></script><script src="atlas.js"></script><script src="vendor/leaflet.js"></script><script src="animals.js?v=23"></script><script src="app.js?v=23"></script>
+  <script src="viewport.js"></script><script src="tree.js?v=24"></script><script src="atlas.js"></script><script src="vendor/leaflet.js"></script><script src="animals.js?v=24"></script><script src="app.js?v=24"></script>
 </body>
 </html>
