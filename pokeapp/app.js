@@ -264,13 +264,33 @@ function setView(view) {
   }));
 }
 function detailOpen(){return !$('pokemonDetail').hidden;}
+function detailTopOffset(){
+  if(document.body.classList.contains('chrome-collapsed')) return Math.max(44,0);
+  return document.querySelector('.app-bar')?.offsetHeight||72;
+}
 function showDetail(){
   const panel=$('pokemonDetail'),first=panel.hidden;
   panel.hidden=false;
   document.body.classList.add('detail-open');
-  document.documentElement.style.setProperty('--detail-top',document.querySelector('.app-bar').offsetHeight+'px');
+  document.documentElement.style.setProperty('--detail-top',detailTopOffset()+'px');
   if(first) requestAnimationFrame(()=>{if(treeView?.viewport?.svg)treeView.viewport.fit();if(activeView==='map')activeAtlas()?.viewport?.fit?.();});
 }
+function setChromeCollapsed(collapsed){
+  document.body.classList.toggle('chrome-collapsed',!!collapsed);
+  const button=$('chromeToggle');
+  if(button){
+    button.setAttribute('aria-expanded',collapsed?'false':'true');
+    button.textContent=collapsed?'Show tools':'Hide tools';
+    button.title=collapsed?'Show top tools':'Hide top tools';
+  }
+  if(detailOpen()) document.documentElement.style.setProperty('--detail-top',detailTopOffset()+'px');
+  requestAnimationFrame(()=>{
+    if(activeView==='map'&&speciesMode==='animals') earth.syncSize(true);
+    else if(activeView==='tree'&&treeView?.viewport?.svg) treeView.viewport.fit();
+    else activeAtlas()?.viewport?.fit?.();
+  });
+}
+$('chromeToggle').onclick=()=>setChromeCollapsed(!document.body.classList.contains('chrome-collapsed'));
 function hideDetail(){
   if($('pokemonDetail').hidden)return;
   $('pokemonDetail').hidden=true;document.body.classList.remove('detail-open');inspected=null;
@@ -563,13 +583,17 @@ function bindPhotoSwipe(el, {onSwipe, onTap}={}){
     if(e.target.closest('button,a')) return;
     tracking=true; swiped=false;
     startX=e.clientX; startY=e.clientY; startT=performance.now();
-    try{el.setPointerCapture(e.pointerId);}catch{}
+    // Avoid setPointerCapture on mouse — it breaks click delivery on some laptops.
+    if(e.pointerType!=='mouse'){
+      try{el.setPointerCapture(e.pointerId);}catch{}
+    }
   });
   el.addEventListener('pointermove',e=>{
     if(!tracking) return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
     if(!swiped&&Math.abs(dx)>threshold&&Math.abs(dx)>Math.abs(dy)*1.2){
       swiped=true;
+      el.dataset.justSwiped='1';
       onSwipe?.(dx<0?1:-1);
     }
   });
@@ -577,12 +601,25 @@ function bindPhotoSwipe(el, {onSwipe, onTap}={}){
     if(!tracking) return;
     tracking=false;
     try{el.releasePointerCapture(e.pointerId);}catch{}
-    if(swiped){e.preventDefault();e.stopPropagation();return;}
+    if(swiped){
+      e.preventDefault();e.stopPropagation();
+      setTimeout(()=>delete el.dataset.justSwiped,280);
+      return;
+    }
     const dx=e.clientX-startX, dy=e.clientY-startY, dt=performance.now()-startT;
-    if(onTap&&dt<450&&Math.hypot(dx,dy)<12) onTap(e);
+    const slop=e.pointerType==='touch'?18:28;
+    if(onTap&&dt<650&&Math.hypot(dx,dy)<slop) onTap(e);
   };
   el.addEventListener('pointerup',end);
   el.addEventListener('pointercancel',()=>{tracking=false;swiped=false;});
+  // Mouse/pen click is more reliable than pointerup-as-tap on Windows laptop + tablet mode.
+  if(onTap){
+    el.addEventListener('click',e=>{
+      if(el.dataset.justSwiped) return;
+      if(e.target.closest('button,a')) return;
+      onTap(e);
+    });
+  }
 }
 function largerPhotoURL(url){
   return String(url||'').replace(/\/(square|small|medium|thumb)\./i,'/large.');
@@ -655,6 +692,7 @@ function mountAnimalGallery(animal,photos){
   const stage=$('animalPhotoStage'),credit=$('animalPhotoCredit');
   if(!stage)return;
   let index=0;
+  const open=()=>openPhotoLightbox(photos.map(p=>({...p,alt:animal.display})), index, animal.display);
   const show=i=>{
     if(!photos.length)return;
     index=((i%photos.length)+photos.length)%photos.length;
@@ -663,30 +701,38 @@ function mountAnimalGallery(animal,photos){
     if(img){
       img.src=shot.url;img.alt=animal.display;
       img.classList.add('photo-zoomable');
-      img.title='Swipe for more · tap for full screen';
+      img.title='Click or tap for full screen';
       img.setAttribute('role','button');
       img.tabIndex=0;
+      img.setAttribute('aria-label','Open full screen photo of '+animal.display);
     }
     stage.dataset.index=String(index);
     const count=stage.querySelector('.photo-count');
     if(count)count.textContent=photos.length>1?`${index+1} / ${photos.length}`:'';
     if(credit)credit.innerHTML=`${escapeHTML(shot.credit||'Photo credit unavailable')} · <a href="${escapeHTML(shot.link)}" target="_blank" rel="noopener">Photo source ↗</a>`;
   };
-  for(const sel of ['[data-photo-dir="-1"]','[data-photo-dir="1"]']){
+  for(const sel of ['[data-photo-dir="-1"]','[data-photo-dir="1"]','[data-photo-expand]']){
     const btn=stage.querySelector(sel); if(!btn) continue;
     const next=btn.cloneNode(true); btn.replaceWith(next);
   }
-  stage.querySelector('[data-photo-dir="-1"]')?.addEventListener('click',()=>show(index-1));
-  stage.querySelector('[data-photo-dir="1"]')?.addEventListener('click',()=>show(index+1));
+  stage.querySelector('[data-photo-dir="-1"]')?.addEventListener('click',e=>{e.stopPropagation();show(index-1);});
+  stage.querySelector('[data-photo-dir="1"]')?.addEventListener('click',e=>{e.stopPropagation();show(index+1);});
+  stage.querySelector('[data-photo-expand]')?.addEventListener('click',e=>{e.stopPropagation();open();});
   delete stage.dataset.swipeBound;
+  delete stage.dataset.justSwiped;
   const img=stage.querySelector('.animal-photo');
-  if(img) delete img.dataset.swipeBound;
-  const open=()=>openPhotoLightbox(photos.map(p=>({...p,alt:animal.display})), index, animal.display);
+  if(img){delete img.dataset.swipeBound;delete img.dataset.justSwiped;}
+  // Swipe only changes photos; open fullscreen via explicit click/keyboard (laptop-safe).
   bindPhotoSwipe(stage,{
-    onSwipe:delta=>{if(photos.length>1) show(index+delta);},
-    onTap:e=>{if(e.target.closest('.animal-photo')) open();}
+    onSwipe:delta=>{if(photos.length>1) show(index+delta);}
   });
   if(img){
+    img.onclick=e=>{
+      if(stage.dataset.justSwiped) return;
+      e.preventDefault();
+      e.stopPropagation();
+      open();
+    };
     img.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};
   }
   show(0);
@@ -698,7 +744,7 @@ async function openAnimal(animal){
   animal.ancestors=animal.ancestors||[];
   const dialog=$('pokemonDetail'),esc=escapeHTML;
   const starter=animal.photos?.length?animal.photos:[{url:animal.photo||'',credit:animal.credit||'',link:animal.photoLink||`https://www.inaturalist.org/taxa/${animal.id}`}].filter(p=>p.url);
-  const carousel=`<div class="detail-stage photo-carousel" id="animalPhotoStage" data-index="0"><button type="button" class="photo-nav prev" data-photo-dir="-1" aria-label="Previous iNaturalist photo" ${starter.length>1?'':'hidden'}>‹</button>${starter.length?`<img class="animal-photo" src="${esc(starter[0].url)}" alt="${esc(animal.display)}" referrerpolicy="no-referrer">`:'<span class="photo-missing">No photo yet</span>'}<button type="button" class="photo-nav next" data-photo-dir="1" aria-label="Next iNaturalist photo" ${starter.length>1?'':'hidden'}>›</button><span class="photo-count" ${starter.length>1?'':'hidden'}>1 / ${starter.length||1}</span></div>`;
+  const carousel=`<div class="detail-stage photo-carousel" id="animalPhotoStage" data-index="0"><button type="button" class="photo-nav prev" data-photo-dir="-1" aria-label="Previous iNaturalist photo" ${starter.length>1?'':'hidden'}>‹</button>${starter.length?`<img class="animal-photo photo-zoomable" src="${esc(starter[0].url)}" alt="${esc(animal.display)}" referrerpolicy="no-referrer">`:'<span class="photo-missing">No photo yet</span>'}<button type="button" class="photo-nav next" data-photo-dir="1" aria-label="Next iNaturalist photo" ${starter.length>1?'':'hidden'}>›</button><button type="button" class="photo-expand" data-photo-expand aria-label="Open full screen photo" ${starter.length?'':'hidden'}>Full screen</button><span class="photo-count" ${starter.length>1?'':'hidden'}>1 / ${starter.length||1}</span></div>`;
   dialog.innerHTML=`<button class="close-button" id="closeDetail" aria-label="Close animal details">×</button><p class="eyebrow">REAL ANIMALS · OPEN TREE OF LIFE</p><h1 id="detailTitle">${esc(animal.display)}</h1><p class="scientific-name">${esc(animal.name)}</p>${carousel}<p class="detail-source" id="animalPhotoCredit">${esc((starter[0]&&starter[0].credit)||animal.credit||'Photo credit unavailable')} · <a href="${esc((starter[0]&&starter[0].link)||animal.photoLink||('https://www.inaturalist.org/taxa/'+animal.id))}" target="_blank" rel="noopener">Photo source ↗</a></p><div class="taxonomy-trail">${animal.ancestors.filter(n=>['phylum','class','order','family','genus'].includes(n.rank)).map(n=>`<button type="button" class="taxon-chip" data-taxon="${n.id}" aria-pressed="false"><small>${esc(n.rank)}</small><b>${esc(n.common||n.name)}</b><span>${esc(n.name)}</span></button>`).join('')}</div>${animal.summary?`<p class="animal-summary">${esc(animal.summary.length>=900?animal.summary.slice(0,animal.summary.lastIndexOf(' '))+'…':animal.summary)}</p><p class="detail-source">Wikipedia contributors via iNaturalist · <a href="${esc(animal.wiki||'https://www.wikipedia.org')}" target="_blank" rel="noopener">Source & history ↗</a> · CC BY-SA</p>`:''}<p>This animal’s place in the tree comes from the Open Tree of Life, so the order of splits stays the order from that tree. Branch lengths are DateLife ages in millions of years when a published chronogram covers every species shown. Otherwise the scale is synthetic and every species still lines up with Now.</p>${kinMarkup()}<div class="detail-actions"><a href="https://www.inaturalist.org/taxa/${animal.id}" target="_blank" rel="noopener">Photos & facts on iNaturalist ↗</a><button class="choose-button" id="detailPick"></button></div>${animal.wiki?`<p><a href="${esc(animal.wiki)}" target="_blank" rel="noopener">Read about this animal ↗</a></p>`:''}<p class="detail-note">Open Tree of Life supplies the branching order. DateLife supplies ages from published chronograms when this page is served locally and a chronogram covers the species. Map dots are sampled GBIF records; these photos come from iNaturalist taxon examples and may differ from mapped GBIF records.</p>`;
   $('closeDetail').onclick=hideDetail;$('detailPick').onclick=async()=>{const name=animal.name;await toggle(animal.id);if(!selected.has(name))hideDetail();};updateDetailButton();mountAnimalKin(animal);showDetail();$('closeDetail').focus();
   mountAnimalGallery(animal,starter);
